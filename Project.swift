@@ -18,7 +18,9 @@ let project = Project(
             ),
             sources: ["BookTracker/Sources/**"],
             resources: ["BookTracker/Resources/**"],
-            dependencies: []
+            dependencies: [
+                .external(name:"ComposableArchitecture")
+            ]
         ),
         .target(
             name: "BookTrackerTests",
