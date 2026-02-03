@@ -5,8 +5,9 @@
 //  Created by 배성연 on 2/2/26.
 //
 
-import SwiftUI
 import ComposableArchitecture
+import SwiftUI
+
 struct PressTintButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -14,8 +15,6 @@ struct PressTintButtonStyle: ButtonStyle {
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
-
-
 
 struct DefaultButton<Label: View>: View {
     let action: () -> Void
@@ -27,7 +26,6 @@ struct DefaultButton<Label: View>: View {
                 .fontWeight(.bold)
                 .padding()
                 .frame(maxWidth: .infinity)
-
         }
         .foregroundStyle(.white)
         .buttonStyle(PressTintButtonStyle())
@@ -36,23 +34,21 @@ struct DefaultButton<Label: View>: View {
     }
 }
 
-
-struct AuthView:View{
-    
+struct AuthView: View {
     var store: StoreOf<AuthFeature>
-    
-    var body: some View{
+
+    var body: some View {
         GeometryReader { proxy in
-            VStack{
+            VStack {
                 // 위 영역
                 VStack {
                     Circle().foregroundStyle(.blue).frame(width: 200)
                 }
                 .frame(height: proxy.size.height * 0.7)
                 .frame(maxWidth: .infinity)
-                
+
                 // 아래 영역
-                VStack(spacing:10){
+                VStack(spacing: 10) {
                     Spacer()
                     DefaultButton(action: {
                         store.send(.snsLoginButtonTapped(.apple))
@@ -67,15 +63,11 @@ struct AuthView:View{
                 }.frame(height: proxy.size.height * 0.3)
             }
         }
-        
     }
 }
-
-
 
 #Preview {
     AuthView(store: Store(initialState: AuthFeature.State(), reducer: {
         AuthFeature()
     }))
 }
-
