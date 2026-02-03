@@ -2,47 +2,41 @@
 //  AppFeature.swift
 //  BookTracker
 //
-//  Created by 배성연 on 2/2/26.
+//  Created by 배성연 on 2/3/26.
 //
 
-import Foundation
 import ComposableArchitecture
-
+import CasePaths
 
 @Reducer
 struct AppFeature {
-
   @ObservableState
-  struct State: Equatable {
-    enum Route: Equatable {
-      case auth(AuthFeature.State)
-      case main(MainFeature.State)
-    }
-
-    var route: Route = .auth(.init())
+  @CasePathable
+  enum State: Equatable {
+    case auth(AuthFeature.State)
+    case main(MainFeature.State)
   }
 
+  @CasePathable
   enum Action {
-    case route(RouteAction)   // ✅ 추가
-  }
-
-  enum RouteAction {
     case auth(AuthFeature.Action)
     case main(MainFeature.Action)
   }
 
   var body: some ReducerOf<Self> {
+    Scope(state: \.auth, action: \.auth) { AuthFeature() }
+    Scope(state: \.main, action: \.main) { MainFeature() }
+
     Reduce { state, action in
       switch action {
-
-      case .route(.auth(.delegate(.setAuthenticated))):
-        state.route = .main(.init())
-        return .none
-
-      case .route:
-        return .none
+      case .auth(.delegate(.setAuthenticated)):
+          state = .main(MainFeature.State())
+          return .none
+      case .auth:
+          return .none
+      case .main:
+          return .none
       }
     }
   }
 }
-
