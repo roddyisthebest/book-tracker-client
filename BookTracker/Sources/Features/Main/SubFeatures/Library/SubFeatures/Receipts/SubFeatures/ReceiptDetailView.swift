@@ -28,10 +28,11 @@ struct ReceiptDetailView: View {
                             .font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
                     }
                     Spacer()
-                }
+                }.padding(.horizontal, 10)
             }
             .frame(height: 52)
             .padding(.horizontal)
+            .padding(.vertical, 10)
 
             ZStack {
                 ScrollView {
@@ -68,7 +69,7 @@ struct ReceiptDetailView: View {
                 VStack {
                     Spacer()
                     DefaultButton(action: {
-                        store.send(.deleteButtonTapped(id: UUID(1)))
+                        store.send(.deleteButtonTapped)
                     }, label: { Text("삭제하기") })
                         .padding(.vertical, 12)
                 }
@@ -83,7 +84,7 @@ struct ReceiptDetailView: View {
 }
 
 #Preview {
-    ReceiptDetailView(store: Store(initialState: ReceiptDetailFeature.State(recepit: "idid"), reducer: {
+    ReceiptDetailView(store: Store(initialState: ReceiptDetailFeature.State(id: UUID(1)), reducer: {
         ReceiptDetailFeature()
     }))
 }
