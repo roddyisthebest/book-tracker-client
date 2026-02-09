@@ -30,6 +30,7 @@ struct SelectBookRow: View {
                         .font(.system(size: 18, weight: .bold))
                         .lineLimit(1)
                         .truncationMode(.tail)
+                        .foregroundStyle(.white)
 
                     HStack(alignment: .top, spacing: 10) {
                         RoundedRectangle(cornerRadius: 6)
@@ -63,6 +64,43 @@ struct SelectBookRow: View {
                     }
                 }
             }
+            .padding()
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(.blue, lineWidth: 2)
+            }
         }
     }
+}
+
+#Preview("SelectBookRow Samples") {
+    VStack(spacing: 16) {
+        SelectBookRow(
+            title: "스위프트UI와 TCA 제대로 배우기",
+            author: "홍길동",
+            publisher: "예제출판사",
+            isbn: "9781234567890",
+            isSelected: false,
+            onTap: {}
+        )
+        .background(Color(hex: "#17171C"))
+        .cornerRadius(10)
+
+        SelectBookRow(
+            title: "iOS 아키텍처 실무 가이드",
+            author: "이몽룡",
+            publisher: "실무출판",
+            isbn: "9780987654321",
+            isSelected: true,
+            onTap: {}
+        )
+//        .padding()
+        .background(Color(hex: "#17171C"))
+        .cornerRadius(10)
+    }
+    .padding()
+    .background(Color(hex: "#2C2C35", default: .black))
 }

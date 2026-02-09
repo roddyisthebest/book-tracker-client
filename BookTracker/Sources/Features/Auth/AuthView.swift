@@ -30,7 +30,6 @@ struct DefaultButton<Label: View>: View {
         .foregroundStyle(.white)
         .buttonStyle(PressTintButtonStyle())
         .cornerRadius(10)
-        .padding(.horizontal)
     }
 }
 

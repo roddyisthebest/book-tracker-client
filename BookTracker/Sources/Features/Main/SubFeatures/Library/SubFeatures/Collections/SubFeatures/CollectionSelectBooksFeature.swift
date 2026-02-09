@@ -20,6 +20,7 @@ struct CollectionSelectBooksFeature {
         ]
 
         @Presents var alert: AlertState<CollectionSelectBooksFeature.Action.Alert>?
+        @Presents var addBooks: AddBooksFeature.State?
     }
 
     enum Action {
@@ -28,12 +29,8 @@ struct CollectionSelectBooksFeature {
         case bookAllDisselected
         case addButtonTapped
         case deleteButtonTapped
-        case delegate(Delegate)
         case alert(PresentationAction<Alert>)
-
-        enum Delegate {
-            case addBooksToCollection(books: [Book])
-        }
+        case addBooks(PresentationAction<AddBooksFeature.Action>)
 
         enum Alert {
             case confirmDeletion
@@ -58,13 +55,8 @@ struct CollectionSelectBooksFeature {
                 state.selectedIds.removeAll()
                 return .none
             case .addButtonTapped:
-                let selectedBooks = state.books.filter { state.selectedIds.contains($0.id) }
-
-                if selectedBooks.isEmpty {
-                    return .none
-                }
-
-                return .send(.delegate(.addBooksToCollection(books: selectedBooks)))
+                state.addBooks = AddBooksFeature.State(unSelectableIds: Set(state.books.map { $0.id }))
+                return .none
             case .deleteButtonTapped:
                 state.alert = AlertState {
                     TextState("Are you sure?")
@@ -80,10 +72,18 @@ struct CollectionSelectBooksFeature {
                 return .none
             case .alert:
                 return .none
-            case .delegate:
+            case .addBooks(.presented(.delegate(.addBooksToCollection(let books)))):
+                state.books.append(contentsOf: books)
+                state.addBooks = nil
+                return .none
+            case .addBooks:
                 return .none
             }
-        }.ifLet(\.$alert, action: \.alert)
+        }
+        .ifLet(\.$addBooks, action: \.addBooks) {
+            AddBooksFeature()
+        }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 
