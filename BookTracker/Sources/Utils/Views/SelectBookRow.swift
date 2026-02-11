@@ -55,6 +55,7 @@ struct SelectBookRow: View {
                                     .font(.system(size: 14, weight: .semibold))
                                 Text("ISBN \(isbn)").font(.caption2).lineLimit(1)
                                     .truncationMode(.tail)
+                                    .foregroundStyle(.white)
                             }
                             .padding(6)
                             .background(Color(hex: "#2A2A33", default: .gray)).cornerRadius(4)

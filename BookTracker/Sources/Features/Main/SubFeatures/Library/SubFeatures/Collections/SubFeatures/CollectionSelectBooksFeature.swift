@@ -14,23 +14,30 @@ struct CollectionSelectBooksFeature {
     struct State: Equatable {
         var selectedIds: Set<UUID> = []
         var books: [Book] = [
-            Book(id: UUID(1), title: "테스트", author: "테스트", publisher: "테스트", imageUrl: nil, isbn: "9788936429430"),
-            Book(id: UUID(2), title: "테스트2", author: "테스트2", publisher: "테스트2", imageUrl: nil, isbn: "9788936429431"),
-            Book(id: UUID(3), title: "테스트3", author: "테스트3", publisher: "테스트3", imageUrl: nil, isbn: "9788936429432"),
+            Book(id: UUID(1), title: "테스트", author: "테스트", publisher: "테스트", imageUrl: nil, isbn: "9788936429430", stereo: .done),
+            Book(id: UUID(2), title: "테스트2", author: "테스트2", publisher: "테스트2", imageUrl: nil, isbn: "9788936429431", stereo: .done),
+            Book(id: UUID(3), title: "테스트3", author: "테스트3", publisher: "테스트3", imageUrl: nil, isbn: "9788936429432", stereo: .done),
         ]
 
         @Presents var alert: AlertState<CollectionSelectBooksFeature.Action.Alert>?
         @Presents var addBooks: AddBooksFeature.State?
     }
 
-    enum Action {
+    enum Action: Equatable {
         case bookSelected(id: UUID)
         case bookAllSelected
         case bookAllDisselected
         case addButtonTapped
         case deleteButtonTapped
+        case saveButtonTapped
+
         case alert(PresentationAction<Alert>)
         case addBooks(PresentationAction<AddBooksFeature.Action>)
+
+        case delegate(Delegate)
+        enum Delegate {
+            case updateCollection
+        }
 
         enum Alert {
             case confirmDeletion
@@ -75,6 +82,13 @@ struct CollectionSelectBooksFeature {
             case .addBooks(.presented(.delegate(.addBooksToCollection(let books)))):
                 state.books.append(contentsOf: books)
                 state.addBooks = nil
+                return .none
+            case .saveButtonTapped:
+                return .run {
+                    send in
+                    await send(.delegate(.updateCollection))
+                }
+            case .delegate:
                 return .none
             case .addBooks:
                 return .none

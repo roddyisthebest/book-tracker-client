@@ -14,60 +14,54 @@ struct ReceiptListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            content
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#101013", default: .black))
-        .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
-            NavigationStack {
-                ReceiptDetailView(store: receiptDetailStore)
+        NavigationStack {
+            VStack(spacing: 0) {
+                content
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(hex: "#101013", default: .black))
+            .navigationTitle("대출증/영수증")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { toolbarContent }
+            .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
+                NavigationStack {
+                    ReceiptDetailView(store: receiptDetailStore)
+                }
+            }
+            .alert($store.scope(state: \.alert, action: \.alert))
         }
-        .alert($store.scope(state: \.alert, action: \.alert))
     }
 
     private static let gridColumns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 12), count: 2)
 
-    private var header: some View {
-        ZStack {
-            Text("대출증/영수증")
-                .font(.headline)
-                .foregroundStyle(.white)
-
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
-                }
-                Spacer()
-                Menu {
-                    Picker("정렬", selection: $store.sortOption) {
-                        Text("오래된순").tag(ReceiptListFeature.SortOption.oldest)
-                        Text("최신순").tag(ReceiptListFeature.SortOption.newest)
-                        Text("제목순(가나다)").tag(ReceiptListFeature.SortOption.titleAsc)
-                        Text("제목순(반대)").tag(ReceiptListFeature.SortOption.titleDesc)
-                    }
-                    .pickerStyle(.inline)
-
-                    Divider()
-
-                    Button(role: .destructive, action: { store.send(.allDeleteButtonTapped) }) {
-                        Label("전체 삭제", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
-                }
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                dismiss()
+            } label: {
+                Label("뒤로가기", systemImage: "chevron.left")
             }
         }
-        .frame(height: 52)
-        .padding(.horizontal)
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Picker("정렬", selection: $store.sortOption) {
+                    Text("오래된순").tag(BookSortOption.oldest)
+                    Text("최신순").tag(BookSortOption.newest)
+                    Text("제목순(가나다)").tag(BookSortOption.titleAsc)
+                    Text("제목순(반대)").tag(BookSortOption.titleDesc)
+                }
+                .pickerStyle(.inline)
+
+                Divider()
+
+                Button(role: .destructive, action: { store.send(.allDeleteButtonTapped) }) {
+                    Label("전체 삭제", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+        }
     }
 
     private var content: some View {

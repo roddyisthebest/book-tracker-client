@@ -7,6 +7,13 @@
 
 import Foundation
 
+enum BookStereo: Equatable {
+    case reading
+    case want
+    case done
+    case dropped
+}
+
 struct Book: Equatable {
     let id: UUID
     let title: String
@@ -14,4 +21,5 @@ struct Book: Equatable {
     let publisher: String
     let imageUrl: String?
     let isbn: String
+    let stereo: BookStereo
 }

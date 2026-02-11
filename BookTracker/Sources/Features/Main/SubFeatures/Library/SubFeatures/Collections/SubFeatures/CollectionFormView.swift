@@ -12,39 +12,7 @@ struct CollectionFormView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack {
-            // Header at top
-            ZStack {
-                Text("컬렉션 생성")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
-                    }
-                    Spacer()
-                    if store.isEditing {
-                        Button("수정하기") {
-                            store.send(.updateButtonTapped)
-                        }
-                        .disabled(!store.isSubmitEnabled)
-                        .foregroundStyle(store.isSubmitEnabled ? .white : .white.opacity(0.2))
-                    } else {
-                        Button("만들기") {
-                            store.send(.createButtonTapped)
-                        }.foregroundStyle(.white)
-                    }
-
-                }.padding(.horizontal, 10)
-            }
-            .frame(height: 52)
-            .padding(.horizontal)
-            .padding(.vertical, 10)
-
+        NavigationStack {
             VStack(spacing: 30) {
                 VStack {
                     HStack {
@@ -52,7 +20,7 @@ struct CollectionFormView: View {
                         Spacer()
                     }
                     TextField("이름",
-                              text: $store.name,
+                              text: $store.title,
                               prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
                         .foregroundStyle(.white)
                         .padding()
@@ -69,7 +37,7 @@ struct CollectionFormView: View {
                     ZStack(alignment: .topLeading) {
                         if store.description.isEmpty {
                             Text("컬렉션 설명을 입력해주세요")
-                                .foregroundStyle(.white.opacity(0.4)) // placeholder는 밝은 색 + 투명도 권장
+                                .foregroundStyle(.white.opacity(0.4))
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 20)
                         }
@@ -85,7 +53,7 @@ struct CollectionFormView: View {
                             .autocorrectionDisabled(false)
                     }
                     .background(Color(hex: "#17171C", default: .accentColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 15)) // 내용까지 라운드로 잘라줌
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
                 Spacer()
                 if store.isEditing {
@@ -93,20 +61,43 @@ struct CollectionFormView: View {
                         store.send(.deleteButtonTapped)
                     }) { Text("삭제하기") }
                 }
-
-            }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 20).padding(.vertical, 10)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(Color(hex: "#2C2C35", default: .black))
+            .navigationTitle(store.isEditing ? "컬렉션 수정" : "컬렉션 생성")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Label("뒤로가기", systemImage: "chevron.left")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if store.isEditing {
+                        Button("수정하기") {
+                            store.send(.updateButtonTapped)
+                        }
+                        .disabled(!store.isSubmitEnabled)
+                    } else {
+                        Button("만들기") {
+                            store.send(.createButtonTapped)
+                        }
+                    }
+                }
+            }
+            .alert($store.scope(state: \.alert, action: \.alert))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#2C2C35", default: .black))
-        .alert($store.scope(state: \.alert, action:
-            \.alert))
     }
 }
 
 #Preview {
     CollectionFormView(
         store: Store(
-            initialState: CollectionFormFeature.State(id: UUID(), name: "", description: ""),
+            initialState: CollectionFormFeature.State(collection: Collection(id: UUID(1), isDefault: false, title: "asdd", description: "asdsdsd")),
             reducer: { CollectionFormFeature() }
         )
     )

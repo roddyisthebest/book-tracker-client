@@ -16,7 +16,7 @@ struct ReceiptListFeature {
         @Presents var receiptDetail: ReceiptDetailFeature.State?
         @Presents var alert: AlertState<ReceiptListFeature.Action.Alert>?
 
-        var sortOption: SortOption = .newest
+        var sortOption: BookSortOption = .newest
 
         var receiptType: ReceiptType = .rental
         var list: [Receipt] = [
@@ -44,13 +44,6 @@ struct ReceiptListFeature {
                 })
             }
         }
-    }
-
-    enum SortOption: Equatable, CaseIterable {
-        case oldest
-        case newest
-        case titleAsc
-        case titleDesc
     }
 
     enum Action: Equatable, BindableAction {

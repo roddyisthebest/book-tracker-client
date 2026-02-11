@@ -11,10 +11,11 @@ import Foundation
 struct CollectionFormFeature {
     @ObservableState
     struct State: Equatable {
-        let id: UUID?
+        var id: UUID?
 
-        var name: String
-        var description: String
+        var title: String = ""
+        var description: String = ""
+        var isDefault: Bool = false
         @Presents var alert: AlertState<CollectionFormFeature.Action.Alert>?
 
         var isEditing: Bool {
@@ -22,17 +23,18 @@ struct CollectionFormFeature {
         }
 
         var isSubmitEnabled: Bool {
-            !name.isEmpty && !description.isEmpty
+            !title.isEmpty && !description.isEmpty
         }
 
+        init() {}
+
         init(
-            id: UUID? = nil,
-            name: String = "",
-            description: String = "",
+            collection: Collection
         ) {
-            self.id = id
-            self.name = name
-            self.description = description
+            self.id = collection.id
+            self.title = collection.title
+            self.description = collection.description
+            self.isDefault = collection.isDefault
         }
     }
 
@@ -52,23 +54,26 @@ struct CollectionFormFeature {
         }
 
         enum Delegate: Equatable {
-            case deleteCollection(UUID)
-            case updateCollection(UUID, String, String)
-            case createCollection(String, String)
+            case deleteCollection(id: UUID)
+            case updateCollection(updated: Collection)
+            case createCollection(new: Collection)
         }
     }
 
     var body: some Reducer<State, Action> {
         BindingReducer()
-        Reduce { state, action in
+        Reduce<State, Action> { state, action in
             switch action {
             case .createButtonTapped:
-                return .send(.delegate(.createCollection(state.name, state.description)))
+                let new = Collection(id: UUID(5), isDefault: false, title: state.title, description: state.description)
+
+                return .send(.delegate(.createCollection(new: new)))
             case .updateButtonTapped:
                 guard let id = state.id else {
                     return .none
                 }
-                return .send(.delegate(.updateCollection(id, state.name, state.description)))
+                let updated = Collection(id: id, isDefault: state.isDefault, title: state.title, description: state.description)
+                return .send(.delegate(.updateCollection(updated: updated)))
             case .deleteButtonTapped:
                 state.alert = AlertState {
                     TextState("Are you sure?")
@@ -84,10 +89,7 @@ struct CollectionFormFeature {
                 guard let id = state.id else {
                     return .none
                 }
-                return .run {
-                    [id = id] send in
-                    await send(.delegate(.deleteCollection(id)))
-                }
+                return .send(.delegate(.deleteCollection(id: id)))
             case .delegate:
                 return .none
             default:

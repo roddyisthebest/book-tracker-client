@@ -65,7 +65,7 @@ struct CollectionSelectBooksView: View {
                 .navigationTitle("구매한책")
                 .navigationBarTitleDisplayMode(.large)
                 .navigationBarBackButtonHidden(true)
-                .navigationSubtitle("영수증 내역으로 자동 생성되는 컬렉션입니다.")
+                .navigationSubtitle("책을 삭제하거나 추가해보세요.")
                 .toolbar { toolbarContent }
                 .overlay(alignment: .bottom) { bottomBar }
                 .sheet(store: store.scope(state: \.$addBooks, action: \.addBooks)) { addBooksStore in
@@ -84,19 +84,24 @@ struct CollectionSelectBooksView: View {
                 Label("뒤로가기", systemImage: "chevron.left")
             }
         }
+
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Menu("선택") {
-                    Button("전체 선택", systemImage: "checkmark.circle") {
-                        store.send(.bookAllSelected)
-                    }
-                    Button("전체 해제", systemImage: "xmark.circle") {
-                        store.send(.bookAllDisselected)
-                    }
+                Button("전체 선택", systemImage: "checkmark.circle") {
+                    store.send(.bookAllSelected)
                 }
-                Button("컬렉션 수정", systemImage: "pencil") {}
+                Button("전체 해제", systemImage: "xmark.circle") {
+                    store.send(.bookAllDisselected)
+                }
             } label: {
                 Image(systemName: "ellipsis.circle")
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                store.send(.saveButtonTapped)
+            } label: {
+                Text("저장하기")
             }
         }
     }
