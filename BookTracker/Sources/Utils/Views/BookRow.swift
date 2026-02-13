@@ -7,7 +7,7 @@ struct BookRow: View {
 
     @ViewBuilder
     private var AddedView: some View {
-        switch book.stereo {
+        switch book.status {
         case .done:
             HStack(spacing: 5) {
                 Image(systemName: "star.fill")
@@ -96,13 +96,13 @@ struct BookRow: View {
 #Preview("SelectBookRow Samples") {
     VStack(spacing: 16) {
         BookRow(
-            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", stereo: .done),
+            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", status: .done, type: .ebook),
             onTap: {},
             onDelete: {}
         )
 
         BookRow(
-            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", stereo: .reading),
+            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", status: .reading, type: .ebook),
             onTap: {},
             onDelete: {}
         )

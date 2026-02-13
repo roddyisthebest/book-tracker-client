@@ -13,16 +13,6 @@ struct CollectionDetailFeature {
     @ObservableState
     struct State: Equatable {
         var books: [Book] = [
-            Book(id: UUID(1), title: "스위프트 마스터 1", author: "저자 A", publisher: "출판사 A", imageUrl: nil, isbn: "111-1111111111", stereo: .done),
-            Book(id: UUID(2), title: "스위프트 마스터 2", author: "저자 B", publisher: "출판사 B", imageUrl: nil, isbn: "222-2222222222", stereo: .reading),
-            Book(id: UUID(3), title: "스위프트 마스터 3", author: "저자 C", publisher: "출판사 C", imageUrl: nil, isbn: "333-3333333333", stereo: .done),
-            Book(id: UUID(4), title: "스위프트 마스터 4", author: "저자 D", publisher: "출판사 D", imageUrl: nil, isbn: "444-4444444444", stereo: .reading),
-            Book(id: UUID(5), title: "스위프트 마스터 5", author: "저자 E", publisher: "출판사 E", imageUrl: nil, isbn: "555-5555555555", stereo: .done),
-            Book(id: UUID(6), title: "스위프트 마스터 6", author: "저자 F", publisher: "출판사 F", imageUrl: nil, isbn: "666-6666666666", stereo: .reading),
-            Book(id: UUID(7), title: "스위프트 마스터 7", author: "저자 G", publisher: "출판사 G", imageUrl: nil, isbn: "777-7777777777", stereo: .done),
-            Book(id: UUID(8), title: "스위프트 마스터 8", author: "저자 H", publisher: "출판사 H", imageUrl: nil, isbn: "888-8888888888", stereo: .reading),
-            Book(id: UUID(9), title: "스위프트 마스터 9", author: "저자 I", publisher: "출판사 I", imageUrl: nil, isbn: "999-9999999999", stereo: .done),
-            Book(id: UUID(10), title: "스위프트 마스터 10", author: "저자 J", publisher: "출판사 J", imageUrl: nil, isbn: "000-0000000000", stereo: .reading)
         ]
         var sortOption: BookSortOption = .newest
         @Presents var destination: Destination.State?

@@ -12,14 +12,14 @@ struct CollectionFormView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 30) {
-                VStack {
-                    HStack {
-                        FormLabel(text: "이름")
-                        Spacer()
-                    }
-                    TextField("이름",
+            NavigationStack {
+                VStack(spacing: 30) {
+                    VStack {
+                        HStack {
+                            FormLabel(text: "이름")
+                            Spacer()
+                        }
+                        TextField("이름",
                               text: $store.title,
                               prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
                         .foregroundStyle(.white)

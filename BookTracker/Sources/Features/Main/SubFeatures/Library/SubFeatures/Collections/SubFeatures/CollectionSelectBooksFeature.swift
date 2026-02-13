@@ -13,11 +13,7 @@ struct CollectionSelectBooksFeature {
     @ObservableState
     struct State: Equatable {
         var selectedIds: Set<UUID> = []
-        var books: [Book] = [
-            Book(id: UUID(1), title: "테스트", author: "테스트", publisher: "테스트", imageUrl: nil, isbn: "9788936429430", stereo: .done),
-            Book(id: UUID(2), title: "테스트2", author: "테스트2", publisher: "테스트2", imageUrl: nil, isbn: "9788936429431", stereo: .done),
-            Book(id: UUID(3), title: "테스트3", author: "테스트3", publisher: "테스트3", imageUrl: nil, isbn: "9788936429432", stereo: .done),
-        ]
+        var books: [Book] = []
 
         @Presents var alert: AlertState<CollectionSelectBooksFeature.Action.Alert>?
         @Presents var addBooks: AddBooksFeature.State?
