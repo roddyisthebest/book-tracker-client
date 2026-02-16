@@ -27,9 +27,16 @@ struct MainView: View {
                     .tabItem { Label("Search", systemImage: "magnifyingglass") }
                     .tag(MainTab.search)
 
-                Text("Books")
-                    .tabItem { Label("Books", systemImage: "books.vertical") }
-                    .tag(MainTab.books)
+                NavigationStack {
+                    LibraryView(
+                        store: store.scope(
+                            state: \.library,
+                            action: \.library
+                        )
+                    )
+                }
+                .tabItem { Label("Books", systemImage: "books.vertical") }
+                .tag(MainTab.library)
 
                 Text("Stats")
                     .tabItem { Label("Stats", systemImage: "chart.bar") }
