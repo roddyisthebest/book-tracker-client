@@ -14,35 +14,26 @@ struct ReceiptListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                content
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#101013", default: .black))
-            .navigationTitle("대출증/영수증")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
-                NavigationStack {
-                    ReceiptDetailView(store: receiptDetailStore)
-                }
-            }
-            .alert($store.scope(state: \.alert, action: \.alert))
+        VStack(spacing: 0) {
+            content
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#101013", default: .black))
+        .navigationTitle("대출증/영수증")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbarContent }
+        .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
+            NavigationStack {
+                ReceiptDetailView(store: receiptDetailStore)
+            }
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 
     private static let gridColumns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 12), count: 2)
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
-            }
-        }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Picker("정렬", selection: $store.sortOption) {
@@ -124,7 +115,9 @@ struct ReceiptListView: View {
 }
 
 #Preview {
-    ReceiptListView(store: Store(initialState: ReceiptListFeature.State(), reducer: {
-        ReceiptListFeature()
-    }))
+    NavigationStack {
+        ReceiptListView(store: Store(initialState: ReceiptListFeature.State(), reducer: {
+            ReceiptListFeature()
+        }))
+    }
 }

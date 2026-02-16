@@ -8,36 +8,27 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct MyBookList: View {
+struct MyBookListView: View {
     @Bindable var store: StoreOf<MyBookListFeature>
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                content
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#101013", default: .black))
-            .navigationTitle("책장")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .sheet(store: store.scope(state: \.$destination.viewBookDetail, action: \.destination.viewBookDetail)) { bookDetailStore in
-                BookDetailView(store: bookDetailStore)
-            }
-            .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+        VStack(spacing: 0) {
+            content
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#101013", default: .black))
+        .navigationTitle("책장")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbarContent }
+        .sheet(store: store.scope(state: \.$destination.viewBookDetail, action: \.destination.viewBookDetail)) { bookDetailStore in
+            BookDetailView(store: bookDetailStore)
+        }
+        .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
     }
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
-            }
-        }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Picker("정렬", selection: $store.sortOption) {
@@ -124,10 +115,31 @@ struct MyBookList: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
+    private var grid: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 16)], spacing: 16) {
+                ForEach(store.books, id: \.id) { book in
+                    BookRow(
+                        book: book,
+                        onTap: {
+                            store.send(.bookCardTapped(id: book.id))
+                        },
+                        onDelete: {
+                            store.send(.deleteButtonTapped(id: book.id))
+                        }
+                    )
+                }
+            }
+            .padding(.horizontal, 15)
+            .padding(.top, 10)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 }
 
 #Preview {
-    MyBookList(store: Store(initialState: MyBookListFeature.State(), reducer: {
+    MyBookListView(store: Store(initialState: MyBookListFeature.State(), reducer: {
         MyBookListFeature()
     }))
 }

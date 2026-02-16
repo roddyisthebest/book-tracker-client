@@ -14,38 +14,29 @@ struct CollectionListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                content
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#101013", default: .black))
-            .navigationTitle("컬렉션")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .sheet(store: store.scope(state: \.$destination.viewCollectionDetail, action: \.destination.viewCollectionDetail)) {
-                collectionDetailStore in
-                CollectionDetailView(store: collectionDetailStore)
-            }
-            .sheet(store: store.scope(state: \.$destination.formCollection, action: \.destination.formCollection)) {
-                formCollectionStore in
-                CollectionFormView(store: formCollectionStore)
-            }
-            .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+        VStack(spacing: 0) {
+            content
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#101013", default: .black))
+        .navigationTitle("컬렉션")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbarContent }
+        .sheet(store: store.scope(state: \.$destination.viewCollectionDetail, action: \.destination.viewCollectionDetail)) {
+            collectionDetailStore in
+            CollectionDetailView(store: collectionDetailStore)
+        }
+        .sheet(store: store.scope(state: \.$destination.formCollection, action: \.destination.formCollection)) {
+            formCollectionStore in
+            CollectionFormView(store: formCollectionStore)
+        }
+        .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
     }
 
     private static let gridColumns: [GridItem] = Array(repeating: GridItem(.flexible(), spacing: 12), count: 2)
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
-            }
-        }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
 //                Picker("정렬", selection: $store.sortOption) {
@@ -98,8 +89,9 @@ struct CollectionListView: View {
 }
 
 #Preview {
-    CollectionListView(store: Store(initialState: CollectionListFeature.State(), reducer: {
-        CollectionListFeature()
-    }))
+    NavigationStack {
+        CollectionListView(store: Store(initialState: CollectionListFeature.State(), reducer: {
+            CollectionListFeature()
+        }))
+    }
 }
-
