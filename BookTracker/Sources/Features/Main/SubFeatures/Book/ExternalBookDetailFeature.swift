@@ -12,6 +12,7 @@ import Foundation
 struct ExternalBookDetailFeature {
     @ObservableState
     struct State: Equatable {
+        let id: String
         var book: ExternalBook?
 
         var isExtended: Bool = false

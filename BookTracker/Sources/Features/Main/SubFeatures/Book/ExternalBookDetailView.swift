@@ -178,7 +178,7 @@ struct ExternalBookDetailView: View {
 
 #Preview {
     NavigationStack {
-        ExternalBookDetailView(store: Store(initialState: ExternalBookDetailFeature.State(), reducer: {
+        ExternalBookDetailView(store: Store(initialState: ExternalBookDetailFeature.State(id: "as"), reducer: {
             ExternalBookDetailFeature()
         }))
     }
