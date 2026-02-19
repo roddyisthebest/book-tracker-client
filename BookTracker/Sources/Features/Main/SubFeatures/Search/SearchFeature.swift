@@ -20,6 +20,7 @@ struct SearchFeature {
     enum Action: Equatable, BindableAction {
         case detailSheet(PresentationAction<ExternalBookDetailFeature.Action>)
         case destination(Destination.Action)
+        case queryResetButtonTapped
         case binding(BindingAction<State>)
     }
 
@@ -41,6 +42,12 @@ struct SearchFeature {
 
                     ], keyword: state.query))
                 }
+                return .none
+
+            case .queryResetButtonTapped:
+                state.query = ""
+                state.destination = .suggestions(SearchSuggestionsFeature.State())
+
                 return .none
 
             case .destination(.suggestions(.delegate(.setKeyword(let keyword)))):

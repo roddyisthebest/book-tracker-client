@@ -25,6 +25,17 @@ struct SearchView: View {
                 .disableAutocorrection(true)
                 .foregroundStyle(.primary)
                 .submitLabel(.search)
+                .overlay(alignment: .trailing) {
+                    if !$store.query.wrappedValue.isEmpty {
+                        Button {
+                            store.send(.queryResetButtonTapped)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 6)
+                        }
+                    }
+                }
             }
             .padding(12)
             .background(Color(.secondarySystemBackground))
