@@ -23,9 +23,16 @@ struct MainView: View {
                     .tabItem { Label("Home", systemImage: "house") }
                     .tag(MainTab.home)
 
-                Text("Search")
-                    .tabItem { Label("Search", systemImage: "magnifyingglass") }
-                    .tag(MainTab.search)
+                NavigationStack {
+                    SearchView(
+                        store: store.scope(
+                            state: \.search,
+                            action: \.search
+                        )
+                    )
+                }
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
+                .tag(MainTab.search)
 
                 NavigationStack {
                     LibraryView(
