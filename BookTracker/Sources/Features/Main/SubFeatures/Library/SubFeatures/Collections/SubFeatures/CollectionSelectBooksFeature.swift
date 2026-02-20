@@ -13,7 +13,9 @@ struct CollectionSelectBooksFeature {
     @ObservableState
     struct State: Equatable {
         var selectedIds: Set<UUID> = []
-        var books: [Book] = []
+        var books: [Book] = [
+            Book.make(),
+        ]
 
         @Presents var alert: AlertState<CollectionSelectBooksFeature.Action.Alert>?
         @Presents var addBooks: AddBooksFeature.State?

@@ -87,7 +87,7 @@ struct ExternalBookDetailView: View {
                     VStack(spacing: 12) {
                         HStack(spacing: 12) {
                             Button(action: {
-                                store.send(.addButtonTapped(.rental))
+                                store.send(.addButtonTapped(.receipt))
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "person.text.rectangle.fill")
@@ -104,7 +104,7 @@ struct ExternalBookDetailView: View {
                             }
 
                             Button(action: {
-                                store.send(.addButtonTapped(.receipt))
+                                store.send(.addButtonTapped(.rental))
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "receipt.fill")
