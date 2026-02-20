@@ -13,7 +13,7 @@ struct ExternalBookDetailFeature {
     @ObservableState
     struct State: Equatable {
         let id: String
-        var book: ExternalBook?
+        var book: ExternalBook? = ExternalBook(id: "1324", title: "extenalBook")
 
         var isExtended: Bool = false
         var isExtendable: Bool = false
@@ -36,6 +36,12 @@ struct ExternalBookDetailFeature {
             case confirmReceipt
             case confirmRental
         }
+
+        case delegate(Delegate)
+        enum Delegate: Equatable {
+            case addBookToReceipt(book: ExternalBook)
+            case addBookToRental(book: ExternalBook)
+        }
     }
 
     var body: some Reducer<State, Action> {
@@ -46,16 +52,25 @@ struct ExternalBookDetailFeature {
                 return .none
             case .addButtonTapped(.receipt):
                 state.destination = .alert(.receiptConfirmation())
-                return .none
+                guard let book = state.book else {
+                    return .none
+                }
+                return .send(.delegate(.addBookToReceipt(book: book)))
             case .addButtonTapped(.rental):
                 state.destination = .alert(.rentalConfirmation())
-                return .none
+                guard let book = state.book else {
+                    return .none
+                }
+
+                return .send(.delegate(.addBookToRental(book: book)))
             case .extendButtonTapped:
                 state.isExtended.toggle()
                 return .none
             case .destination(.presented(.alert(.confirmReceipt))):
                 return .none
             case .destination:
+                return .none
+            case .delegate:
                 return .none
             }
         }

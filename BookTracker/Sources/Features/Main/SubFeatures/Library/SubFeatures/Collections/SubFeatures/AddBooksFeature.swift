@@ -12,7 +12,44 @@ import Foundation
 struct AddBooksFeature {
     @ObservableState
     struct State: Equatable {
-        var books: [Book] = []
+        var books: [Book] = [
+            Book.make(
+                id: UUID(1),
+                title: "모비 딕",
+                author: "허먼 멜빌",
+                publisher: "문학사상",
+                isbn: "9781234567001",
+                status: .want,
+                type: .paper
+            ),
+            Book.make(
+                id: UUID(2),
+                title: "데미안",
+                author: "헤르만 헤세",
+                publisher: "민음사",
+                isbn: "9781234567002",
+                status: .reading,
+                type: .ebook
+            ),
+            Book.make(
+                id: UUID(3),
+                title: "자기 개발서",
+                author: "홍길동",
+                publisher: "한빛미디어",
+                isbn: "9781234567003",
+                status: .done,
+                type: .paper
+            ),
+            Book.make(
+                id: UUID(4),
+                title: "스위프트 마스터",
+                author: "애플",
+                publisher: "애플프레스",
+                isbn: "9781234567004",
+                status: .dropped,
+                type: .ebook
+            )
+        ]
         var selectedIds: Set<UUID> = []
         var keyword: String = ""
 

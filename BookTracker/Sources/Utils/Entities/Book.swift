@@ -49,3 +49,31 @@ struct Book: Equatable {
     let status: BookStatus
     let type: BookType
 }
+
+extension Book {
+    static func make(
+        id: UUID = UUID(),
+        title: String,
+        author: String,
+        publisher: String = "",
+        imageUrl: String? = nil,
+        isbn: String = "",
+        status: BookStatus = .reading,
+        type: BookType = .paper
+    ) -> Book {
+        Book(
+            id: id,
+            title: title,
+            author: author,
+            publisher: publisher,
+            imageUrl: imageUrl,
+            isbn: isbn,
+            status: status,
+            type: type
+        )
+    }
+
+    static func make() -> Book {
+        Book.make(title: "ddasds", author: "asdasdsssasd")
+    }
+}

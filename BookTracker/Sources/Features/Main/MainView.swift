@@ -19,16 +19,24 @@ struct MainView: View {
                     send: MainFeature.Action.tabSelected
                 )
             ) {
-                Text("Home")
-                    .tabItem { Label("Home", systemImage: "house") }
-                    .tag(MainTab.home)
+                NavigationStack {
+                    HomeView(
+                        store: store.scope(
+                            state: \.home,
+                            action: \.home
+                        )
+                    )
+                }
+                .tabItem { Label("Home", systemImage: "house") }
+                .tag(MainTab.home)
 
                 NavigationStack {
                     SearchView(
                         store: store.scope(
                             state: \.search,
                             action: \.search
-                        )
+                        ),
+                        isSheet: false
                     )
                 }
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }

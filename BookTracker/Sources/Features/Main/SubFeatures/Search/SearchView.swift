@@ -10,6 +10,8 @@ import SwiftUI
 
 struct SearchView: View {
     @Bindable var store: StoreOf<SearchFeature>
+    var isSheet: Bool = true
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
@@ -56,6 +58,7 @@ struct SearchView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(isSheet ? Color(hex: "#2C2C35", default: .black) : Color(hex: "#101013", default: .black))
         .sheet(
             item: $store.scope(state: \.detailSheet, action: \.detailSheet)
         ) { store in
@@ -65,6 +68,15 @@ struct SearchView: View {
         }
         .navigationTitle("검색")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if isSheet {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { dismiss() } label: {
+                        Label("뒤로가기", systemImage: "chevron.left")
+                    }
+                }
+            }
+        }
     }
 }
 
