@@ -35,7 +35,8 @@ struct MainView: View {
                         store: store.scope(
                             state: \.search,
                             action: \.search
-                        )
+                        ),
+                        isSheet: false
                     )
                 }
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }
