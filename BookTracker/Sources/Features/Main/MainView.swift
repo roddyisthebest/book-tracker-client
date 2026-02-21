@@ -53,9 +53,16 @@ struct MainView: View {
                 .tabItem { Label("Books", systemImage: "books.vertical") }
                 .tag(MainTab.library)
 
-                Text("Stats")
-                    .tabItem { Label("Stats", systemImage: "chart.bar") }
-                    .tag(MainTab.stats)
+                NavigationStack {
+                    StatView(
+                        store: store.scope(
+                            state: \.stat,
+                            action: \.stat
+                        )
+                    )
+                }
+                .tabItem { Label("Stats", systemImage: "chart.bar") }
+                .tag(MainTab.stat)
 
                 Text("Settings")
                     .tabItem { Label("Settings", systemImage: "gearshape") }
