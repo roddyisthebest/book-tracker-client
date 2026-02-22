@@ -16,6 +16,7 @@ struct MainFeature {
         var library = LibraryFeature.State()
         var search = SearchFeature.State()
         var home = HomeFeature.State()
+        var stat = StatFeature.State()
     }
 
     enum Action: Equatable {
@@ -23,6 +24,7 @@ struct MainFeature {
         case library(LibraryFeature.Action)
         case search(SearchFeature.Action)
         case home(HomeFeature.Action)
+        case stat(StatFeature.Action)
     }
 
     var body: some ReducerOf<Self> {
@@ -38,6 +40,10 @@ struct MainFeature {
             HomeFeature()
         }
 
+        Scope(state: \.stat, action: \.stat) {
+            StatFeature()
+        }
+
         Reduce { state, action in
             switch action {
             case let .tabSelected(tab):
@@ -48,6 +54,8 @@ struct MainFeature {
             case .search:
                 return .none
             case .home:
+                return .none
+            case .stat:
                 return .none
             }
         }

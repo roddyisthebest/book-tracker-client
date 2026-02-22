@@ -13,7 +13,7 @@ struct StatusRow: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            Text("\(key)").foregroundStyle(.white.opacity(0.65)).font(.system(size: 18, weight: .medium))
+            MainLabel(key)
             Spacer(minLength: 20)
             Text("\(value)").foregroundStyle(.white.opacity(0.85)).font(.system(size: 18, weight: .bold))
         }
