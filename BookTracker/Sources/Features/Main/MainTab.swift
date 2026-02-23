@@ -6,5 +6,5 @@
 //
 
 enum MainTab: Hashable {
-    case home, search, library, stat, settings
+    case home, search, library, stat, setting
 }
