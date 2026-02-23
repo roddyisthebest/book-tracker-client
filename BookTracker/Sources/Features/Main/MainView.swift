@@ -64,9 +64,16 @@ struct MainView: View {
                 .tabItem { Label("Stats", systemImage: "chart.bar") }
                 .tag(MainTab.stat)
 
-                Text("Settings")
-                    .tabItem { Label("Settings", systemImage: "gearshape") }
-                    .tag(MainTab.settings)
+                NavigationStack {
+                    SettingView(
+                        store: store.scope(
+                            state: \.setting,
+                            action: \.setting
+                        )
+                    )
+                }
+                .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tag(MainTab.setting)
             }
         }
     }
