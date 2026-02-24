@@ -17,21 +17,21 @@ enum SnsLoginMethod: Equatable {
 struct AuthFeature {
     @ObservableState
     struct State: Equatable {}
-    
+
     enum Action {
         case snsLoginButtonTapped(SnsLoginMethod)
-        
+
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case setAuthenticated
+            case login
         }
-     }
-    
+    }
+
     var body: some Reducer<State, Action> {
         Reduce { _, action in
             switch action {
                 case .snsLoginButtonTapped(let method):
-                    return .send(.delegate(.setAuthenticated))
+                    return .send(.delegate(.login))
                 case .delegate:
                     return .none
             }

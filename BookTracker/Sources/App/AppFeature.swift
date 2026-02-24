@@ -29,8 +29,11 @@ struct AppFeature {
 
         Reduce { state, action in
             switch action {
-            case .auth(.delegate(.setAuthenticated)):
+            case .auth(.delegate(.login)):
                 state = .main(MainFeature.State())
+                return .none
+            case .main(.delegate(.logout)):
+                state = .auth(AuthFeature.State())
                 return .none
             case .auth:
                 return .none

@@ -226,6 +226,26 @@ struct SettingView: View {
         }
         .navigationTitle("설정")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        store.send(.logoutButtonTapped)
+                    } label: {
+                        Label("로그아웃", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+
+                    Button(role: .destructive) {
+                        store.send(.deleteAccountButtonTapped)
+                    } label: {
+                        Label("회원 탈퇴", systemImage: "person.crop.circle.badge.xmark")
+                    }
+                } label: {
+                    Text("계정 관리")
+                }
+            }
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 
