@@ -18,6 +18,10 @@ let package = Package(
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture",
             from: "1.0.0"
+        ),
+        .package(
+            url: "https://github.com/supabase/supabase-swift",
+            from: "2.0.0" // 일단 이렇게 두고, 필요하면 올리면 됨
         )
     ]
 )
