@@ -35,6 +35,21 @@ struct AppView: View {
             if let mainStore = store.scope(state: \.main, action: \.main) {
                 MainView(store: mainStore)
             }
+
+        case .launching:
+            VStack {
+                Text("Loading...")
+            }
+            .task {
+                store.send(.onAppear)
+            }
+
+        case .signingOut:
+            VStack {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                Text("Signing out...")
+            }
         }
     }
 }
