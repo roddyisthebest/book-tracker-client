@@ -5,11 +5,13 @@
 //  Created by 배성연 on 2/25/26.
 //
 
+import AuthenticationServices
 import Supabase
 
 struct AuthService {
     var signUp: (_ email: String, _ password: String) async throws -> Result<AuthResponse, AppError>
     var signIn: (_ email: String, _ password: String) async throws -> Result<Session, AppError>
+    var appleSignIn: (_ idToken: String, _ nonce: String) async throws -> Result<Session, AppError>
     var signOut: () async throws -> Void
     var currentSession: () async throws -> Session?
     var authStateChanges: () -> AsyncStream<(AuthChangeEvent, Session?)>
@@ -24,6 +26,16 @@ extension AuthService {
             },
             signIn: { email, password in
                 let session = try await client.auth.signIn(email: email, password: password)
+                return .success(session)
+            },
+            appleSignIn: { idToken, nonce in
+                let session = try await client.auth.signInWithIdToken(
+                    credentials: OpenIDConnectCredentials(
+                        provider: .apple,
+                        idToken: idToken,
+                        nonce: nonce
+                    )
+                )
                 return .success(session)
             },
             signOut: {

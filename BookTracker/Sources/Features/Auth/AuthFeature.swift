@@ -19,6 +19,7 @@ struct AuthFeature {
     struct State: Equatable {
         var path = StackState<Path.State>()
         @Presents var alert: AlertState<Action.Alert>?
+        var isAppleLoginLoading: Bool = false
     }
 
     enum Action {
@@ -26,6 +27,7 @@ struct AuthFeature {
         case snsLoginButtonTapped(SnsLoginMethod)
         case emailLoginButtonTapped
 
+        case appleLoginFailed
         case alert(PresentationAction<Alert>)
 
         enum Alert: Equatable {}
@@ -37,25 +39,50 @@ struct AuthFeature {
         }
     }
 
+    @Dependency(\.authService) var authService
+    @Dependency(\.appleAuthClient) var appleAuthClient
+
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-                case .snsLoginButtonTapped(let method):
-                    return .send(.delegate(.login))
-                case .emailLoginButtonTapped:
-                    state.path.append(.emailLogin(EmailLoginFeature.State()))
+            case .snsLoginButtonTapped(let method):
+                switch method {
+                case .apple:
+                    state.isAppleLoginLoading = true
+                    return .run { send in
+                        do {
+                            let payload = try await appleAuthClient.signIn()
+                            _ = try await authService.appleSignIn(payload.idToken, payload.nonce)
+                            await send(.delegate(.login))
+                        } catch {
+                            print(error)
+                            await send(.appleLoginFailed)
+                        }
+                    }
+                    .cancellable(id: "apple-login", cancelInFlight: true)
+                case .google:
                     return .none
-                case .delegate:
-                    return .none
-                case .alert:
-                    return .none
-                case .path(.element(id: _, action: .emailLogin(.delegate(.signupRequested)))):
-                    state.path.append(.signup(SignupFeature.State()))
-                    return .none
-                case .path(.element(id: _, action: .emailLogin(.delegate(.signin)))):
-                    return .send(.delegate(.login))
-                case .path:
-                    return .none
+                }
+            //                    return .send(.delegate(.login))
+            case .emailLoginButtonTapped:
+                state.path.append(.emailLogin(EmailLoginFeature.State()))
+                return .none
+            case .delegate:
+                return .none
+            case .alert:
+                return .none
+            case .path(.element(id: _, action: .emailLogin(.delegate(.signupRequested)))):
+                state.path.append(.signup(SignupFeature.State()))
+                return .none
+            case .path(.element(id: _, action: .emailLogin(.delegate(.signin)))):
+                return .send(.delegate(.login))
+            case .path:
+                return .none
+            case .appleLoginFailed:
+                state.isAppleLoginLoading = false
+                state.alert = .showErrorMsg()
+
+                return .none
             }
         }
         .forEach(\.path, action: \.path) {

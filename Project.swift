@@ -19,7 +19,7 @@ let project = Project(
             name: "BookTracker",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.seong.booktracker",
+            bundleId: "com.seongyeon.booktracker",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [

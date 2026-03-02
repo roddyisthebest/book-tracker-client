@@ -14,6 +14,7 @@ private enum AuthServiceKey: DependencyKey {
     static let testValue: AuthService = .init(
         signUp: { _, _ in throw Unimplemented("unimplemented") },
         signIn: { _, _ in throw Unimplemented("unimplemented") },
+        appleSignIn: { _, _ in throw Unimplemented("unimplemented") },
         signOut: {},
         currentSession: { nil },
         authStateChanges: { AsyncStream { $0.finish() } }
@@ -26,4 +27,3 @@ extension DependencyValues {
         set { self[AuthServiceKey.self] = newValue }
     }
 }
-

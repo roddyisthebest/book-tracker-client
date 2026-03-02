@@ -75,12 +75,26 @@ struct AuthView: View {
                     .cornerRadius(10)
 
                     Button(action: {
-                        // action
+                        store.send(.snsLoginButtonTapped(.apple))
                     }) {
-                        Label("애플 로그인", systemImage: "apple.logo").fontWeight(.bold)
-                            .padding()
-                            .frame(maxWidth: .infinity).font(.headline)
+                        Group {
+                            if store.isAppleLoginLoading {
+                                HStack(spacing: 8) {
+                                    ProgressView().tint(.white)
+                                    Text("애플 로그인 중…")
+                                        .fontWeight(.bold)
+                                        .font(.headline)
+                                }
+                            } else {
+                                Label("애플 로그인", systemImage: "apple.logo")
+                                    .fontWeight(.bold)
+                                    .font(.headline)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
                     }
+                    .disabled(store.isAppleLoginLoading)
                     .foregroundStyle(.white)
                     .background(Color(hex: "#2C2C35", default: .accentColor))
                     .cornerRadius(10)
