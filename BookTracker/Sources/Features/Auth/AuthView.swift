@@ -34,9 +34,8 @@ struct DefaultButton<Label: View>: View {
 }
 
 struct AuthView: View {
-    var store: StoreOf<AuthFeature>
-
-    var body: some View {
+    @Bindable var store: StoreOf<AuthFeature>
+    private var mainContent: some View {
         GeometryReader { proxy in
             VStack {
                 // 위 영역
@@ -50,18 +49,69 @@ struct AuthView: View {
                 VStack(spacing: 10) {
                     Spacer()
                     DefaultButton(action: {
-                        store.send(.snsLoginButtonTapped(.apple))
+                        store.send(.emailLoginButtonTapped)
                     }) {
-                        Text("Apple로 계속")
+                        Text("이메일 로그인")
                     }
-                    DefaultButton(action: {
-                        store.send(.snsLoginButtonTapped(.google))
+
+                    Button(action: {
+                        // action
                     }) {
-                        Text("Google로 계속")
+                        HStack {
+                            Image("GoogleLogo")
+                                .resizable()
+                                .renderingMode(.original)
+                                .frame(width: 20, height: 20)
+
+                            Text("구글 로그인")
+                                .fontWeight(.bold)
+                                .font(.headline)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
                     }
-                }.frame(height: proxy.size.height * 0.3)
+                    .foregroundStyle(.white)
+                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .cornerRadius(10)
+
+                    Button(action: {
+                        // action
+                    }) {
+                        Label("애플 로그인", systemImage: "apple.logo").fontWeight(.bold)
+                            .padding()
+                            .frame(maxWidth: .infinity).font(.headline)
+                    }
+                    .foregroundStyle(.white)
+                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .cornerRadius(10)
+
+                }.frame(height: proxy.size.height * 0.3).padding(.horizontal)
+            }
+            .background(Color(hex: "#101013", default: .black))
+        }
+    }
+
+    @ViewBuilder
+    private func destinationView(for destinationStore: StoreOf<AuthFeature.Path>) -> some View {
+        switch destinationStore.state {
+        case .emailLogin:
+            if let store = destinationStore.scope(state: \.emailLogin, action: \.emailLogin) {
+                EmailLoginView(store: store)
+            }
+        case .signup:
+            if let store = destinationStore.scope(state: \.signup, action: \.signup) {
+                SignupView(store: store)
             }
         }
+    }
+
+    var body: some View {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+            mainContent
+        } destination: { destinationStore in
+            destinationView(for: destinationStore)
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 
