@@ -9,7 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct BookDetailView: View {
-    var store: StoreOf<BookDetailFeature>
+    @Bindable var store: Store<BookDetailFeature.State, BookDetailFeature.Action>
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -186,11 +186,10 @@ struct BookDetailView: View {
                     }
                 }
             }
-            .sheet(store: store.scope(state: \.$destination.formBook, action: \.destination.formBook)) {
-                formBookStore in
+            .sheet(item: $store.scope(state: \.destination?.formBook, action: \.destination.formBook)) { formBookStore in
                 BookFormView(store: formBookStore)
             }
-            .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
         }
     }
 }
