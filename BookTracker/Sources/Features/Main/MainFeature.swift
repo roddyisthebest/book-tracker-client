@@ -27,6 +27,12 @@ struct MainFeature {
         case home(HomeFeature.Action)
         case stat(StatFeature.Action)
         case setting(SettingFeature.Action)
+        case delegate(Delegate)
+
+        enum Delegate: Equatable {
+            case logout
+            case deleteAccount
+        }
     }
 
     var body: some ReducerOf<Self> {
@@ -63,7 +69,14 @@ struct MainFeature {
                 return .none
             case .stat:
                 return .none
+            case .setting(.delegate(.logout)):
+                return .send(.delegate(.logout))
+            case .setting(.delegate(.deleteAccount)):
+                // Handle global delete account flow here (e.g., revoke credentials)
+                return .none
             case .setting:
+                return .none
+            case .delegate:
                 return .none
             }
         }
