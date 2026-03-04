@@ -20,6 +20,7 @@ struct AuthFeature {
         var path = StackState<Path.State>()
         @Presents var alert: AlertState<Action.Alert>?
         var isAppleLoginLoading: Bool = false
+        var isGoogleLoginLoading: Bool = false
     }
 
     enum Action {
@@ -28,6 +29,7 @@ struct AuthFeature {
         case emailLoginButtonTapped
 
         case appleLoginFailed
+        case googleLoginFailed
         case alert(PresentationAction<Alert>)
 
         enum Alert: Equatable {}
@@ -61,7 +63,17 @@ struct AuthFeature {
                     }
                     .cancellable(id: "apple-login", cancelInFlight: true)
                 case .google:
-                    return .none
+                    state.isGoogleLoginLoading = true
+
+                    return .run { send in
+                        do {
+                            _ = try await authService.googleSignIn()
+                            await send(.delegate(.login))
+                        } catch {
+                            print(error)
+                            await send(.googleLoginFailed)
+                        }
+                    }
                 }
             //                    return .send(.delegate(.login))
             case .emailLoginButtonTapped:
@@ -82,6 +94,10 @@ struct AuthFeature {
                 state.isAppleLoginLoading = false
                 state.alert = .showErrorMsg()
 
+                return .none
+            case .googleLoginFailed:
+                state.isGoogleLoginLoading = false
+                state.alert = .showErrorMsg()
                 return .none
             }
         }

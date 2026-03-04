@@ -55,21 +55,33 @@ struct AuthView: View {
                     }
 
                     Button(action: {
-                        // action
+                        store.send(.snsLoginButtonTapped(.google))
                     }) {
-                        HStack {
-                            Image("GoogleLogo")
-                                .resizable()
-                                .renderingMode(.original)
-                                .frame(width: 20, height: 20)
+                        Group {
+                            if store.isGoogleLoginLoading {
+                                HStack(spacing: 8) {
+                                    ProgressView().tint(.white)
+                                    Text("구글 로그인 중…")
+                                        .fontWeight(.bold)
+                                        .font(.headline)
+                                }
+                            } else {
+                                HStack {
+                                    Image("GoogleLogo")
+                                        .resizable()
+                                        .renderingMode(.original)
+                                        .frame(width: 20, height: 20)
 
-                            Text("구글 로그인")
-                                .fontWeight(.bold)
-                                .font(.headline)
+                                    Text("구글 로그인")
+                                        .fontWeight(.bold)
+                                        .font(.headline)
+                                }
+                            }
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
                     }
+                    .disabled(store.isGoogleLoginLoading)
                     .foregroundStyle(.white)
                     .background(Color(hex: "#2C2C35", default: .accentColor))
                     .cornerRadius(10)

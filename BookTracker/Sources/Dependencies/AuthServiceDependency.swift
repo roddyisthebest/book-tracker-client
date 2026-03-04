@@ -15,6 +15,7 @@ private enum AuthServiceKey: DependencyKey {
         signUp: { _, _ in throw Unimplemented("unimplemented") },
         signIn: { _, _ in throw Unimplemented("unimplemented") },
         appleSignIn: { _, _ in throw Unimplemented("unimplemented") },
+        googleSignIn: { throw Unimplemented("unimplemented") },
         signOut: {},
         currentSession: { nil },
         authStateChanges: { AsyncStream { $0.finish() } }

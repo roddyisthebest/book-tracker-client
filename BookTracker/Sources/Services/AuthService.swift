@@ -7,11 +7,13 @@
 
 import AuthenticationServices
 import Supabase
+import UIKit
 
 struct AuthService {
     var signUp: (_ email: String, _ password: String) async throws -> Result<AuthResponse, AppError>
     var signIn: (_ email: String, _ password: String) async throws -> Result<Session, AppError>
     var appleSignIn: (_ idToken: String, _ nonce: String) async throws -> Result<Session, AppError>
+    var googleSignIn: () async throws -> Result<Session, AppError>
     var signOut: () async throws -> Void
     var currentSession: () async throws -> Session?
     var authStateChanges: () -> AsyncStream<(AuthChangeEvent, Session?)>
@@ -38,6 +40,18 @@ extension AuthService {
                 )
                 return .success(session)
             },
+            googleSignIn: {
+                let redirectTo = URL(string: "booktracker://auth-callback")!
+
+                let session = try await client.auth.signInWithOAuth(
+                    provider: .google,
+                    redirectTo: redirectTo
+                ) { (webSession: ASWebAuthenticationSession) in
+                    webSession.presentationContextProvider = KeyWindowPresentationContextProvider.shared
+                    webSession.prefersEphemeralWebBrowserSession = false
+                }
+                return .success(session)
+            },
             signOut: {
                 try await client.auth.signOut()
             },
@@ -58,5 +72,16 @@ extension AuthService {
                 }
             }
         )
+    }
+}
+
+final class KeyWindowPresentationContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
+    static let shared = KeyWindowPresentationContextProvider()
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow } ?? UIWindow()
     }
 }
