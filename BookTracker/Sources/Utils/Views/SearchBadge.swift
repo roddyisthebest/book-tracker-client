@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct SearchBadge: View {
-    let id: UUID
+    let id: String
     let text: String
     let onTapped: () -> Void
     let onDeleted: () -> Void
@@ -39,5 +39,5 @@ struct SearchBadge: View {
 }
 
 #Preview {
-    SearchBadge(id: UUID(1), text: "괜찮아 괜찮43괜찮아 괜찮43괜찮아 괜찮43 ㅁㄴㅇㅁㄴㅇㄹㅇㄴㄹㅁㄴㅇㄹㅇㄴㅇㄹ", onTapped: {}, onDeleted: {})
+    SearchBadge(id: "assadsd", text: "괜찮아 괜찮43괜찮아 괜찮43괜찮아 괜찮43 ㅁㄴㅇㅁㄴㅇㄹㅇㄴㄹㅁㄴㅇㄹㅇㄴㅇㄹ", onTapped: {}, onDeleted: {})
 }

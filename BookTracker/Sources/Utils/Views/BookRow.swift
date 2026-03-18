@@ -1,5 +1,60 @@
 import SwiftUI
 
+private struct ThumbnailAsyncImage: View {
+    let thumbnailURL: URL?
+    let fullURL: URL?
+
+    @State private var showFull = false
+
+    var body: some View {
+        ZStack {
+            if let thumbURL = thumbnailURL {
+                AsyncImage(url: thumbURL) { phase in
+                    switch phase {
+                    case .empty:
+                        Color.clear
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(showFull ? 0 : 1)
+                            .transition(.opacity)
+                    case .failure:
+                        Image(systemName: "photo")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            }
+
+            if let fullURL {
+                AsyncImage(url: fullURL) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView().tint(.secondary)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .onAppear { withAnimation(.easeInOut(duration: 0.2)) { showFull = true } }
+                            .transition(.opacity)
+                    case .failure:
+                        if thumbnailURL == nil {
+                            Image(systemName: "photo")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct BookRow: View {
     let book: Book
     let onTap: () -> Void
@@ -9,32 +64,41 @@ struct BookRow: View {
     private var AddedView: some View {
         switch book.status {
         case .done:
+            let rating = min(max(book.score ?? 0, 0), 5)
             HStack(spacing: 5) {
-                Image(systemName: "star.fill")
-                Image(systemName: "star.leadinghalf.filled")
-                Image(systemName: "star")
-                Image(systemName: "star")
-                Image(systemName: "star")
-            }.padding(.vertical, 5).foregroundStyle(.yellow)
-        case .reading:
-            let progress = 0.6
-            VStack(alignment: .leading, spacing: 5) {
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(Color(hex: "#2A2A33", default: .gray))
-                        .frame(height: 5)
-
-                    GeometryReader { proxy in
-                        let fullWidth = proxy.size.width
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.blue.opacity(0.6))
-                            .frame(width: fullWidth * progress, height: 5)
-                    }
+                ForEach(0 ..< 5, id: \.self) { i in
+                    let diff = rating - Double(i)
+                    Image(systemName: diff >= 1 ? "star.fill" : (diff >= 0.5 ? "star.leadinghalf.filled" : "star"))
                 }
-                .frame(height: 5)
-                .clipShape(RoundedRectangle(cornerRadius: 5))
-                Text("100% (123p/526p)").foregroundStyle(Color(hex: "#9B9BA1", default: .gray)).font(.caption2)
-            }.padding(.vertical, 7.5)
+            }
+            .padding(.vertical, 5)
+            .foregroundStyle(.yellow)
+        case .reading:
+            if let read = book.readCount, let total = book.pageCount, total > 0 {
+                let progress = min(max(Double(read) / Double(total), 0), 1)
+                VStack(alignment: .leading, spacing: 5) {
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(Color(hex: "#2A2A33", default: .gray))
+                            .frame(height: 5)
+
+                        GeometryReader { proxy in
+                            let fullWidth = proxy.size.width
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(Color.blue.opacity(0.6))
+                                .frame(width: fullWidth * progress, height: 5)
+                        }
+                    }
+                    .frame(height: 5)
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                    Text("\(Int(progress * 100))% (\(read)p/\(total)p)")
+                        .foregroundStyle(Color(hex: "#9B9BA1", default: .gray))
+                        .font(.caption2)
+                }
+                .padding(.vertical, 7.5)
+            } else {
+                EmptyView()
+            }
         default:
             EmptyView()
         }
@@ -54,10 +118,19 @@ struct BookRow: View {
                         .fill(Color(hex: "#2A2A33", default: .gray))
                         .frame(width: 80, height: 100)
                         .overlay(
-                            Image(systemName: "photo")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                            Group {
+                                if let urlString = book.imageUrl, let full = URL(string: urlString) {
+                                    // If you later add a `thumbnailUrl` property to `Book`, pass it here; for now we reuse full as fallback
+                                    let thumb: URL? = nil
+                                    ThumbnailAsyncImage(thumbnailURL: thumb, fullURL: full)
+                                } else {
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         )
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(book.author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 14, weight: .semibold))
@@ -96,13 +169,60 @@ struct BookRow: View {
 #Preview("SelectBookRow Samples") {
     VStack(spacing: 16) {
         BookRow(
-            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", status: .done, type: .ebook),
+            book: Book(
+                id: UUID(),
+                userId: UUID(),
+                externalBookId: nil,
+                title: "whatttup",
+                author: "we up now",
+                publisher: "pubbb",
+                pageCount: 300,
+                pageCountEditable: false,
+                imageUrl: nil,
+                isbn: "123232",
+                status: .done,
+                type: .ebook,
+                startedAt: Date(),
+                readCount: nil,
+                memo: nil,
+                endedAt: nil,
+                score: 0.5,
+                review: nil,
+                droppedReason: nil
+            ),
             onTap: {},
             onDelete: {}
         )
 
         BookRow(
-            book: Book(id: UUID(1), title: "스위프트와 제대로 배우기", author: "피자", publisher: "ㅁㄴㅇㅇ", imageUrl: nil, isbn: "1231232322212", status: .reading, type: .ebook),
+            book: Book(
+                id: UUID(),
+                userId: UUID(),
+                externalBookId: nil,
+                title: "whatttup",
+                author: "we up now",
+                publisher: "pubbb",
+                pageCount: 300,
+                pageCountEditable: false,
+                imageUrl: nil,
+                isbn: "123232",
+                status: .reading,
+                type: .ebook,
+                startedAt: Date(),
+                readCount: 0,
+                memo: nil,
+                endedAt: nil,
+                score: 0.5,
+                review: nil,
+                droppedReason: nil,
+
+            ),
+            onTap: {},
+            onDelete: {}
+        )
+
+        BookRow(
+            book: Book.make(),
             onTap: {},
             onDelete: {}
         )
