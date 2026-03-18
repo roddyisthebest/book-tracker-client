@@ -56,18 +56,20 @@ struct BookFormView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    if store.isEditing {
+                    if store.isLoading {
+                        ProgressView()
+                    } else if store.isEditing {
                         Button("저장하기") {
-//                            store.send(.updateButtonTapped)
+                            store.send(.saveButtonTapped)
                         }
-//                        .disabled(!store.isSubmitEnabled)
                     } else {
                         Button("생성하기") {
-//                            store.send(.createButtonTapped)
+                            store.send(.addButtonTapped)
                         }
                     }
                 }
             }
+            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .scrollContentBackground(.hidden) // 추가
             .background(Color(hex: "#2C2C35", default: .black))
         }
