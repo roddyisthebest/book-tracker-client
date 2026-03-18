@@ -21,18 +21,20 @@ struct SearchSuggestionsView: View {
                     Text("최근 검색어")
                         .font(.headline)
                         .padding(.horizontal, 15)
-                    FlowLayout(spacing: 10, rowSpacing: 10) {
-                        ForEach(store.searches, id: \.id) { search in
-                            SearchBadge(
-                                id: search.id,
-                                text: search.text,
-                                onTapped: {
-                                    store.send(.searchTapped(text: search.text))
-                                },
-                                onDeleted: {
-                                    store.send(.deleteButtonTapped(id: search.id))
-                                }
-                            )
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 10) {
+                            ForEach(store.searches, id: \.id) { search in
+                                SearchBadge(
+                                    id: search.id,
+                                    text: search.text,
+                                    onTapped: {
+                                        store.send(.searchTapped(text: search.text))
+                                    },
+                                    onDeleted: {
+                                        store.send(.deleteButtonTapped(id: search.id))
+                                    }
+                                )
+                            }
                         }
                     }
                     .padding(.horizontal, 15)
@@ -57,6 +59,7 @@ struct SearchSuggestionsView: View {
             .padding(.top, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear { store.send(.onAppear) }
     }
 }
 

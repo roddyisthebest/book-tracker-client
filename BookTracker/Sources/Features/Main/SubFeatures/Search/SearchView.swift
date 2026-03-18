@@ -44,7 +44,7 @@ struct SearchView: View {
             .cornerRadius(12)
             .padding(.horizontal, 15)
             .padding(.top)
-            .padding(.bottom, 20)
+            .padding(.bottom, 5)
 
             switch store.state.destination {
             case .suggestions:
