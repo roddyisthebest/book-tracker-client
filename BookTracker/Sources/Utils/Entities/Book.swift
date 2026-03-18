@@ -41,13 +41,39 @@ enum BookType: Equatable, CaseIterable, Identifiable, Hashable {
 
 struct Book: Equatable {
     let id: UUID
+    let userId: UUID
+    let externalBookId: String?
+
     let title: String
     let author: String
     let publisher: String
+    let pageCount: Int?
+    let pageCountEditable: Bool
+
     let imageUrl: String?
     let isbn: String
+
     let status: BookStatus
     let type: BookType
+
+    // status-driven
+
+    // .reading
+    let startedAt: Date?
+    let readCount: Int?
+    let memo: String?
+
+    // .want
+//    let memo: String?
+
+    // .done
+//    let startedAt: Date?
+    let endedAt: Date?
+    let score: Double?
+    let review: String?
+
+    // .dropped
+    let droppedReason: String?
 }
 
 extension Book {
@@ -63,13 +89,24 @@ extension Book {
     ) -> Book {
         Book(
             id: id,
+            userId: UUID(),
+            externalBookId: nil,
             title: title,
             author: author,
             publisher: publisher,
+            pageCount: nil,
+            pageCountEditable: false,
             imageUrl: imageUrl,
             isbn: isbn,
             status: status,
-            type: type
+            type: type,
+            startedAt: nil,
+            readCount: nil,
+            memo: nil,
+            endedAt: nil,
+            score: nil,
+            review: nil,
+            droppedReason: nil
         )
     }
 

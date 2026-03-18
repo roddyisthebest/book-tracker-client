@@ -27,59 +27,77 @@ struct LibraryView: View {
                             }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
                         }
                         Text("독서 상태별로 책을 한눈에 볼 수 있어요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7E7E87", default: .gray))
+                        // Loading/Error/Success handled below
                     }
 
-                    HStack(spacing: 12) {
-                        Button(action: { store.send(.sectionTapped(.myBooks(status: .done)))
-
-                        }) {
-                            VStack(spacing: 10) {
-                                Image(systemName: "book.pages.fill")
-                                Text("완독 23").font(.subheadline)
+                    // Mutually exclusive rendering: loading, error, or success
+                    Group {
+                        if store.isLoadingStatusCounts {
+                            ZStack {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                    .tint(.secondary)
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 82.5)
-                            .background(Color(hex: "#2C2C35", default: .gray))
-                            .cornerRadius(10)
-                            .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                        }
-                        Button(action: { store.send(.sectionTapped(.myBooks(status: .reading))) }) {
-                            VStack(spacing: 10) {
-                                Image(systemName: "book.pages.fill")
-                                Text("읽는 중 23").font(.subheadline)
+                        } else if case .failure = store.statusCounts {
+                            ZStack(alignment: .leading) {
+                                Text("상태 카운트를 불러오지 못했어요")
+                                    .font(.footnote)
+                                    .foregroundStyle(.red.opacity(0.8))
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 82.5)
-                            .background(Color(hex: "#2C2C35", default: .gray))
-                            .cornerRadius(10)
-                            .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                        }
-                        Button(action: {
-                            store.send(.sectionTapped(.myBooks(status: .want)))
-                        }) {
-                            VStack(spacing: 10) {
-                                Image(systemName: "book.pages.fill")
-                                Text("읽고싶은 23").font(.subheadline)
+                        } else if let counts = try? store.statusCounts.get() {
+                            HStack(spacing: 12) {
+                                Button(action: { store.send(.sectionTapped(.myBooks(status: .done))) }) {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "book.pages.fill")
+                                        Text("완독 \(counts[.done] ?? 0)").font(.subheadline)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 82.5)
+                                    .background(Color(hex: "#2C2C35", default: .gray))
+                                    .cornerRadius(10)
+                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                                }
+                                Button(action: { store.send(.sectionTapped(.myBooks(status: .reading))) }) {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "book.pages.fill")
+                                        Text("읽는 중 \(counts[.reading] ?? 0)").font(.subheadline)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 82.5)
+                                    .background(Color(hex: "#2C2C35", default: .gray))
+                                    .cornerRadius(10)
+                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                                }
+                                Button(action: { store.send(.sectionTapped(.myBooks(status: .want))) }) {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "book.pages.fill")
+                                        Text("읽고싶은 \(counts[.want] ?? 0)").font(.subheadline)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 82.5)
+                                    .background(Color(hex: "#2C2C35", default: .gray))
+                                    .cornerRadius(10)
+                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                                }
+                                Button(action: { store.send(.sectionTapped(.myBooks(status: .dropped))) }) {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "book.pages.fill")
+                                        Text("읽다 만 \(counts[.dropped] ?? 0)").font(.subheadline)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 82.5)
+                                    .background(Color(hex: "#2C2C35", default: .gray))
+                                    .cornerRadius(10)
+                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                                }
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 82.5)
-                            .background(Color(hex: "#2C2C35", default: .gray))
-                            .cornerRadius(10)
-                            .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                        }
-                        Button(action: { store.send(.sectionTapped(.myBooks(status: .dropped))) }) {
-                            VStack(spacing: 10) {
-                                Image(systemName: "book.pages.fill")
-                                Text("읽다 만 23").font(.subheadline)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 82.5)
-                            .background(Color(hex: "#2C2C35", default: .gray))
-                            .cornerRadius(10)
-                            .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
                         }
                     }
-                    .frame(maxWidth: .infinity)
 
                 }.padding()
 
@@ -164,11 +182,12 @@ struct LibraryView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+        NavigationStackStore(store.scope(state: \.path, action: \.path)) {
             mainContent
         } destination: { destinationStore in
             destinationView(for: destinationStore)
         }
+        .task { await store.send(.loadStatusCounts).finish() }
         .sheet(store: store.scope(state: \.$destination.collectionDetail, action: \.destination.collectionDetail)) { collectionDetailStore in
             CollectionDetailView(store: collectionDetailStore)
         }

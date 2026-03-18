@@ -13,9 +13,18 @@ struct MyBookListView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            content
+        ZStack {
+            VStack(spacing: 0) {
+                content
+            }
+
+            if store.isDeleting {
+                ProgressView()
+                    .progressViewStyle(.circular)
+            }
         }
+        .disabled(store.isDeleting)
+        .animation(.easeInOut, value: store.isDeleting)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "#101013", default: .black))
         .navigationTitle("책장")
@@ -25,6 +34,9 @@ struct MyBookListView: View {
             BookDetailView(store: bookDetailStore)
         }
         .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+        .task {
+            await store.send(.onAppear).finish()
+        }
     }
 
     @ToolbarContentBuilder
@@ -42,8 +54,7 @@ struct MyBookListView: View {
                 Divider()
 
                 Button(role: .destructive, action: {
-//                    store.send(.allDeleteButtonTapped)
-
+                    // store.send(.allDeleteButtonTapped)
                 }) {
                     Label("전체 삭제", systemImage: "trash")
                 }
@@ -61,85 +72,98 @@ struct MyBookListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    @ViewBuilder
     private var segmentedPicker: some View {
-        Picker("탭", selection: $store.bookStatus) {
-            Text("완독(5)").tag(BookStatus.done)
-            Text("읽는 중").tag(BookStatus.reading)
-            Text("읽는 싶은").tag(BookStatus.want)
-            Text("읽는 만").tag(BookStatus.dropped)
-        }
-        .pickerStyle(.segmented)
-        .controlSize(.large)
-        .padding(.horizontal)
-        .onAppear {
-            // 선택된 세그먼트의 pill 배경색
-            UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.systemBlue
+        if store.isLoadingStatusCounts {
+            ZStack {
+                ProgressView()
+                    .scaleEffect(0.7)
+                    .tint(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
 
-            // (옵션) 텍스트 색상/두께/크기 조절
-            let selectedAttrs: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.white,
-                .font: UIFont.systemFont(ofSize: 17, weight: .bold)
-            ]
-            let normalAttrs: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.white.withAlphaComponent(0.8),
-                .font: UIFont.systemFont(ofSize: 17, weight: .medium)
-            ]
-            UISegmentedControl.appearance().setTitleTextAttributes(normalAttrs, for: .normal)
-            UISegmentedControl.appearance().setTitleTextAttributes(selectedAttrs, for: .selected)
+        } else {
+            Picker("탭", selection: $store.bookStatus) {
+                Text("완독(\((store.statusCounts?[.done]) ?? 0))").tag(BookStatus.done)
+                Text("읽는 중(\((store.statusCounts?[.reading]) ?? 0))").tag(BookStatus.reading)
+                Text("읽고 싶은(\((store.statusCounts?[.want]) ?? 0))").tag(BookStatus.want)
+                Text("읽다 만(\((store.statusCounts?[.dropped]) ?? 0))").tag(BookStatus.dropped)
+            }
+            .pickerStyle(.segmented)
+            .controlSize(.large)
+            .padding(.horizontal)
+            .onAppear {
+                UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.systemBlue
+
+                let selectedAttrs: [NSAttributedString.Key: Any] = [
+                    .foregroundColor: UIColor.white,
+                    .font: UIFont.systemFont(ofSize: 14, weight: .bold)
+                ]
+                let normalAttrs: [NSAttributedString.Key: Any] = [
+                    .foregroundColor: UIColor.white.withAlphaComponent(0.8),
+                    .font: UIFont.systemFont(ofSize: 14, weight: .medium)
+                ]
+
+                UISegmentedControl.appearance().setTitleTextAttributes(normalAttrs, for: .normal)
+                UISegmentedControl.appearance().setTitleTextAttributes(selectedAttrs, for: .selected)
+            }
+            .padding(.bottom, 10)
         }
-        .onDisappear {
-            // 필요 시 원복 (전역 Appearance 영향 최소화)
-            UISegmentedControl.appearance().selectedSegmentTintColor = nil
-            UISegmentedControl.appearance().setTitleTextAttributes(nil, for: .normal)
-            UISegmentedControl.appearance().setTitleTextAttributes(nil, for: .selected)
-        }
-        .padding(.bottom, 10)
     }
 
     private var list: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(store.books, id: \.id) { book in
-                    BookRow(
-                        book: book,
-                        onTap: {
-                            store.send(.bookCardTapped(id: book.id))
-                        },
-                        onDelete: {
-                            store.send(.deleteButtonTapped(id: book.id))
+        ZStack {
+            ScrollView {
+                LazyVStack {
+                    ForEach(store.books, id: \.id) { book in
+                        BookRow(
+                            book: book,
+                            onTap: {
+                                store.send(.bookCardTapped(id: book.id))
+                            },
+                            onDelete: {
+                                store.send(.deleteButtonTapped(id: book.id))
+                            }
+                        )
+                        .onAppear {
+                            if book.id == store.books.last?.id {
+                                store.send(.loadMore)
+                            }
                         }
-                    )
-                }
-            }
-            .padding(.horizontal, 15).padding(.top, 10)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
+                    }
 
-    private var grid: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 16)], spacing: 16) {
-                ForEach(store.books, id: \.id) { book in
-                    BookRow(
-                        book: book,
-                        onTap: {
-                            store.send(.bookCardTapped(id: book.id))
-                        },
-                        onDelete: {
-                            store.send(.deleteButtonTapped(id: book.id))
-                        }
-                    )
+                    if store.isLoadingMore {
+                        ProgressView()
+                            .padding(.vertical, 12)
+                    }
                 }
+                .padding(.horizontal, 15)
+                .padding(.top, 10)
             }
-            .padding(.horizontal, 15)
-            .padding(.top, 10)
+            .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
+
+            if store.isLoading && store.books.isEmpty {
+                ProgressView()
+                    .scaleEffect(1.1)
+                    .padding(16)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .refreshable {
+            await store.send(.refresh).finish()
+        }
     }
 }
 
 #Preview {
-    MyBookListView(store: Store(initialState: MyBookListFeature.State(), reducer: {
-        MyBookListFeature()
-    }))
+    MyBookListView(
+        store: Store(
+            initialState: MyBookListFeature.State(),
+            reducer: {
+                MyBookListFeature()
+            }
+        )
+    )
 }

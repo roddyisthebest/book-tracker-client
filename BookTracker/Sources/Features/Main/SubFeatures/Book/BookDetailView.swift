@@ -15,150 +15,250 @@ struct BookDetailView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ScrollView {
-                    HStack(alignment: .top, spacing: 15) {
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(Color(hex: "#19191E", default: .gray))
-                            .frame(width: 90, height: 130)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                            )
+                if store.state.isLoading {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                } else if let message = store.state.errorMessage {
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(.yellow)
+                        Text(message)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 24)
+                        Button {
+                            store.send(.fetch)
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.clockwise")
+                                Text("다시 가져오기")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .padding()
+                } else {
+                    if let book = store.book {
+                        ScrollView {
+                            HStack(alignment: .top, spacing: 15) {
+                                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                    .fill(Color(hex: "#19191E", default: .gray))
+                                    .frame(width: 90, height: 130)
+                                    .overlay {
+                                        let url = URL(string: book.imageUrl ?? "")
+                                        if let url {
+                                            AsyncImage(url: url) { phase in
+                                                switch phase {
+                                                case .empty:
+                                                    Image(systemName: "photo")
+                                                        .font(.system(size: 14, weight: .semibold))
+                                                        .foregroundStyle(.secondary)
 
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("smsasdsdfkas")
-                                .font(.system(size: 18, weight: .bold))
-                                .lineLimit(2)
-                                .truncationMode(.tail)
-                                .foregroundStyle(.white)
+                                                case .success(let image):
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                        .transition(.opacity)
 
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("강영숙").foregroundStyle(.white.opacity(0.7)).font(.system(size: 15, weight: .semibold))
-                                    .lineLimit(2)
-                                    .truncationMode(.tail)
-                                Text("한얼교육").foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                                HStack {
-                                    Image(systemName: "book.pages.fill")
-                                        .font(.system(size: 14, weight: .semibold))
-                                    Text("종이책").font(.caption).lineLimit(1)
+                                                case .failure:
+                                                    Image(systemName: "photo")
+                                                        .font(.system(size: 14, weight: .semibold))
+                                                        .foregroundStyle(.secondary)
+
+                                                @unknown default:
+                                                    Image(systemName: "photo")
+                                                        .font(.system(size: 14, weight: .semibold))
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                            }
+                                        } else {
+                                            Image(systemName: "photo")
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(book.title)
+                                        .font(.system(size: 18, weight: .bold))
+                                        .lineLimit(2)
                                         .truncationMode(.tail)
                                         .foregroundStyle(.white)
-                                        .fontWeight(.semibold)
+
+                                    VStack(alignment: .leading, spacing: 5) {
+                                        Text(book.author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 15, weight: .semibold))
+                                            .lineLimit(2)
+                                            .truncationMode(.tail)
+                                        Text(book.publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
+                                            .lineLimit(1)
+                                            .truncationMode(.tail)
+                                        HStack {
+                                            if book.type == .paper {
+                                                Image(systemName: "book.pages.fill")
+                                                    .font(.system(size: 14, weight: .semibold))
+                                                Text("종이책").font(.caption).lineLimit(1)
+                                                    .truncationMode(.tail)
+                                                    .foregroundStyle(.white)
+                                                    .fontWeight(.semibold)
+
+                                            } else {
+                                                Image(systemName: "smartphone")
+                                                    .font(.system(size: 14, weight: .semibold))
+                                                Text("전자책").font(.caption).lineLimit(1)
+                                                    .truncationMode(.tail)
+                                                    .foregroundStyle(.white)
+                                                    .fontWeight(.semibold)
+                                            }
+                                        }
+                                        .padding(6)
+                                        .padding(.horizontal, 5)
+                                        .background(Color(hex: "#19191E", default: .gray)).cornerRadius(4)
+                                        .padding(.top, 5)
+                                    }
+                                    Spacer()
                                 }
-                                .padding(6)
-                                .padding(.horizontal, 5)
-                                .background(Color(hex: "#19191E", default: .gray)).cornerRadius(4)
+                                Spacer()
+
+                            }.padding(.horizontal, 15).padding(.vertical, 10)
+                            Divider().background(.white.opacity(0.7))
+                            HStack {
+                                Button(action: {}, label: {
+                                    Text("자세히 보기")
+                                    Image(systemName: "chevron.forward")
+                                })
+
+                            }.foregroundStyle(.white.opacity(0.6)).font(.headline)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 8)
+                            Divider().frame(height: 15).background(.black.opacity(0.6))
+
+                            VStack {
+                                HStack {
+                                    Text("독서기록").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Spacer()
+                                }
                                 .padding(.top, 5)
-                            }
-                            Spacer()
-                        }
-                        Spacer()
+                                VStack(spacing: 17.5) {
+                                    StatusRow(key: "상태", value: book.status.title)
+                                    switch book.status {
+                                    case .done:
+                                        VStack(spacing: 8) {
+                                            let startedDate: Date? = book.startedAt as? Date
+                                            let endedDate: Date? = book.endedAt as? Date
+                                            let started = startedDate?.formatted(date: .abbreviated, time: .omitted) ?? "-"
+                                            let ended = endedDate?.formatted(date: .abbreviated, time: .omitted) ?? "-"
+                                            StatusRow(key: "기간", value: "\(started) - \(ended)")
+                                        }
 
-                    }.padding(.horizontal, 15).padding(.vertical, 10)
-                    Divider().background(.white.opacity(0.7))
-                    HStack {
-                        Button(action: {}, label: {
-                            Text("자세히 보기")
-                            Image(systemName: "chevron.forward")
-                        })
+                                    case .dropped:
+                                        VStack(spacing: 8) {
+                                            let reason = (book.droppedReason?.isEmpty == false) ? (book.droppedReason ?? "") : "사유 없음"
+                                            StatusRow(key: "중단이유", value: reason)
+                                        }
 
-                    }.foregroundStyle(.white.opacity(0.6)).font(.headline)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                    Divider().frame(height: 15).background(.black.opacity(0.6))
+                                    case .reading:
+                                        VStack(spacing: 8) {
+                                            let readCountRaw = book.readCount ?? 0
+                                            let pageCountRaw = max(book.pageCount ?? 0, 1)
+                                            let progress = Int((Double(readCountRaw) / Double(pageCountRaw)) * 100.0)
+                                            let pagesText = "\(readCountRaw)p"
+                                            StatusRow(key: "진행률", value: "\(progress)% (\(pagesText))")
+                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : "메모 없음"
+                                            StatusRow(key: "메모", value: memoText)
+                                        }
 
-                    VStack {
-                        HStack {
-                            Text("독서기록").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
-                            Spacer()
-                        }
-                        .padding(.top, 5)
-                        VStack(spacing: 17.5) {
-                            StatusRow(key: "상태", value: "읽고 싶은책")
-                            StatusRow(key: "진행률", value: "23%")
-                            StatusRow(key: "메모", value: "안녕하세요 저는 미켈란젤로 입니다. 사람들은 이리 말하고 저리말하지")
-                        }
-                        .padding(.vertical, 10)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical)
-
-                    Divider().frame(height: 15).background(.black.opacity(0.6))
-
-                    VStack {
-                        HStack {
-                            Text("상태변경").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
-                            Spacer()
-                        }
-                        .padding(.top, 5)
-                        VStack(spacing: 12) {
-                            HStack(spacing: 12) {
-                                Button(action: {}) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(.green)
-                                        Text("다 읽었어요")
-                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                            .fontWeight(.semibold)
+                                    case .want:
+                                        VStack(spacing: 8) {
+                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : "메모 없음"
+                                            StatusRow(key: "메모", value: memoText)
+                                        }
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color(hex: "#19191E", default: .black))
-                                    .cornerRadius(10)
                                 }
+                                .padding(.vertical, 10)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical)
 
-                                Button(action: {}) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "multiply.circle.fill")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(.red)
-                                        Text("그만 읽고싶어요")
-                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                            .fontWeight(.semibold)
+                            Divider().frame(height: 15).background(.black.opacity(0.6))
+
+                            VStack {
+                                HStack {
+                                    Text("상태변경").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Spacer()
+                                }
+                                .padding(.top, 5)
+                                VStack(spacing: 12) {
+                                    HStack(spacing: 12) {
+                                        Button(action: {}) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundStyle(.green)
+                                                Text("다 읽었어요")
+                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color(hex: "#19191E", default: .black))
+                                            .cornerRadius(10)
+                                        }
+
+                                        Button(action: {}) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "multiply.circle.fill")
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundStyle(.red)
+                                                Text("그만 읽고싶어요")
+                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color(hex: "#19191E", default: .black))
+                                            .cornerRadius(10)
+                                        }
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color(hex: "#19191E", default: .black))
-                                    .cornerRadius(10)
+                                    Button(action: {}) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
+                                            Text("책을 반납했어요")
+                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                .fontWeight(.semibold)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color(hex: "#19191E", default: .black))
+                                        .cornerRadius(10)
+                                    }
+                                    Button(action: {}) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "apple.books.pages.fill")
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundStyle(.blue)
+                                            Text("읽고있어요")
+                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                .fontWeight(.semibold)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color(hex: "#19191E", default: .black))
+                                        .cornerRadius(10)
+                                    }
                                 }
+                                .padding(.vertical, 10)
                             }
-                            Button(action: {}) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
-                                    Text("책을 반납했어요")
-                                        .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(hex: "#19191E", default: .black))
-                                .cornerRadius(10)
-                            }
-                            Button(action: {}) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "apple.books.pages.fill")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundStyle(.blue)
-                                    Text("읽고있어요")
-                                        .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(hex: "#19191E", default: .black))
-                                .cornerRadius(10)
-                            }
-                        }
-                        .padding(.vertical, 10)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical)
+                        } // end ScrollView
+                    } else {
+                        EmptyView()
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -174,15 +274,21 @@ struct BookDetailView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button("수정하기", systemImage: "pencil.circle") {
-                            store.send(.updateButtonTapped)
+                    if store.state.isDeleting {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+
+                    } else {
+                        Menu {
+                            Button("수정하기", systemImage: "pencil.circle") {
+                                store.send(.updateButtonTapped)
+                            }
+                            Button("삭제하기", systemImage: "trash.circle") {
+                                store.send(.deleteButtonTapped)
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                        Button("삭제하기", systemImage: "trash.circle") {
-                            store.send(.deleteButtonTapped)
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
@@ -190,12 +296,16 @@ struct BookDetailView: View {
                 BookFormView(store: formBookStore)
             }
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+            .task {
+                store.send(.onAppear)
+            }
         }
     }
 }
 
 #Preview {
-    BookDetailView(store: Store(initialState: BookDetailFeature.State(), reducer: {
+    let previewID = UUID(uuidString: "0dd5c85b-b058-45d6-871e-fb3e1e0f33bd") ?? UUID()
+    return BookDetailView(store: Store(initialState: BookDetailFeature.State(id: previewID), reducer: {
         BookDetailFeature()
     }))
 }

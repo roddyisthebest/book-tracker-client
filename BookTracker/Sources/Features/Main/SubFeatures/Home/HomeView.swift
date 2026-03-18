@@ -36,46 +36,66 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        HStack(alignment: .center) {
-                            DayBadge(day: "금") {
-                                Text("23")
-                                    .foregroundStyle(.white)
-                                    .font(.headline)
+                        switch (store.isRecentWeekLoading, store.hasRecordFetchingError) {
+                        case (true, _):
+                            VStack {
+                                ProgressView().tint(.white)
+                            }.frame(maxWidth: .infinity, alignment: .center)
+                        case (false, .none):
+                            VStack {
+                                ProgressView().tint(.white)
+                            }.frame(maxWidth: .infinity, alignment: .center)
+                        case (false, true):
+                            HStack {
+                                Text("에러가 발생했어요. 다시 시도해 보세요.")
+                                    .foregroundStyle(.red)
+                                Button("다시 시도하기") {
+                                    store.send(.loadRecentWeekRequested)
+                                }
                             }
-                            DayBadge(day: "토") {
-                                Text("24")
-                                    .foregroundStyle(.white)
-                                    .font(.headline)
+                        case (false, false):
+                            HStack(alignment: .center) {
+                                ForEach(
+                                    store.recentWeekRecords
+                                        .map { (date: $0.key, record: $0.value) }
+                                        .sorted { $0.date < $1.date },
+                                    id: \.date
+                                ) { item in
+                                    DayBadge(day: item.date.toDayOfWeek()) {
+                                        if item.record != nil {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(.green)
+                                        } else {
+                                            Text(item.date.toDay())
+                                                .foregroundStyle(.white)
+                                                .font(.headline)
+                                        }
+                                    }
+                                }
                             }
-                            DayBadge(day: "일") {
-                                Text("25")
-                                    .foregroundStyle(.white)
-                                    .font(.headline)
-                            }
-                            DayBadge(day: "월") {
-                                Text("26")
-                                    .foregroundStyle(.white)
-                                    .font(.headline)
-                            }
-                            DayBadge(day: "화") {
-                                Text("27")
-                                    .foregroundStyle(.white)
-                                    .font(.headline)
-                            }
-                            DayBadge(day: "수") {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                            }
-                            DayBadge(day: "목") {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                            }
+                            .opacity(store.isRecentWeekLoading ? 0.6 : 1.0)
+                            .overlay(
+                                Group {
+                                    if store.isRecentWeekLoading {
+                                        ProgressView().tint(.white)
+                                    }
+                                }
+                            )
+                            .frame(maxWidth: .infinity)
+                            DefaultButton(action: {
+                                store.send(.doneButtonTapped)
+                            }, label: {
+                                if store.isTodayRecordUpdating {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Text(store.didReadToday == true ? "사실 독서를 하지 않았어요" : "독서를 했습니다")
+                                }
+                            })
+                            .disabled(store.isTodayRecordUpdating)
+                            .opacity((store.isTodayRecordUpdating) ? 0.6 : 1.0)
                         }
-                        .frame(maxWidth: .infinity)
-                        DefaultButton(action: {}, label: {
-                            Text("독서를 했습니다")
-                        })
                     }
+
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
                     .background(Color(hex: "#17171C", default: .black))
@@ -166,6 +186,9 @@ struct HomeView: View {
             .background(Color(hex: "#101013", default: .black))
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+                store.send(.loadRecentWeekRequested)
+            }
         } destination: { destinationStore in
             destinationView(for: destinationStore)
         }
@@ -175,6 +198,7 @@ struct HomeView: View {
                 ReceiptSelectBooksView(store: receiptSelectBooksStore)
             }
         }
+        .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     }
 }
 
