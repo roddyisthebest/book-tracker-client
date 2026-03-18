@@ -37,7 +37,22 @@ struct ProgressSectionView: View {
                             Text("p")
                         }
                         Text("/").foregroundStyle(.gray)
-                        Text("\(store.entirePage)p")
+                        if store.pageCountEditable {
+                            TextField("0", text: $store.entirePage)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 10)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(5)
+                                .keyboardType(.numberPad)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .foregroundStyle(.white)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 60)
+                        }
+                        else {
+                            Text("\(store.entirePage)p")
+                        }
                     }
 
                 }.padding(.horizontal).padding(.bottom, 15).padding(.top, 5)
