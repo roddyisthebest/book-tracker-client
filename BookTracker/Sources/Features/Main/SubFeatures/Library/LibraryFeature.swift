@@ -10,6 +10,8 @@ import Foundation
 
 @Reducer
 struct LibraryFeature {
+    @Dependency(\.bookService) var bookService
+
     @ObservableState
     struct State: Equatable {
         var collections: [Collection] = [
@@ -21,6 +23,15 @@ struct LibraryFeature {
             Receipt(id: UUID(1), type: .purchase, title: "alsdkkks"),
             Receipt(id: UUID(2), type: .rental, title: "2asds")
         ]
+
+        var statusCounts: Result<[BookStatus: Int], AppError> = .success([
+            .reading: 0,
+            .want: 0,
+            .done: 0,
+            .dropped: 0
+        ])
+
+        var isLoadingStatusCounts: Bool = false
 
         var path = StackState<Path.State>()
 
@@ -34,6 +45,9 @@ struct LibraryFeature {
         case collectionCardTapped(id: UUID)
         case receiptCardTapped(id: UUID)
 
+        case loadStatusCounts
+        case statusCountsResponse(Result<[BookStatus: Int], AppError>)
+
         case destination(PresentationAction<Destination.Action>)
 
         enum Section: Equatable {
@@ -42,6 +56,8 @@ struct LibraryFeature {
             case receipts
         }
     }
+
+    private enum CancelID { case loadStatusCounts }
 
     var body: some Reducer<State, Action> {
         Reduce<State, Action> {
@@ -52,6 +68,21 @@ struct LibraryFeature {
                 return .none
             case .receiptCardTapped(let id):
                 state.destination = .receiptDetail(ReceiptDetailFeature.State(id: id))
+                return .none
+            case .loadStatusCounts:
+                state.isLoadingStatusCounts = true
+                return .run { [bookService] send in
+                    let result = try await bookService.statusCounts()
+                    await send(.statusCountsResponse(result))
+                }
+                .cancellable(id: CancelID.loadStatusCounts, cancelInFlight: true)
+            case .statusCountsResponse(.success(let counts)):
+                state.isLoadingStatusCounts = false
+                state.statusCounts = .success(counts)
+                return .none
+            case .statusCountsResponse(.failure(let error)):
+                state.isLoadingStatusCounts = false
+                state.statusCounts = .failure(error)
                 return .none
             case .sectionTapped(.collections):
                 state.path.append(.collections(CollectionListFeature.State()))
