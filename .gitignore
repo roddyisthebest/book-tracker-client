@@ -69,7 +69,6 @@ Derived/
 ### Tuist managed dependencies ###
 Tuist/.build
 # xcconfig
+*.xcconfig
 
-
-Config/App-Debug.xcconfig
-Config/App-Release.xcconfig
+Config/
