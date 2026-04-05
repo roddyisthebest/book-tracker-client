@@ -15,13 +15,11 @@ struct HomeFeature {
     }
 
     @Dependency(\.readingRecordService) var readingRecordService
+    @Dependency(\.localReceiptService) var localReceiptService
 
     @ObservableState
     struct State: Equatable {
         var books: [Book] = []
-
-        var receiptBookCount: Int = 0
-        var rentalBookCount: Int = 0
 
         var didReadToday: Bool? = nil
         var todayRecordId: UUID? = nil
@@ -32,6 +30,11 @@ struct HomeFeature {
 
         var recentWeekRecords: [Date: ReadingRecord?] = [:]
         var isRecentWeekLoading: Bool = false
+
+        var purchaseBookCount: Int = 0
+        var rentalBookCount: Int = 0
+
+        var isBookCountFetching: Bool = false
 
         var path = StackState<Path.State>()
 
@@ -49,9 +52,14 @@ struct HomeFeature {
         case deleteTodayResponse
         case deleteTodayFailed
 
-        case loadRecentWeekRequested
+        case onAppear
+
+        case loadRecentWeek
         case loadRecentWeekResponse([Date: ReadingRecord?])
         case loadRecentWeekFailed
+
+        case loadBookCount
+        case loadBookCountResponse(Result<[ReceiptType: Int], LocalReceiptError>)
 
         case path(StackAction<Path.State, Path.Action>)
         case destination(PresentationAction<Destination.Action>)
@@ -67,6 +75,12 @@ struct HomeFeature {
         Reduce<State, Action> {
             state, action in
             switch action {
+            case .onAppear:
+                return .merge(
+                    .send(.loadRecentWeek),
+                    .send(.loadBookCount)
+                )
+
             case .doneButtonTapped:
                 // Toggle today's reading record: if exists, delete; otherwise create
                 if state.isTodayRecordUpdating { return .none }
@@ -86,8 +100,6 @@ struct HomeFeature {
                 } else {
                     return .run { [readingRecordService] send in
                         let result = try await readingRecordService.create(Date())
-                        print(result, "result")
-
                         switch result {
                         case .success(let record):
                             await send(.createTodayResponse(record))
@@ -103,7 +115,7 @@ struct HomeFeature {
                 return .none
 
             case .receiptIssueButtonTapped(let type):
-                state.destination = .selectBooks(ReceiptSelectBooksFeature.State())
+                state.destination = .selectBooks(ReceiptSelectBooksFeature.State(type: type))
                 return .none
 
             case .myBooksButtonTapped:
@@ -136,7 +148,7 @@ struct HomeFeature {
                 state.isTodayRecordUpdating = false
                 return .none
 
-            case .loadRecentWeekRequested:
+            case .loadRecentWeek:
                 state.isRecentWeekLoading = true
                 state.hasRecordFetchingError = nil
                 return .run { [readingRecordService] send in
@@ -149,6 +161,26 @@ struct HomeFeature {
                     }
                 }
                 .cancellable(id: CancelID.loadRecentWeek, cancelInFlight: true)
+
+            case .loadBookCount:
+                state.isBookCountFetching = true
+                return .run {
+                    send in
+                    let result = await localReceiptService.counts()
+                    await send(.loadBookCountResponse(result))
+                }
+
+            case .loadBookCountResponse(let result):
+                state.isBookCountFetching = false
+                switch result {
+                case .success(let arr):
+                    state.purchaseBookCount = arr[.purchase] ?? 0
+                    state.rentalBookCount = arr[.rental] ?? 0
+                case .failure:
+                    state.destination = .alert(.showBookCountsFetchingError())
+                }
+
+                return .none
 
             case .loadRecentWeekResponse(let records):
                 state.isRecentWeekLoading = false
@@ -170,8 +202,32 @@ struct HomeFeature {
                 state.recentWeekRecords = [:]
                 return .none
 
-            case .destination(.presented(.selectBooks(.delegate(.receiptFlowCompleted)))):
+            case .destination(.presented(.selectBooks(.delegate(.receiptFlowCompleted(let type))))):
                 state.destination = nil
+                if type == .purchase {
+                    state.purchaseBookCount = 0
+                } else {
+                    state.rentalBookCount = 0
+                }
+
+                return .none
+
+            case .destination(.presented(.selectBooks(.delegate(.removeBook(_, let type))))):
+                if type == .purchase {
+                    state.purchaseBookCount = max(0, state.purchaseBookCount - 1)
+                } else {
+                    state.rentalBookCount = max(0, state.rentalBookCount - 1)
+                }
+
+                return .none
+
+            case .destination(.presented(.selectBooks(.destination(.presented(.search(.detailSheet(.presented(.delegate(.addBookToReceipt(let book)))))))))):
+                if book.type == .purchase {
+                    state.purchaseBookCount += 1
+
+                } else {
+                    state.rentalBookCount += 1
+                }
                 return .none
 
             case .path:
@@ -221,6 +277,16 @@ extension AlertState where Action == HomeFeature.Action.Alert {
     static func showTodayReadingRecordUpdateError() -> Self {
         Self {
             TextState("오늘 독서 기록 처리 중 오류가 발생했어요.")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("확인")
+            }
+        }
+    }
+
+    static func showBookCountsFetchingError() -> Self {
+        Self {
+            TextState("영수증, 대출증 등의 정보를 가져오는 중 오류가 발생했어요. ")
         } actions: {
             ButtonState(role: .cancel) {
                 TextState("확인")

@@ -11,6 +11,145 @@ import SwiftUI
 struct LibraryView: View {
     @Bindable var store: StoreOf<LibraryFeature>
 
+    @ViewBuilder
+    private var collectionsSectionContent: some View {
+        if store.isLoadingCollections {
+            ZStack {
+                ProgressView()
+                    .scaleEffect(0.7)
+                    .tint(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 82.5)
+
+        } else if case .failure = store.collections {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("컬렉션 목록을 불러오지 못했어요")
+                    .font(.footnote)
+                    .foregroundStyle(.red.opacity(0.8))
+
+                Button(action: { store.send(.loadCollections) }) {
+                    Text("다시 가져오기")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 82.5)
+            .padding(.horizontal)
+
+        } else if let collections = try? store.collections.get() {
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 12) {
+                    ForEach(collections, id: \.id) { collection in
+                        CollectionCard(
+                            summary: collection,
+                            onTap: {},
+                            onDelete: {}
+                        )
+                        .frame(width: 150)
+                    }
+                }
+                .padding(.leading)
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var statusCountsContent: some View {
+        if store.isLoadingStatusCounts {
+            ZStack {
+                ProgressView()
+                    .scaleEffect(0.7)
+                    .tint(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 82.5)
+
+        } else if case .failure = store.statusCounts {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("상태 카운트를 불러오지 못했어요")
+                    .font(.footnote)
+                    .foregroundStyle(.red.opacity(0.8))
+
+                Button(action: { store.send(.loadStatusCounts) }) {
+                    Text("다시 가져오기")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 82.5)
+            .padding(.horizontal)
+
+        } else if let counts = try? store.statusCounts.get() {
+            HStack(spacing: 12) {
+                Button(action: {
+                    store.send(.sectionTapped(.myBooks(status: .done)))
+                }) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "book.pages.fill")
+                        Text("완독 \(counts[.done] ?? 0)")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 82.5)
+                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .cornerRadius(10)
+                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                }
+
+                Button(action: {
+                    store.send(.sectionTapped(.myBooks(status: .reading)))
+                }) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "book.pages.fill")
+                        Text("읽는 중 \(counts[.reading] ?? 0)")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 82.5)
+                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .cornerRadius(10)
+                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                }
+
+                Button(action: {
+                    store.send(.sectionTapped(.myBooks(status: .want)))
+                }) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "book.pages.fill")
+                        Text("읽고싶은 \(counts[.want] ?? 0)")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 82.5)
+                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .cornerRadius(10)
+                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                }
+
+                Button(action: {
+                    store.send(.sectionTapped(.myBooks(status: .dropped)))
+                }) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "book.pages.fill")
+                        Text("읽다 만 \(counts[.dropped] ?? 0)")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 82.5)
+                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .cornerRadius(10)
+                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+        } else {
+            EmptyView()
+        }
+    }
+
     private var mainContent: some View {
         ScrollView {
             VStack(spacing: 15) {
@@ -30,75 +169,7 @@ struct LibraryView: View {
                         // Loading/Error/Success handled below
                     }
 
-                    // Mutually exclusive rendering: loading, error, or success
-                    Group {
-                        if store.isLoadingStatusCounts {
-                            ZStack {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                                    .tint(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 82.5)
-                        } else if case .failure = store.statusCounts {
-                            ZStack(alignment: .leading) {
-                                Text("상태 카운트를 불러오지 못했어요")
-                                    .font(.footnote)
-                                    .foregroundStyle(.red.opacity(0.8))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 82.5)
-                        } else if let counts = try? store.statusCounts.get() {
-                            HStack(spacing: 12) {
-                                Button(action: { store.send(.sectionTapped(.myBooks(status: .done))) }) {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "book.pages.fill")
-                                        Text("완독 \(counts[.done] ?? 0)").font(.subheadline)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 82.5)
-                                    .background(Color(hex: "#2C2C35", default: .gray))
-                                    .cornerRadius(10)
-                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                                }
-                                Button(action: { store.send(.sectionTapped(.myBooks(status: .reading))) }) {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "book.pages.fill")
-                                        Text("읽는 중 \(counts[.reading] ?? 0)").font(.subheadline)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 82.5)
-                                    .background(Color(hex: "#2C2C35", default: .gray))
-                                    .cornerRadius(10)
-                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                                }
-                                Button(action: { store.send(.sectionTapped(.myBooks(status: .want))) }) {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "book.pages.fill")
-                                        Text("읽고싶은 \(counts[.want] ?? 0)").font(.subheadline)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 82.5)
-                                    .background(Color(hex: "#2C2C35", default: .gray))
-                                    .cornerRadius(10)
-                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                                }
-                                Button(action: { store.send(.sectionTapped(.myBooks(status: .dropped))) }) {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "book.pages.fill")
-                                        Text("읽다 만 \(counts[.dropped] ?? 0)").font(.subheadline)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 82.5)
-                                    .background(Color(hex: "#2C2C35", default: .gray))
-                                    .cornerRadius(10)
-                                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-
+                    statusCountsContent
                 }.padding()
 
                 Divider().frame(height: 15).background(.black)
@@ -115,19 +186,7 @@ struct LibraryView: View {
                         }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 12) {
-                            // 예시: 여러 개의 카드가 있다고 가정
-                            ForEach(store.collections, id: \.id) {
-                                collection in
-                                CollectionCard(onTap: {
-                                    store.send(.collectionCardTapped(id: collection.id))
-                                }, onDelete: {}).frame(minWidth: 150)
-                            }
-                        }
-                    }
-                    .padding(.leading)
-                    .frame(maxWidth: .infinity)
+                    collectionsSectionContent
                 }
                 .padding(.bottom)
                 Divider().frame(height: 15).background(.black)
@@ -144,20 +203,49 @@ struct LibraryView: View {
                         }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 12) {
-                            // 예시: 여러 개의 카드가 있다고 가정
-                            ForEach(store.receipts, id: \.id) {
-                                receipt in
-                                ReceiptCard(receipt: receipt, onTapped: {
-                                    store.send(.receiptCardTapped(id: receipt.id))
-                                }, onDelete: {}).frame(width: 170)
+                    if store.isLoadingRecentReceipts {
+                        ZStack {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .tint(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 120)
+                    } else if case .failure = store.recentReceipts {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("대출증/영수증을 불러오지 못했어요")
+                                .font(.footnote)
+                                .foregroundStyle(.red.opacity(0.8))
+
+                            Button(action: { store.send(.loadRecentReceipts) }) {
+                                Text("다시 가져오기")
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                    } else if let receipts = try? store.recentReceipts.get(), !receipts.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(receipts, id: \.id) { receipt in
+                                    ReceiptCard(
+                                        receipt: receipt,
+                                        onTapped: { store.send(.receiptCardTapped(id: receipt.id)) },
+                                        onDelete: {}
+                                    )
+                                    .frame(width: 170)
+                                }
+                            }
+                            .padding(.leading)
+                        }
+                        .frame(maxWidth: .infinity)
+                    } else {
+                        Text("표시할 항목이 없어요")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
                     }
-                    .padding(.leading)
-                    .frame(maxWidth: .infinity)
-                }
+                }.padding(.bottom, 24)
             }
         }
         .background(Color(hex: "#101013", default: .black))
@@ -187,7 +275,7 @@ struct LibraryView: View {
         } destination: { destinationStore in
             destinationView(for: destinationStore)
         }
-        .task { await store.send(.loadStatusCounts).finish() }
+        .task { await store.send(.onAppear).finish() }
         .sheet(store: store.scope(state: \.$destination.collectionDetail, action: \.destination.collectionDetail)) { collectionDetailStore in
             CollectionDetailView(store: collectionDetailStore)
         }
@@ -206,3 +294,4 @@ struct LibraryView: View {
         }))
     }
 }
+
