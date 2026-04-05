@@ -62,7 +62,6 @@ struct SearchFeature {
                             .send(._setSuggestions)
                         )
                     case .suggestions:
-                        state.destination = .suggestions(SearchSuggestionsFeature.State())
                         return .none
                     }
                 } else {
