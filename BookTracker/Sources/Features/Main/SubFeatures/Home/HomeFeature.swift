@@ -30,6 +30,7 @@ struct HomeFeature {
 
         var recentWeekRecords: [Date: ReadingRecord?] = [:]
         var isRecentWeekLoading: Bool = false
+        var didInitialLoad: Bool = false
 
         var purchaseBookCount: Int = 0
         var rentalBookCount: Int = 0
@@ -76,10 +77,12 @@ struct HomeFeature {
             state, action in
             switch action {
             case .onAppear:
-                return .merge(
-                    .send(.loadRecentWeek),
-                    .send(.loadBookCount)
-                )
+                var effects: [Effect<Action>] = []
+                if !state.didInitialLoad {
+                    effects.append(.send(.loadRecentWeek))
+                }
+                effects.append(.send(.loadBookCount))
+                return .merge(effects)
 
             case .doneButtonTapped:
                 // Toggle today's reading record: if exists, delete; otherwise create
@@ -193,6 +196,7 @@ struct HomeFeature {
 
                 state.didReadToday = todayRecord != nil
                 state.todayRecordId = todayRecord??.id
+                state.didInitialLoad = true
 
                 return .none
 
@@ -294,3 +298,4 @@ extension AlertState where Action == HomeFeature.Action.Alert {
         }
     }
 }
+
