@@ -35,7 +35,18 @@ struct IssueReceiptView: View {
             FormCard(labelText: "실제 구매 금액") {
                 FormTextField(placeholder: "23,000원", text: $store.price, keyboardType: .numberPad)
             }
-            Text("총 계산된 금액:\(store.totalPrice)")
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.appSecondaryText)
+                Text(store.price.isEmpty
+                     ? "미입력 시 책 가격 합산(\(store.totalPrice)원)으로 자동 계산돼요"
+                     : "총 계산된 금액: \(store.price)원 (책 가격 합산: \(store.totalPrice)원)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.appSecondaryText)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
         if case .rental = store.type {
             FormCard(labelText: "도서관") {
