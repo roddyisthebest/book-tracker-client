@@ -4,7 +4,7 @@ struct FormTextEditor: View {
     let placeholder: String
     @Binding var text: String
     var height: CGFloat = 160
-    var backgroundColor: Color = .init(hex: "#17171C", default: .accentColor)
+    var backgroundColor: Color = .appSurfaceDeep
     var autocapitalization: TextInputAutocapitalization? = .sentences
     var autocorrectionDisabled: Bool = false
 
@@ -12,13 +12,13 @@ struct FormTextEditor: View {
         ZStack(alignment: .topLeading) {
             if text.isEmpty {
                 Text(placeholder)
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(Color.appSecondaryText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 20)
             }
 
             TextEditor(text: $text)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
                 .padding(12)
                 .frame(height: height)
                 .scrollIndicators(.visible)

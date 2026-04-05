@@ -26,17 +26,17 @@ struct AddPriceView: View {
                             TextField(
                                 "",
                                 text: priceBinding,
-                                prompt: Text("가격 입력").foregroundStyle(.white.opacity(0.4))
+                                prompt: Text("가격 입력").foregroundStyle(Color.appSecondaryText)
                             )
                             .keyboardType(.numberPad)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 20, weight: .semibold))
                             .background(.clear)
                             .frame(height: 28)
                             .focused($isPriceFieldFocused)
 
                             Text(store.currencyCode.rawValue)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 16, weight: .semibold))
                         }
 
@@ -62,17 +62,17 @@ struct AddPriceView: View {
                     } label: {
                         HStack {
                             Text(store.currencyCode.rawValue)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appPrimaryText)
                                 .font(.system(size: 18, weight: .semibold))
 
                             Spacer()
 
                             Text(store.currencyCode.description)
-                                .foregroundStyle(.white.opacity(0.45))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 13, weight: .medium))
 
                             Image(systemName: "chevron.up.chevron.down")
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color.appSecondaryText)
                         }
                         .padding(.vertical, 10)
                     }
@@ -91,7 +91,7 @@ struct AddPriceView: View {
 
                     HStack {
                         Text(formattedPreviewPrice)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 22, weight: .bold))
 
                         Spacer()
@@ -134,7 +134,7 @@ struct AddPriceView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .alert($store.scope(state: \.alert, action: \.alert))
         .task {
             isPriceFieldFocused = true

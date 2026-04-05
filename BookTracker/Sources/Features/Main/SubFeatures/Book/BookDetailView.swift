@@ -44,7 +44,7 @@ struct BookDetailView: View {
                         ScrollView {
                             HStack(alignment: .top, spacing: 15) {
                                 RoundedRectangle(cornerRadius: 15, style: .continuous)
-                                    .fill(Color(hex: "#19191E", default: .gray))
+                                    .fill(Color.appSurfaceDeep)
                                     .frame(width: 90, height: 130)
                                     .overlay {
                                         let url = URL(string: book.imageUrl ?? "")
@@ -86,13 +86,13 @@ struct BookDetailView: View {
                                         .font(.system(size: 18, weight: .bold))
                                         .lineLimit(2)
                                         .truncationMode(.tail)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     VStack(alignment: .leading, spacing: 5) {
-                                        Text(book.author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 15, weight: .semibold))
+                                        Text(book.author).foregroundStyle(Color.appSecondaryText).font(.system(size: 15, weight: .semibold))
                                             .lineLimit(2)
                                             .truncationMode(.tail)
-                                        Text(book.publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
+                                        Text(book.publisher).foregroundStyle(Color.appSecondaryText.opacity(0.8)).font(.system(size: 12, weight: .semibold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                         HStack {
@@ -101,7 +101,7 @@ struct BookDetailView: View {
                                                     .font(.system(size: 14, weight: .semibold))
                                                 Text("종이책").font(.caption).lineLimit(1)
                                                     .truncationMode(.tail)
-                                                    .foregroundStyle(.white)
+                                                    .foregroundStyle(Color.appPrimaryText)
                                                     .fontWeight(.semibold)
 
                                             } else {
@@ -109,13 +109,13 @@ struct BookDetailView: View {
                                                     .font(.system(size: 14, weight: .semibold))
                                                 Text("전자책").font(.caption).lineLimit(1)
                                                     .truncationMode(.tail)
-                                                    .foregroundStyle(.white)
+                                                    .foregroundStyle(Color.appPrimaryText)
                                                     .fontWeight(.semibold)
                                             }
                                         }
                                         .padding(6)
                                         .padding(.horizontal, 5)
-                                        .background(Color(hex: "#19191E", default: .gray)).cornerRadius(4)
+                                        .background(Color.appSurfaceDeep).cornerRadius(4)
                                         .padding(.top, 5)
                                     }
                                     Spacer()
@@ -123,21 +123,21 @@ struct BookDetailView: View {
                                 Spacer()
 
                             }.padding(.horizontal, 15).padding(.vertical, 10)
-                            Divider().background(.white.opacity(0.7))
+                            Divider().background(Color.appSeparator)
                             HStack {
                                 Button(action: {}, label: {
                                     Text("자세히 보기")
                                     Image(systemName: "chevron.forward")
                                 })
 
-                            }.foregroundStyle(.white.opacity(0.6)).font(.headline)
+                            }.foregroundStyle(Color.appSecondaryText).font(.headline)
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 8)
-                            Divider().frame(height: 15).background(.black.opacity(0.6))
+                            Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
                                 HStack {
-                                    Text("독서기록").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Text("독서기록").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                     Spacer()
                                 }
                                 .padding(.top, 5)
@@ -182,11 +182,11 @@ struct BookDetailView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical)
 
-                            Divider().frame(height: 15).background(.black.opacity(0.6))
+                            Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
                                 HStack {
-                                    Text("상태변경").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Text("상태변경").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                     Spacer()
                                 }
                                 .padding(.top, 5)
@@ -198,12 +198,12 @@ struct BookDetailView: View {
                                                     .font(.system(size: 16, weight: .semibold))
                                                     .foregroundStyle(.green)
                                                 Text("다 읽었어요")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
                                             .frame(maxWidth: .infinity)
                                             .padding()
-                                            .background(Color(hex: "#19191E", default: .black))
+                                            .background(Color.appButtonSurface)
                                             .cornerRadius(10)
                                         }
 
@@ -213,12 +213,12 @@ struct BookDetailView: View {
                                                     .font(.system(size: 16, weight: .semibold))
                                                     .foregroundStyle(.red)
                                                 Text("그만 읽고싶어요")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
                                             .frame(maxWidth: .infinity)
                                             .padding()
-                                            .background(Color(hex: "#19191E", default: .black))
+                                            .background(Color.appButtonSurface)
                                             .cornerRadius(10)
                                         }
                                     }
@@ -226,14 +226,14 @@ struct BookDetailView: View {
                                         HStack(spacing: 8) {
                                             Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
                                                 .font(.system(size: 16, weight: .semibold))
-                                                .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
+                                .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
                                             Text("책을 반납했어요")
-                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                .foregroundStyle(Color.appSecondaryText)
                                                 .fontWeight(.semibold)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding()
-                                        .background(Color(hex: "#19191E", default: .black))
+                                        .background(Color.appButtonSurface)
                                         .cornerRadius(10)
                                     }
                                     Button(action: {}) {
@@ -242,12 +242,12 @@ struct BookDetailView: View {
                                                 .font(.system(size: 16, weight: .semibold))
                                                 .foregroundStyle(.blue)
                                             Text("읽고있어요")
-                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                .foregroundStyle(Color.appSecondaryText)
                                                 .fontWeight(.semibold)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding()
-                                        .background(Color(hex: "#19191E", default: .black))
+                                        .background(Color.appButtonSurface)
                                         .cornerRadius(10)
                                     }
                                 }
@@ -262,7 +262,7 @@ struct BookDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .navigationTitle("책 상세")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

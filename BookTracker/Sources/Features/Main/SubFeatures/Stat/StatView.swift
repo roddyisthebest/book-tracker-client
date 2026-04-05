@@ -20,26 +20,26 @@ struct StatView: View {
                     HStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
-                                Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                                Rectangle().fill(Color.appSurface)
                                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                         Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
                                     }
-                                Text("독서 리포트").font(.title2).fontWeight(.bold).foregroundStyle(.white)
+                                Text("독서 리포트").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                 Spacer()
                             }
-                            Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7E7E87", default: .gray))
+                            Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
                         }
-                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
 
                     }.padding()
                 }
 
-                Divider().frame(height: 15).background(.black)
+                Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("나의 독서 기록").font(.title2).fontWeight(.bold).lineLimit(1)
-                        Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7E7E87", default: .gray)).lineLimit(1)
+                        Text("나의 독서 기록").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText).lineLimit(1)
+                        Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {
@@ -47,15 +47,15 @@ struct StatView: View {
 
                             }) {
                                 HStack(spacing: 10) {
-                                    Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                                    Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                             Image(systemName: "calendar").foregroundStyle(.blue)
                                         }
 
                                     HStack {
-                                        Text("완독 독서 캘린더").font(.title3).fontWeight(.bold).foregroundStyle(.white)
+                                        Text("완독 독서 캘린더").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
-                                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
                                 }
                             }
@@ -64,15 +64,15 @@ struct StatView: View {
                                 store.send(.navigateButtonTapped(.readingTrakcer))
                             }) {
                                 HStack(spacing: 10) {
-                                    Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                                    Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                                         }
 
                                     HStack {
-                                        Text("독서 트래커").font(.title3).fontWeight(.bold).foregroundStyle(.white)
+                                        Text("독서 트래커").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
-                                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
                                 }
                             }
@@ -83,7 +83,7 @@ struct StatView: View {
                 .padding(.bottom)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     @ViewBuilder

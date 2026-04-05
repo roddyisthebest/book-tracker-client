@@ -20,11 +20,11 @@ struct RecommendedSearchBadge: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .allowsTightening(true)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
                 .padding(.horizontal, 15)
                 .padding(.vertical, 10)
         }
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .cornerRadius(20)
     }
 }

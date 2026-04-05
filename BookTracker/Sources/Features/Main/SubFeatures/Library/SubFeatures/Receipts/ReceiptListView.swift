@@ -18,7 +18,7 @@ struct ReceiptListView: View {
             content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
         .navigationTitle("대출증/영수증")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
@@ -78,7 +78,7 @@ struct ReceiptListView: View {
             ProgressView().tint(.white)
             Text("불러오는 중이에요...")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -90,10 +90,10 @@ struct ReceiptListView: View {
                 .foregroundStyle(.yellow)
             Text("목록을 불러오지 못했어요.")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
             Text("잠시 후 다시 시도해주세요.")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
             Button(action: { store.send(.onRefresh) }) {
                 Text("다시 시도")
                     .font(.system(size: 14, weight: .semibold))
@@ -112,14 +112,14 @@ struct ReceiptListView: View {
         VStack(spacing: 14) {
             Image(systemName: "doc.text")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
             Text("표시할 항목이 없어요.")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
             Text("다른 탭을 선택하거나 새로고침 해보세요.")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
             Button(action: { store.send(.onRefresh) }) {
                 Text("새로고침")
                     .font(.system(size: 14, weight: .semibold))

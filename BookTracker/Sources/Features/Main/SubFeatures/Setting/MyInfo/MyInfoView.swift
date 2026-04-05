@@ -16,13 +16,13 @@ struct MyInfoView: View {
     private func skeletonStatusRow(width: CGFloat) -> some View {
         HStack {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "#2C2C35", default: .black))
+                .fill(Color.appSurface)
                 .frame(width: width, height: 18)
 
             Spacer()
 
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "#2C2C35", default: .black))
+                .fill(Color.appSurface)
                 .frame(width: width, height: 18)
         }
     }
@@ -35,7 +35,7 @@ struct MyInfoView: View {
                         Button(action: {
                             store.send(.profileImageViewTapped)
                         }) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 100, height: 100).cornerRadius(50).overlay {
                                     ZStack(alignment: .bottomTrailing) {
 //                                        if let urlString = store.profile, let url = URL(string: urlString) {
@@ -60,7 +60,7 @@ struct MyInfoView: View {
                                             .font(.system(size: 60))
                                         ZStack {
                                             Circle()
-                                                .fill(Color(hex: "#2C2C35", default: .black))
+                                                .fill(Color.appSurface)
                                                 .frame(width: 25, height: 25)
                                             Image(systemName: "plus.circle.fill")
                                                 .font(.system(size: 22))
@@ -92,19 +92,19 @@ struct MyInfoView: View {
                                 VStack(alignment: .leading, spacing: 14) {
                                     Text("계정 정보를 불러오지 못했어요")
                                         .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
                                         Text("다시 시도")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
                                             .padding(.vertical, 8)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color(hex: "#2C2C35", default: .black))
+                                                    .fill(Color.appSurface)
                                             )
                                     }
                                 }
@@ -117,19 +117,19 @@ struct MyInfoView: View {
                                 VStack(alignment: .leading, spacing: 14) {
                                     Text("계정 정보가 없어요")
                                         .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
                                         Text("새로고침")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
                                             .padding(.vertical, 8)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color(hex: "#2C2C35", default: .black))
+                                                    .fill(Color.appSurface)
                                             )
                                     }
                                 }
@@ -144,7 +144,7 @@ struct MyInfoView: View {
                 .padding(.bottom)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     var body: some View {

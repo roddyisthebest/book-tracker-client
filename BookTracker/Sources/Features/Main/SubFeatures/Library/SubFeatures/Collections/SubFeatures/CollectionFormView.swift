@@ -21,10 +21,10 @@ struct CollectionFormView: View {
                     }
                     TextField("이름",
                               text: $store.title,
-                              prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
-                        .foregroundStyle(.white)
+                              prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(Color.appSecondaryText))
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#17171C", default: .accentColor))
+                        .background(Color.appSurfaceDeep)
                         .cornerRadius(15)
                 }
 
@@ -37,13 +37,13 @@ struct CollectionFormView: View {
                     ZStack(alignment: .topLeading) {
                         if store.description.isEmpty {
                             Text("컬렉션 설명을 입력해주세요")
-                                .foregroundStyle(.white.opacity(0.4))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 20)
                         }
 
                         TextEditor(text: $store.description)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .padding(12)
                             .frame(height: 150)
                             .scrollIndicators(.visible)
@@ -52,7 +52,7 @@ struct CollectionFormView: View {
                             .textInputAutocapitalization(.sentences)
                             .autocorrectionDisabled(false)
                     }
-                    .background(Color(hex: "#17171C", default: .accentColor))
+                    .background(Color.appSurfaceDeep)
                     .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
 
@@ -80,7 +80,7 @@ struct CollectionFormView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
-                        .background(Color(hex: "#17171C", default: .accentColor))
+                        .background(Color.appSurfaceDeep)
                         .clipShape(RoundedRectangle(cornerRadius: 15))
 
                     }.frame(maxWidth: .infinity, alignment: .leading)
@@ -91,7 +91,7 @@ struct CollectionFormView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .navigationTitle(store.isEditing ? "컬렉션 수정" : "컬렉션 생성")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

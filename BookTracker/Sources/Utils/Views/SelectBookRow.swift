@@ -32,7 +32,7 @@ struct SelectBookRow: View {
                         .font(.system(size: 18, weight: .bold))
                         .lineLimit(1)
                         .truncationMode(.tail)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
 
                     HStack(alignment: .top, spacing: 10) {
                         thumbnailView
@@ -40,7 +40,7 @@ struct SelectBookRow: View {
                         VStack(alignment: .leading, spacing: 4) {
                             if !author.isEmpty {
                                 Text(author)
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText)
                                     .font(.system(size: 14, weight: .semibold))
                                     .lineLimit(2)
                                     .truncationMode(.tail)
@@ -48,7 +48,7 @@ struct SelectBookRow: View {
 
                             if !publisher.isEmpty {
                                 Text(publisher)
-                                    .foregroundStyle(.white.opacity(0.6))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                                     .font(.system(size: 11, weight: .semibold))
                                     .lineLimit(1)
                                     .truncationMode(.tail)
@@ -63,10 +63,10 @@ struct SelectBookRow: View {
                                         .font(.caption2)
                                         .lineLimit(1)
                                         .truncationMode(.tail)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
                                 }
                                 .padding(6)
-                                .background(Color(hex: "#2A2A33", default: .gray))
+                                .background(Color.appSurface)
                                 .cornerRadius(4)
                                 .padding(.top, 2)
                             }
@@ -118,7 +118,7 @@ struct SelectBookRow: View {
 
     private var thumbnailPlaceholder: some View {
         RoundedRectangle(cornerRadius: 6)
-            .fill(Color(hex: "#2A2A33", default: .gray))
+            .fill(Color.appSurface)
             .frame(width: 80, height: 100)
             .overlay(
                 Image(systemName: "photo")

@@ -12,11 +12,11 @@ struct DeleteReceiptBookRow: View {
                     .font(.system(size: 18, weight: .bold))
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
 
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: "#2A2A33", default: .gray))
+                        .fill(Color.appSurface)
                         .frame(width: 100, height: 120)
                         .overlay {
                             if let url = book.thumbnail {
@@ -55,7 +55,7 @@ struct DeleteReceiptBookRow: View {
                     VStack(alignment: .leading, spacing: 4) {
                         if let author = book.authors.first, !author.isEmpty {
                             Text(author)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 14, weight: .semibold))
                                 .lineLimit(2)
                                 .truncationMode(.tail)
@@ -63,7 +63,7 @@ struct DeleteReceiptBookRow: View {
 
                         if let publisher = book.publisher, !publisher.isEmpty {
                             Text(publisher)
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 11, weight: .semibold))
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -78,10 +78,10 @@ struct DeleteReceiptBookRow: View {
                                     .font(.caption2)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.appPrimaryText)
                             }
                             .padding(6)
-                            .background(Color(hex: "#2A2A33", default: .gray))
+                            .background(Color.appSurface)
                             .cornerRadius(4)
                             .padding(.top, 2)
                         }
@@ -90,7 +90,7 @@ struct DeleteReceiptBookRow: View {
                             let amount = Double(micros) / 1_000_000
                             Text("\(Int(amount))원")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appPrimaryText)
                                 .padding(.top, 2)
                         }
                     }
@@ -99,7 +99,7 @@ struct DeleteReceiptBookRow: View {
                 }
             }
             .padding()
-            .background(Color(hex: "#17171C"))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(10)
         }
         .buttonStyle(.plain)

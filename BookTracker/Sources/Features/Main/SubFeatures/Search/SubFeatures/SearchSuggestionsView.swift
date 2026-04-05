@@ -20,6 +20,7 @@ struct SearchSuggestionsView: View {
                 if !store.searches.isEmpty {
                     Text("최근 검색어")
                         .font(.headline)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding(.horizontal, 15)
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: 10) {
@@ -45,6 +46,7 @@ struct SearchSuggestionsView: View {
                 if !store.books.isEmpty {
                     Text("추천 검색어")
                         .font(.headline)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding(.horizontal, 15)
                     FlowLayout(spacing: 10, rowSpacing: 10) {
                         ForEach(store.books, id: \.id) { book in

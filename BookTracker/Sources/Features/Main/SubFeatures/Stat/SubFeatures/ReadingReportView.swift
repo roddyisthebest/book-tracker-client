@@ -72,14 +72,14 @@ struct ReadingReportView: View {
         VStack(spacing: 14) {
             Image(systemName: "doc.text.magnifyingglass")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
             Text("이 달의 리포트가 없어요")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
             Text("연/월을 바꾸거나 다시 시도해 보세요.")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
             Button(action: { store.send(.loadData) }) {
                 Text("다시 시도")
                     .font(.system(size: 14, weight: .semibold))
@@ -102,7 +102,7 @@ struct ReadingReportView: View {
                         .tint(.white)
                     Text("불러오는 중…")
                         .font(.footnote)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Color.appSecondaryText)
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
             } else if store.monthlyReadingReport == nil && !store.isError {
@@ -119,8 +119,8 @@ struct ReadingReportView: View {
                             }
                             .pickerStyle(.menu)
                             .padding(3)
-                            .tint(.white)
-                            .background(Color(hex: "#2C2C35", default: .white))
+                            .tint(Color.appPrimaryText)
+                            .background(Color.appSurface)
                             .cornerRadius(10)
 
                             Picker("월", selection: monthBinding) {
@@ -130,13 +130,13 @@ struct ReadingReportView: View {
                             }
                             .pickerStyle(.menu)
                             .padding(3)
-                            .tint(.white)
-                            .background(Color(hex: "#2C2C35", default: .white))
+                            .tint(Color.appPrimaryText)
+                            .background(Color.appSurface)
                             .cornerRadius(10)
                         }
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
                                 }
@@ -145,7 +145,7 @@ struct ReadingReportView: View {
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "xmark.circle.fill").foregroundStyle(.red).font(.caption)
                                 }
@@ -154,7 +154,7 @@ struct ReadingReportView: View {
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "star.fill").foregroundStyle(.yellow).font(.caption)
                                 }
@@ -163,29 +163,29 @@ struct ReadingReportView: View {
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
-                                    Image(systemName: "receipt.fill").foregroundStyle(Color(hex: "#67E9AF", default: .white)).font(.caption)
+                                    Image(systemName: "receipt.fill").foregroundStyle(Color.appPurchaseAccent).font(.caption)
                                 }
                             StatusRow(key: "구매", value: "\((store.monthlyReadingReport?.month.purchaseCount ?? 0))권")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
-                                    Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color(hex: "#7D7DFF", default: .white)).font(.caption)
+                                    Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color.appRentalAccent).font(.caption)
                                 }
                             StatusRow(key: "대여", value: "\((store.monthlyReadingReport?.month.rentalCount ?? 0))권")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 20) {
                         HStack {
-                            Text("전월 비교").font(.title2).fontWeight(.bold)
+                            Text("전월 비교").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
@@ -195,12 +195,12 @@ struct ReadingReportView: View {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
                                     Text("\(store.monthlyReadingReport?.comparison.previousCompletedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
                                     Text("\(store.monthlyReadingReport?.comparison.currentCompletedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -220,12 +220,12 @@ struct ReadingReportView: View {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
                                     Text("\(store.monthlyReadingReport?.comparison.previousUnfinishedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
                                     Text("\(store.monthlyReadingReport?.comparison.currentUnfinishedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -245,12 +245,12 @@ struct ReadingReportView: View {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
                                     Text(money(store.monthlyReadingReport?.comparison.previousPurchaseAmount ?? 0))
-                                        .foregroundStyle(.white.opacity(0.35))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
                                     Text(money(store.monthlyReadingReport?.comparison.currentPurchaseAmount ?? 0))
-                                        .foregroundStyle(.white.opacity(0.85))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -270,12 +270,12 @@ struct ReadingReportView: View {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
                                     Text("\(store.monthlyReadingReport?.comparison.previousRentalCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
                                     Text("\(store.monthlyReadingReport?.comparison.currentRentalCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -291,16 +291,16 @@ struct ReadingReportView: View {
                     }
                     .padding()
 
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 20) {
                         HStack {
-                            Text("독서기간").font(.title2).fontWeight(.bold)
+                            Text("독서기간").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
                                 }
@@ -310,11 +310,11 @@ struct ReadingReportView: View {
                     }
                     .padding()
 
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 45) {
                         HStack {
-                            Text("종이책/전자책 비율").font(.title2).fontWeight(.bold)
+                            Text("종이책/전자책 비율").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
@@ -367,7 +367,7 @@ struct ReadingReportView: View {
                 .padding(.top, 8)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     var body: some View {

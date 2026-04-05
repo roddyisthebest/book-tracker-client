@@ -18,7 +18,7 @@ struct CollectionListView: View {
             content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
         .navigationTitle("컬렉션")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }

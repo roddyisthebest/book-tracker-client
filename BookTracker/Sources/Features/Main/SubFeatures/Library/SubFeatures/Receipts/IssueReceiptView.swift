@@ -27,9 +27,9 @@ struct IssueReceiptView: View {
                 )
                 .labelsHidden()
                 .datePickerStyle(.graphical)
-                .tint(.white)
+                .tint(Color.appAccent)
                 .padding(8)
-                .background(Color(hex: "#17171C", default: .accentColor))
+                .background(Color.appSurfaceDeep)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             }
             FormCard(labelText: "실제 구매 금액") {
@@ -50,9 +50,9 @@ struct IssueReceiptView: View {
                 )
                 .labelsHidden()
                 .datePickerStyle(.graphical)
-                .tint(.white)
+                .tint(Color.appAccent)
                 .padding(8)
-                .background(Color(hex: "#17171C", default: .accentColor))
+                .background(Color.appSurfaceDeep)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             }
         }
@@ -88,7 +88,7 @@ struct IssueReceiptView: View {
                 }
             }
             .scrollContentBackground(.hidden) // 추가
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
         }
         .alert($store.scope(state: \.alert, action: \.alert))
     }

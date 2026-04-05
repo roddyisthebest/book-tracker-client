@@ -23,9 +23,9 @@ struct UpdateNameView: View {
                             TextField(
                                 "",
                                 text: $store.name,
-                                prompt: Text("이름").foregroundStyle(.white.opacity(0.4))
+                                prompt: Text("이름").foregroundStyle(Color.appSecondaryText)
                             )
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 20, weight: .semibold))
                             .background(.clear)
                             .frame(height: 28)
@@ -86,7 +86,7 @@ struct UpdateNameView: View {
                 }
             }
             .scrollContentBackground(.hidden) // 추가
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .alert($store.scope(state: \.alert, action: \.alert))
         }
     }

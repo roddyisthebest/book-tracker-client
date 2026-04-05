@@ -33,17 +33,17 @@ struct ReceiptCard: View {
                     if isRental {
                         HStack {
                             Image(systemName: "person.text.rectangle.fill")
-                                .font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor))
-                            Text("대출증").foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor)).font(.system(size: 14, weight: .bold))
+                                .font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appRentalAccent)
+                            Text("대출증").foregroundStyle(Color.appRentalAccent).font(.system(size: 14, weight: .bold))
 
-                        }.padding(10).background(Color(hex: "#202045")).cornerRadius(15)
+                        }.padding(10).background(Color.appRentalBadgeFill).cornerRadius(15)
                     }
                     else {
                         HStack {
                             Image(systemName: "receipt.fill")
-                                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
-                            Text("영수증").foregroundStyle(Color(hex: "#67E9AF", default: .accentColor)).font(.system(size: 14, weight: .bold))
-                        }.padding(10).background(Color(hex: "#384B43")).cornerRadius(15)
+                                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.appPurchaseAccent)
+                            Text("영수증").foregroundStyle(Color.appPurchaseAccent).font(.system(size: 14, weight: .bold))
+                        }.padding(10).background(Color.appPurchaseBadgeFill).cornerRadius(15)
                     }
                     Spacer()
                 }
@@ -51,7 +51,7 @@ struct ReceiptCard: View {
                 HStack(spacing: 2.5) {
                     let firstBookTitle = receipt.firstBookTitle ?? (receipt.type == .rental ? "대출증" : "영수증")
                     Text(firstBookTitle)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -59,7 +59,7 @@ struct ReceiptCard: View {
                     let restQuantity = max(receipt.totalQuantity - 1, 0)
                     if restQuantity > 0 {
                         Text("외 \(restQuantity)건")
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .fontWeight(.bold).layoutPriority(1)
                     }
 
@@ -69,16 +69,16 @@ struct ReceiptCard: View {
                 HStack(spacing: 5) {
                     if isRental {
                         Image(systemName: "building.columns.fill")
-                            .font(.system(size: 14)).foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor))
+                            .font(.system(size: 14)).foregroundStyle(Color.appRentalAccent)
 
-                        Text(receipt.source).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white).lineLimit(1).truncationMode(.tail)
+                        Text(receipt.source).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
                     }
                     else {
                         Image(systemName: "wonsign")
-                            .font(.system(size: 14)).foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
+                            .font(.system(size: 14)).foregroundStyle(Color.appPurchaseAccent)
 
                         if let totalPrice = receipt.totalPrice, totalPrice > 0 {
-                            Text("\(totalPrice)원").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white).lineLimit(1).truncationMode(.tail)
+                            Text("\(totalPrice)원").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
                         }
                     }
 
@@ -88,13 +88,13 @@ struct ReceiptCard: View {
                 HStack {
                     if let date = receipt.receiptAt {
                         Text(Self.receiptDateFormatter.string(from: date))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(Color.appSecondaryText)
                             .font(.system(size: 14))
                     }
                     Spacer()
                 }.padding(.leading, 5)
 
-            }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 10).padding(.vertical, 15).background(Color(hex: "#33353D")).cornerRadius(10)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 10).padding(.vertical, 15).background(Color.appSurface).cornerRadius(10)
         }
 
         .contextMenu {

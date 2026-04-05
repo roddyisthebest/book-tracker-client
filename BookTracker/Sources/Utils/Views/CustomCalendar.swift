@@ -61,7 +61,7 @@ public struct CustomCalendar<DayContent: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             if showsHeader { header }
             weekdayHeader
             daysGrid
@@ -96,7 +96,7 @@ public struct CustomCalendar<DayContent: View>: View {
     }
 
     private var daysGrid: some View {
-        LazyVGrid(columns: columns, spacing: 8) {
+        LazyVGrid(columns: columns, spacing: 14) {
             ForEach(days.indices, id: \.self) { idx in
                 if let date = days[idx] {
                     Button {
@@ -104,17 +104,17 @@ public struct CustomCalendar<DayContent: View>: View {
                     } label: {
                         ZStack {
                             if let sel = selection?.wrappedValue, calendar.isDate(sel, inSameDayAs: date) {
-                                RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.08))
+                                RoundedRectangle(cornerRadius: 8).fill(Color.appPlaceholder)
                             }
                             dayContent(date)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .padding(6)
                         }
-                        .frame(height: 36)
+                        .frame(height: 48)
                     }
                     .buttonStyle(.plain)
                 } else {
-                    Color.clear.frame(height: 36)
+                    Color.clear.frame(height: 48)
                 }
             }
         }
@@ -140,8 +140,7 @@ public extension CustomCalendar where DayContent == Text {
         self.init(calendar: calendar, monthDate: monthDate, selection: selection, showsHeader: showsHeader) { date in
             let day = calendar.component(.day, from: date)
             return Text("\(day)")
-                .foregroundStyle(.white)
-                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.appPrimaryText)
         }
     }
 }

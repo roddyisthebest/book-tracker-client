@@ -15,7 +15,7 @@ struct StatusRow: View {
         HStack(alignment: .top) {
             MainLabel(key)
             Spacer(minLength: 20)
-            Text("\(value)").foregroundStyle(.white.opacity(0.85)).font(.system(size: 18, weight: .bold))
+            Text("\(value)").foregroundStyle(Color.appPrimaryText).font(.system(size: 18, weight: .bold))
         }
     }
 }

@@ -197,6 +197,7 @@ extension Color {
 }
 
 // MARK: - App Theme: Badge Backgrounds
+
 extension Color {
     /// Background for rental badge icons (dark: #2F2F49, light: soft indigo tint)
     static var appRentalBadgeBackground: Color {
@@ -204,7 +205,7 @@ extension Color {
             let isDark = (trait.userInterfaceStyle == .dark)
             return isDark
                 ? UIColor(red: 0.184, green: 0.184, blue: 0.286, alpha: 1.0) // #2F2F49
-                : UIColor(red: 0.86, green: 0.90, blue: 0.96, alpha: 1.0)     // slightly deeper indigo-ish
+                : UIColor(red: 0.86, green: 0.90, blue: 0.96, alpha: 1.0) // slightly deeper indigo-ish
         })
     }
 
@@ -214,12 +215,53 @@ extension Color {
             let isDark = (trait.userInterfaceStyle == .dark)
             return isDark
                 ? UIColor(red: 0.204, green: 0.239, blue: 0.224, alpha: 1.0) // #343D39
-                : UIColor(red: 0.87, green: 0.93, blue: 0.90, alpha: 1.0)     // slightly deeper green-ish
+                : UIColor(red: 0.87, green: 0.93, blue: 0.90, alpha: 1.0) // slightly deeper green-ish
+        })
+    }
+}
+
+// MARK: - App Theme: Receipt Badge Colors
+
+extension Color {
+    static var appRentalAccent: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.49, green: 0.49, blue: 1.0, alpha: 1.0)   // #7D7DFF
+                : UIColor(red: 0.35, green: 0.35, blue: 0.85, alpha: 1.0)
+        })
+    }
+
+    static var appRentalBadgeFill: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.125, green: 0.125, blue: 0.271, alpha: 1.0) // #202045
+                : UIColor(red: 0.88, green: 0.88, blue: 0.96, alpha: 1.0)
+        })
+    }
+
+    static var appPurchaseAccent: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.404, green: 0.914, blue: 0.686, alpha: 1.0) // #67E9AF
+                : UIColor(red: 0.20, green: 0.65, blue: 0.45, alpha: 1.0)
+        })
+    }
+
+    static var appPurchaseBadgeFill: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.220, green: 0.294, blue: 0.263, alpha: 1.0) // #384B43
+                : UIColor(red: 0.87, green: 0.95, blue: 0.91, alpha: 1.0)
         })
     }
 }
 
 // MARK: - App Theme: Deep Surface
+
 extension Color {
     /// A deeper surface background than `appSurface`.
     /// Dark mode: #17171C, Light mode: a slightly darker light surface.
@@ -229,6 +271,67 @@ extension Color {
             return isDark
                 ? UIColor(red: 0.090, green: 0.090, blue: 0.110, alpha: 1.0) // #17171C
                 : UIColor(red: 0.94, green: 0.94, blue: 0.96, alpha: 1.0)
+        })
+    }
+
+    static var appSurfaceDeeper: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0) // #000000
+                : UIColor(red: 0.90, green: 0.90, blue: 0.92, alpha: 1.0)
+        })
+    }
+}
+
+// MARK: - App Theme: Button Surface
+
+extension Color {
+    static var appButtonSurface: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.098, green: 0.098, blue: 0.118, alpha: 1.0) // #19191E
+                : UIColor(red: 0.88, green: 0.88, blue: 0.90, alpha: 1.0)   // #E0E0E6
+        })
+    }
+}
+
+// MARK: - App Theme: Profile Header Surface
+
+extension Color {
+    static var appHeaderSurface: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.114, green: 0.114, blue: 0.141, alpha: 1.0) // #1D1D24
+                : UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0)
+        })
+    }
+}
+
+// MARK: - App Theme: Placeholder
+
+extension Color {
+    static var appPlaceholder: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(white: 1.0, alpha: 0.08)
+                : UIColor(white: 0.0, alpha: 0.06)
+        })
+    }
+}
+
+// MARK: - App Theme: Border
+
+extension Color {
+    static var appBorder: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.235, green: 0.235, blue: 0.278, alpha: 1.0) // #3C3C47
+                : UIColor(red: 0.82, green: 0.82, blue: 0.85, alpha: 1.0)
         })
     }
 }

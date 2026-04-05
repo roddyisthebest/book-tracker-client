@@ -55,8 +55,8 @@ struct ReadingCalendarView: View {
                         }
                         .pickerStyle(.menu)
                         .padding(3)
-                        .tint(.white)
-                        .background(Color(hex: "#2C2C35", default: .white))
+                        .tint(Color.appPrimaryText)
+                        .background(Color.appSurface)
                         .cornerRadius(10)
 
                         Picker("월", selection: monthBinding) {
@@ -66,8 +66,8 @@ struct ReadingCalendarView: View {
                         }
                         .pickerStyle(.menu)
                         .padding(3)
-                        .tint(.white)
-                        .background(Color(hex: "#2C2C35", default: .white))
+                        .tint(Color.appPrimaryText)
+                        .background(Color.appSurface)
                         .cornerRadius(10)
                     }
                 }
@@ -78,7 +78,7 @@ struct ReadingCalendarView: View {
                         ProgressView().tint(.white)
                         Text("불러오는 중…")
                             .font(.footnote)
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Color.appSecondaryText)
                     }
                     .frame(maxWidth: .infinity, minHeight: 200)
                     .padding()
@@ -106,8 +106,7 @@ struct ReadingCalendarView: View {
                                     .font(.system(size: 16, weight: .bold))
                             } else {
                                 Text("\(day)")
-                                    .foregroundStyle(.white)
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(Color.appPrimaryText)
                             }
                         }
                     }
@@ -120,7 +119,7 @@ struct ReadingCalendarView: View {
         .refreshable {
             store.send(.loadData)
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     var body: some View {

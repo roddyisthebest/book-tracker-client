@@ -18,11 +18,11 @@ struct ExternalBookRow: View {
                     .font(.system(size: 18, weight: .bold))
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
 
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: "#2A2A33", default: .gray))
+                        .fill(Color.appSurface)
                         .frame(width: 100, height: 120)
                         .overlay {
                             if let url = book.thumbnail {
@@ -57,13 +57,13 @@ struct ExternalBookRow: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         if let author = book.authors?.first {
-                            Text(author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 14, weight: .semibold))
+                            Text(author).foregroundStyle(Color.appSecondaryText).font(.system(size: 14, weight: .semibold))
                                 .lineLimit(2)
                                 .truncationMode(.tail)
                         }
 
                         if let publisher = book.publisher {
-                            Text(publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 11, weight: .semibold))
+                            Text(publisher).foregroundStyle(Color.appSecondaryText.opacity(0.8)).font(.system(size: 11, weight: .semibold))
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
@@ -78,7 +78,7 @@ struct ExternalBookRow: View {
             }
         }
         .padding()
-        .background(Color(hex: "#17171C"))
+        .background(Color.appSurfaceDeep)
         .cornerRadius(10)
     }
 }

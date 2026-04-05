@@ -38,7 +38,7 @@ struct ReceiptDetailView: View {
                                 ProgressView().tint(.white)
                                 Text("불러오는 중이에요...")
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.8))
+                                    .foregroundStyle(Color.appSecondaryText)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .padding(.vertical, 40)
@@ -49,7 +49,7 @@ struct ReceiptDetailView: View {
                                     .foregroundStyle(.yellow)
                                 Text("상세를 불러오지 못했어요.")
                                     .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.appPrimaryText)
                                 Button(action: { store.send(.onRefresh) }) {
                                     Text("다시 시도")
                                         .font(.system(size: 14, weight: .semibold))
@@ -72,18 +72,18 @@ struct ReceiptDetailView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
 
-                            Divider().background(.white.opacity(0.7))
+                            Divider().background(Color.appSeparator)
                             HStack {
                                 Spacer()
-                                Text("총 \(detail.items.count)권").foregroundStyle(.white).font(.headline)
+                                Text("총 \(detail.items.count)권").foregroundStyle(Color.appPrimaryText).font(.headline)
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 8)
-                            Divider().frame(height: 15).background(.black.opacity(0.8))
+                            Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
                                 HStack {
-                                    Text("상태값").foregroundStyle(.white).font(.system(size: 25)).fontWeight(.black)
+                                    Text("상태값").foregroundStyle(Color.appPrimaryText).font(.system(size: 25)).fontWeight(.black)
                                     Spacer()
                                 }
                                 .padding(.top, 5)
@@ -107,7 +107,7 @@ struct ReceiptDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .navigationTitle("영수증")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

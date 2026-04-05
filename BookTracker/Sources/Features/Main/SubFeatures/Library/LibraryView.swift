@@ -93,9 +93,9 @@ struct LibraryView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 82.5)
-                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .background(Color.appSurface)
                     .cornerRadius(10)
-                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                    .foregroundStyle(Color.appSecondaryText)
                 }
 
                 Button(action: {
@@ -108,9 +108,9 @@ struct LibraryView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 82.5)
-                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .background(Color.appSurface)
                     .cornerRadius(10)
-                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                    .foregroundStyle(Color.appSecondaryText)
                 }
 
                 Button(action: {
@@ -123,9 +123,9 @@ struct LibraryView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 82.5)
-                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .background(Color.appSurface)
                     .cornerRadius(10)
-                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                    .foregroundStyle(Color.appSecondaryText)
                 }
 
                 Button(action: {
@@ -138,9 +138,9 @@ struct LibraryView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 82.5)
-                    .background(Color(hex: "#2C2C35", default: .gray))
+                    .background(Color.appSurface)
                     .cornerRadius(10)
-                    .foregroundStyle(Color(hex: "#C0C0CF", default: .white))
+                    .foregroundStyle(Color.appSecondaryText)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -156,51 +156,51 @@ struct LibraryView: View {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
                         HStack {
-                            Text("내 책장 보기").font(.title2).fontWeight(.bold)
+                            Text("내 책장 보기").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                             Button(action: {
                                 store.send(.sectionTapped(.myBooks(status: .done)))
                             }) {
                                 Text("전체보기")
                                 Image(systemName: "chevron.right")
-                            }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                            }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                         }
-                        Text("독서 상태별로 책을 한눈에 볼 수 있어요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7E7E87", default: .gray))
+                        Text("독서 상태별로 책을 한눈에 볼 수 있어요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
                         // Loading/Error/Success handled below
                     }
 
                     statusCountsContent
                 }.padding()
 
-                Divider().frame(height: 15).background(.black)
+                Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                 VStack(spacing: 20) {
                     HStack {
-                        Text("컬렉션").font(.title2).fontWeight(.bold)
+                        Text("컬렉션").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                         Spacer()
                         Button(action: {
                             store.send(.sectionTapped(.collections))
                         }) {
                             Text("전체보기")
                             Image(systemName: "chevron.right")
-                        }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                        }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
 
                     collectionsSectionContent
                 }
                 .padding(.bottom)
-                Divider().frame(height: 15).background(.black)
+                Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                 VStack(spacing: 20) {
                     HStack {
-                        Text("대출증/영수증").font(.title2).fontWeight(.bold)
+                        Text("대출증/영수증").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                         Spacer()
                         Button(action: {
                             store.send(.sectionTapped(.receipts))
                         }) {
                             Text("전체보기")
                             Image(systemName: "chevron.right")
-                        }.fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
+                        }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
 
                     if store.isLoadingRecentReceipts {
@@ -241,14 +241,14 @@ struct LibraryView: View {
                     } else {
                         Text("표시할 항목이 없어요")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.appSecondaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                     }
                 }.padding(.bottom, 24)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     @ViewBuilder

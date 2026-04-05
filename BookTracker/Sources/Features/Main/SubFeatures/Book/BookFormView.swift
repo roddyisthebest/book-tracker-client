@@ -71,7 +71,7 @@ struct BookFormView: View {
             }
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .scrollContentBackground(.hidden) // 추가
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
         }
     }
 }

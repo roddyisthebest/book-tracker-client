@@ -17,7 +17,7 @@ private struct BookRowView: View {
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets(top: 7.5, leading: 20, bottom: 7.5, trailing: 20))
-            .background(Color(hex: "#17171C"))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(10)
     }
 }
@@ -37,7 +37,7 @@ struct CollectionDetailView: View {
 
             Text("문제가 발생했어요")
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
             Button("다시 시도") {
                 store.send(.onAppear)
@@ -46,7 +46,7 @@ struct CollectionDetailView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
     }
 
     @ViewBuilder
@@ -73,7 +73,7 @@ struct CollectionDetailView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .listRowBackground(Color.clear)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
             .refreshable {
                 await store.send(.onRefresh).finish()

@@ -18,14 +18,14 @@ struct SearchView: View {
             // Search Field
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.appSecondaryText)
                 TextField(
                     "검색어를 입력하세요",
                     text: $store.query
                 )
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.appPrimaryText)
                 .submitLabel(.search)
                 .overlay(alignment: .trailing) {
                     if !$store.query.wrappedValue.isEmpty {
@@ -33,14 +33,14 @@ struct SearchView: View {
                             store.send(.queryResetButtonTapped)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.appSecondaryText)
                                 .padding(.horizontal, 6)
                         }
                     }
                 }
             }
             .padding(12)
-            .background(Color(.secondarySystemBackground))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(12)
             .padding(.horizontal, 15)
             .padding(.top)
@@ -58,7 +58,7 @@ struct SearchView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(isSheet ? Color(hex: "#2C2C35", default: .black) : Color(hex: "#101013", default: .black))
+        .background(isSheet ? Color.appSurface : Color.appBackground)
         .sheet(
             item: $store.scope(state: \.detailSheet, action: \.detailSheet)
         ) { store in

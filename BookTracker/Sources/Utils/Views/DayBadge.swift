@@ -19,9 +19,9 @@ struct DayBadge<Content: View>: View {
         VStack {
             Text(day)
                 .font(.subheadline)
-                .foregroundStyle(.gray)
+                .foregroundStyle(Color.appSecondaryText)
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(hex: "#2C2C35", default: .black))
+                .fill(Color.appSurfaceDeeper)
                 .frame(width: 40, height: 40)
                 .overlay(overlayContent)
         }

@@ -17,7 +17,7 @@ struct DateSectionView: View {
                 DatePicker("시작일자", selection: $store.startedAt, displayedComponents: [.date])
                     .padding()
             }
-            .background(Color(hex: "#17171C", default: .accentColor))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(15)
             .frame(maxWidth: .infinity, alignment: .leading)
         }

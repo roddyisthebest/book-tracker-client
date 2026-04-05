@@ -37,7 +37,7 @@ struct BookGridItem: View {
                 .frame(height: 100)
                 .frame(maxWidth: .infinity)
                 .clipped()
-                .background(Color(hex: "#202026"))
+                .background(Color.appSurfaceDeeper)
                 .overlay {
                     if isDisabled {
                         RoundedRectangle(cornerRadius: 8)
@@ -57,7 +57,7 @@ struct BookGridItem: View {
                 .font(.subheadline.bold())
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .foregroundStyle(isDisabled ? Color.gray.opacity(0.95) : .white)
+                .foregroundStyle(isDisabled ? Color.gray.opacity(0.95) : Color.appPrimaryText)
 
             Text(author)
                 .font(.caption)
@@ -109,7 +109,7 @@ struct BookGridItem: View {
     }
 
     private var cardBackgroundColor: Color {
-        isDisabled ? Color(hex: "#222228", default: .black) : Color(hex: "#17171C", default: .black)
+        isDisabled ? Color.appSurfaceDeeper : Color.appSurfaceDeep
     }
 
     private var borderColor: Color {
@@ -125,7 +125,7 @@ struct BookGridItem: View {
 
     private var placeholder: some View {
         ZStack {
-            Color(hex: "#2C2C35")
+            Color.appSurface
             Image(systemName: "book.closed")
                 .font(.title3)
                 .foregroundStyle(.secondary)

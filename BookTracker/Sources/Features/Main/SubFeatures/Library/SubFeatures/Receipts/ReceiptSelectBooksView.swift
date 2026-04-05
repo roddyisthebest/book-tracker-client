@@ -33,7 +33,7 @@ private struct ReceiptBooksLoadingView: View {
 
             Text("책 목록을 불러오는 중이에요.")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -50,11 +50,11 @@ private struct ReceiptBooksErrorView: View {
 
             Text("책 목록을 불러오지 못했어요.")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
             Text("잠시 후 다시 시도해주세요.")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
 
             Button(action: onRetry) {
                 Text("다시 시도")
@@ -78,16 +78,16 @@ private struct ReceiptBooksEmptyView: View {
         VStack(spacing: 14) {
             Image(systemName: "books.vertical")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
 
             Text("추가된 책이 없어요.")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
             Text("책을 추가해서 영수증이나 대출증 발급을 시작해보세요.")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
 
             Button(action: onAdd) {
                 Text("책 추가하기")
@@ -119,11 +119,11 @@ private struct FullScreenLoadingOverlay: View {
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
-            .background(Color(hex: "#17171C"))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(14)
         }
     }
@@ -163,7 +163,7 @@ struct ReceiptSelectBooksView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .refreshable {
             store.send(.onRefresh)
         }
@@ -178,7 +178,7 @@ struct ReceiptSelectBooksView: View {
 
     var body: some View {
         contentView
-            .background(Color(hex: "#2C2C35", default: .black).ignoresSafeArea())
+            .background(Color.appSurface.ignoresSafeArea())
             .navigationTitle(store.type == .purchase ? "영수증 발급" : "대출증 발급")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)

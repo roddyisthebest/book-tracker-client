@@ -16,7 +16,7 @@ struct ProgressSectionView: View {
             VStack {
                 Slider(value: $store.progress, in: 0 ... 100, step: 1).padding()
 
-                Divider().background(.white)
+                Divider().background(Color.appSeparator)
                 HStack {
                     Text("\(store.progress, specifier: "%.0f")%").fontWeight(.semibold)
                     Spacer()
@@ -26,27 +26,27 @@ struct ProgressSectionView: View {
                             TextField("0", text: $store.page)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
-                                .background(Color.gray.opacity(0.2))
+                                .background(Color.appPlaceholder)
                                 .cornerRadius(5)
                                 .keyboardType(.numberPad)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled(true)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appPrimaryText)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 60)
                             Text("p")
                         }
-                        Text("/").foregroundStyle(.gray)
+                        Text("/").foregroundStyle(Color.appSecondaryText)
                         if store.pageCountEditable {
                             TextField("0", text: $store.entirePage)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
-                                .background(Color.gray.opacity(0.2))
+                                .background(Color.appPlaceholder)
                                 .cornerRadius(5)
                                 .keyboardType(.numberPad)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled(true)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appPrimaryText)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 60)
                         }
@@ -57,7 +57,7 @@ struct ProgressSectionView: View {
 
                 }.padding(.horizontal).padding(.bottom, 15).padding(.top, 5)
             }
-            .background(Color(hex: "#17171C", default: .accentColor))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(15)
             .frame(maxWidth: .infinity, alignment: .leading)
         }

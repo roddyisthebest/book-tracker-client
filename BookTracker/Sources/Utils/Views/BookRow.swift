@@ -79,7 +79,7 @@ struct BookRow: View {
                 VStack(alignment: .leading, spacing: 5) {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(Color(hex: "#2A2A33", default: .gray))
+                            .fill(Color.appSurface)
                             .frame(height: 5)
 
                         GeometryReader { proxy in
@@ -92,7 +92,7 @@ struct BookRow: View {
                     .frame(height: 5)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
                     Text("\(Int(progress * 100))% (\(read)p/\(total)p)")
-                        .foregroundStyle(Color(hex: "#9B9BA1", default: .gray))
+                        .foregroundStyle(Color.appSecondaryText)
                         .font(.caption2)
                 }
                 .padding(.vertical, 7.5)
@@ -111,11 +111,11 @@ struct BookRow: View {
                     .font(.system(size: 18, weight: .bold))
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
 
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: "#2A2A33", default: .gray))
+                        .fill(Color.appSurface)
                         .frame(width: 80, height: 100)
                         .overlay(
                             Group {
@@ -133,10 +133,10 @@ struct BookRow: View {
                         .clipShape(RoundedRectangle(cornerRadius: 6))
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(book.author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 14, weight: .semibold))
+                        Text(book.author).foregroundStyle(Color.appSecondaryText).font(.system(size: 14, weight: .semibold))
                             .lineLimit(2)
                             .truncationMode(.tail)
-                        Text(book.publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 11, weight: .semibold))
+                        Text(book.publisher).foregroundStyle(Color.appSecondaryText.opacity(0.8)).font(.system(size: 11, weight: .semibold))
                             .lineLimit(1)
                             .truncationMode(.tail)
 
@@ -147,7 +147,7 @@ struct BookRow: View {
             }
         }
         .padding()
-        .background(Color(hex: "#17171C"))
+        .background(Color.appSurfaceDeep)
         .cornerRadius(10)
         .contextMenu {
             Button(role: .destructive) {

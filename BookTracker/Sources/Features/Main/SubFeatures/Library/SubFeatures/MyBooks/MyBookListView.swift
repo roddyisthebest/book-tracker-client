@@ -26,7 +26,7 @@ struct MyBookListView: View {
         .disabled(store.isDeleting)
         .animation(.easeInOut, value: store.isDeleting)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
         .navigationTitle("책장")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }

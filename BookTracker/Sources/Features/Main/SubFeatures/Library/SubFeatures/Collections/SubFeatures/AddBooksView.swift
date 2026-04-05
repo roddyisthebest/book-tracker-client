@@ -55,7 +55,7 @@ struct AddBooksView: View {
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
             }
         }
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .navigationTitle("책 추가")
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)

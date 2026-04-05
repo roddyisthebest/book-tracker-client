@@ -48,18 +48,18 @@ struct CollectionCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(titleText)
                         .font(.headline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.appPrimaryText)
                         .lineLimit(1)
 
                     Text(countText)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
                 }
                 .padding(.top, 8)
             }
             .padding(15)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
@@ -101,29 +101,29 @@ struct CollectionCard: View {
 
     private var emptyPreview: some View {
         RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .fill(Color.white.opacity(0.08))
+            .fill(Color.appPlaceholder)
             .frame(height: 80)
             .overlay {
                 VStack(spacing: 6) {
                     Image(systemName: "books.vertical")
                         .font(.system(size: 20))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
 
                     Text("책이 아직 없어요")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
                 }
             }
     }
 
     private var placeholderSlot: some View {
         RoundedRectangle(cornerRadius: 6, style: .continuous)
-            .fill(Color.white.opacity(0.08))
+            .fill(Color.appPlaceholder)
             .frame(maxWidth: .infinity)
             .frame(height: 80)
             .overlay {
                 Image(systemName: "book.closed")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.appSecondaryText)
             }
     }
 
@@ -153,11 +153,11 @@ struct CollectionCard: View {
     private func imagePlaceholder(systemName: String) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.appPlaceholder)
 
             Image(systemName: systemName)
                 .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.appSecondaryText)
                 .imageScale(.large)
         }
     }

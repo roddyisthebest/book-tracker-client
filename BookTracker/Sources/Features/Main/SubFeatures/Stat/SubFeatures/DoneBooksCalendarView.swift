@@ -3,10 +3,10 @@ import SwiftUI
 
 struct DoneBooksCalendarView: View {
     @Bindable var store: StoreOf<DoneBooksCalendarFeature>
-
+    
     private var calendar: Calendar { Calendar.current }
     private var years: [Int] { Array(2000...2026) }
-
+    
     private var yearBinding: Binding<Int> {
         Binding(
             get: { calendar.component(.year, from: store.date) },
@@ -20,7 +20,7 @@ struct DoneBooksCalendarView: View {
             }
         )
     }
-
+    
     private var monthBinding: Binding<Int> {
         Binding(
             get: { calendar.component(.month, from: store.date) },
@@ -34,7 +34,7 @@ struct DoneBooksCalendarView: View {
             }
         )
     }
-
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 15) {
@@ -48,10 +48,10 @@ struct DoneBooksCalendarView: View {
                         }
                         .pickerStyle(.menu)
                         .padding(3)
-                        .tint(.white)
-                        .background(Color(hex: "#2C2C35", default: .white))
+                        .tint(Color.appPrimaryText)
+                        .background(Color.appSurface)
                         .cornerRadius(10)
-
+                        
                         Picker("월", selection: monthBinding) {
                             ForEach(1...12, id: \.self) { month in
                                 Text("\(month)월").tag(month)
@@ -59,54 +59,53 @@ struct DoneBooksCalendarView: View {
                         }
                         .pickerStyle(.menu)
                         .padding(3)
-                        .tint(.white)
-                        .background(Color(hex: "#2C2C35", default: .white))
+                        .tint(Color.appPrimaryText)
+                        .background(Color.appSurface)
                         .cornerRadius(10)
                     }
-                }
-                .padding()
-
-                if store.isLoading && store.thumbnailsByDate == nil {
-                    VStack(spacing: 8) {
-                        ProgressView().tint(.white)
-                        Text("불러오는 중…")
-                            .font(.footnote)
-                            .foregroundStyle(.white.opacity(0.7))
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 200)
                     .padding()
-                } else if store.isError {
-                    VStack(spacing: 8) {
-                        Text("달력을 불러오지 못했어요")
-                            .font(.footnote)
-                            .foregroundStyle(.red.opacity(0.85))
-                        Button(action: { store.send(.loadData) }) {
-                            Text("다시 가져오기").font(.caption)
+                    
+                    if store.isLoading && store.thumbnailsByDate == nil {
+                        VStack(spacing: 8) {
+                            ProgressView().tint(.white)
+                            Text("불러오는 중…")
+                                .font(.footnote)
+                                .foregroundStyle(Color.appSecondaryText)
                         }
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 200)
-                    .padding()
-                } else {
-                    let cal = Calendar.current
-                    CustomCalendar(monthDate: $store.date, selection: .constant(nil), showsHeader: false) { date in
-                        let key = cal.startOfDay(for: date)
-                        let items = store.thumbnailsByDate?[key] ?? []
-                        if items.isEmpty {
-                            Text("\(cal.component(.day, from: date))")
-                                .foregroundStyle(.white)
-                                .font(.system(size: 16, weight: .semibold))
-                        } else {
-                            DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
+                        .frame(maxWidth: .infinity, minHeight: 200)
+                        .padding()
+                    } else if store.isError {
+                        VStack(spacing: 8) {
+                            Text("달력을 불러오지 못했어요")
+                                .font(.footnote)
+                                .foregroundStyle(.red.opacity(0.85))
+                            Button(action: { store.send(.loadData) }) {
+                                Text("다시 가져오기").font(.caption)
+                            }
                         }
+                        .frame(maxWidth: .infinity, minHeight: 200)
+                        .padding()
+                    } else {
+                        let cal = Calendar.current
+                        CustomCalendar(monthDate: $store.date, selection: .constant(nil), showsHeader: false) { date in
+                            let key = cal.startOfDay(for: date)
+                            let items = store.thumbnailsByDate?[key] ?? []
+                            if items.isEmpty {
+                                Text("\(cal.component(.day, from: date))")
+                                    .foregroundStyle(Color.appPrimaryText)
+                            } else {
+                                DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
                 }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
         }
         .refreshable { store.send(.loadData) }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
         .navigationTitle("완독 독서 캘린더")
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.send(.onAppear).finish() }
