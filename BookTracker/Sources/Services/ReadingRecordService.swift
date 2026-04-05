@@ -8,6 +8,79 @@
 import Foundation
 import Supabase
 
+struct MonthlyReadingReport: Equatable, Decodable {
+    let month: MonthlyReadingReportMonth
+    let comparison: MonthlyReadingReportComparison
+}
+
+struct MonthlyReadingReportMonth: Equatable, Decodable {
+    let year: Int
+    let month: Int
+    let completedCount: Int
+    let completedAverageScore: Double
+    let purchaseCount: Int
+    let purchaseAmount: Int
+    let rentalCount: Int
+    let unfinishedCount: Int
+    let averageReadingDays: Double
+    let paperCount: Int
+    let ebookCount: Int
+    let paperPercentage: Double
+    let ebookPercentage: Double
+
+    enum CodingKeys: String, CodingKey {
+        case year
+        case month
+        case completedCount = "completed_count"
+        case completedAverageScore = "completed_average_score"
+        case purchaseCount = "purchase_count"
+        case purchaseAmount = "purchase_amount"
+        case rentalCount = "rental_count"
+        case unfinishedCount = "unfinished_count"
+        case averageReadingDays = "average_reading_days"
+        case paperCount = "paper_count"
+        case ebookCount = "ebook_count"
+        case paperPercentage = "paper_percentage"
+        case ebookPercentage = "ebook_percentage"
+    }
+}
+
+struct MonthlyReadingReportComparison: Equatable, Decodable {
+    let previousCompletedCount: Int
+    let currentCompletedCount: Int
+    let completedChangePercentage: Double
+
+    let previousUnfinishedCount: Int
+    let currentUnfinishedCount: Int
+    let unfinishedChangePercentage: Double
+
+    let previousPurchaseAmount: Int
+    let currentPurchaseAmount: Int
+    let purchaseAmountChangePercentage: Double
+
+    let previousRentalCount: Int
+    let currentRentalCount: Int
+    let rentalCountChangePercentage: Double
+
+    enum CodingKeys: String, CodingKey {
+        case previousCompletedCount = "previous_completed_count"
+        case currentCompletedCount = "current_completed_count"
+        case completedChangePercentage = "completed_change_percentage"
+
+        case previousUnfinishedCount = "previous_unfinished_count"
+        case currentUnfinishedCount = "current_unfinished_count"
+        case unfinishedChangePercentage = "unfinished_change_percentage"
+
+        case previousPurchaseAmount = "previous_purchase_amount"
+        case currentPurchaseAmount = "current_purchase_amount"
+        case purchaseAmountChangePercentage = "purchase_amount_change_percentage"
+
+        case previousRentalCount = "previous_rental_count"
+        case currentRentalCount = "current_rental_count"
+        case rentalCountChangePercentage = "rental_count_change_percentage"
+    }
+}
+
 struct ReadingRecord: Equatable, Identifiable {
     let id: UUID
     let date: Date
@@ -87,6 +160,16 @@ private extension ReadingRecordsTableRow {
     }
 }
 
+private struct MonthlyReadingReportPayload: Encodable {
+    let pYear: Int
+    let pMonth: Int
+
+    enum CodingKeys: String, CodingKey {
+        case pYear = "p_year"
+        case pMonth = "p_month"
+    }
+}
+
 struct ReadingRecordService {
     var create: (_ date: Date) async throws -> Result<ReadingRecord, AppError>
     var fetch: (_ id: UUID) async throws -> Result<ReadingRecord, AppError>
@@ -96,11 +179,17 @@ struct ReadingRecordService {
     var listRecentDays: (_ days: Int) async throws -> Result<[ReadingRecord], AppError>
     var listRecentDaysByDate: (_ days: Int) async throws -> Result<[Date: ReadingRecord?], AppError>
     var delete: (_ id: UUID) async throws -> Result<Void, AppError>
+    var monthlyReport: (_ year: Int, _ month: Int) async -> Result<MonthlyReadingReport, AppError>
+    var listByMonth: (_ year: Int, _ month: Int) async
+        -> Result<[ReadingRecord], AppError>
+    var listByMonthByDate: (_ year: Int, _ month: Int) async
+        -> Result<[Date: ReadingRecord?], AppError>
 }
 
 extension ReadingRecordService {
     static func live(client: SupabaseClient) -> Self {
         let table = "reading_records"
+        let monthlyReportRpc = "monthly_reading_report"
 
         return Self(
             create: { date in
@@ -291,7 +380,135 @@ extension ReadingRecordService {
                 } catch {
                     return .failure(.storage(code: "UNKNOWN", status: nil, message: error.localizedDescription))
                 }
-            }
+            },
+            monthlyReport: { year, month in
+                do {
+                    let payload = MonthlyReadingReportPayload(
+                        pYear: year,
+                        pMonth: month
+                    )
+
+                    let response: PostgrestResponse<MonthlyReadingReport> = try await client
+                        .rpc(monthlyReportRpc, params: payload)
+                        .execute()
+
+                    return .success(response.value)
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "LOAD_MONTHLY_READING_REPORT_FAILED",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
+                }
+            },
+            listByMonth: { year, month in
+                do {
+                    let calendar = Calendar(identifier: .gregorian)
+
+                    guard let start = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+                          let end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start)
+                    else {
+                        return .failure(
+                            .storage(
+                                code: "INVALID_YEAR_MONTH",
+                                status: nil,
+                                message: "Invalid year/month: \(year)-\(month)"
+                            )
+                        )
+                    }
+
+                    let formatter = DateFormatter()
+                    formatter.calendar = calendar
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.timeZone = .current
+                    formatter.dateFormat = "yyyy-MM-dd"
+
+                    let startStr = formatter.string(from: start)
+                    let endStr = formatter.string(from: end)
+
+                    let response: PostgrestResponse<[ReadingRecordsTableRow]> = try await client
+                        .from(table)
+                        .select()
+                        .gte("date", value: startStr)
+                        .lte("date", value: endStr)
+                        .order("date", ascending: true)
+                        .order("created_at", ascending: false)
+                        .execute()
+
+                    let records = try response.value.map { try $0.toDomain() }
+                    return .success(records)
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "LOAD_LIST_BY_MONTH_FAILED",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
+                }
+            },
+            listByMonthByDate: { year, month in
+                do {
+                    let calendar = Calendar(identifier: .gregorian)
+
+                    guard let monthStart = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+                          let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: monthStart),
+                          let lastDay = calendar.date(byAdding: .day, value: -1, to: nextMonthStart),
+                          let dayCount = calendar.dateComponents([.day], from: monthStart, to: nextMonthStart).day
+                    else {
+                        return .failure(
+                            .client(
+                                code: "INVALID_YEAR_MONTH",
+                                message: "Invalid year/month: \(year)-\(month)"
+                            )
+                        )
+                    }
+
+                    let formatter = DateFormatter()
+                    formatter.calendar = calendar
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.timeZone = .current
+                    formatter.dateFormat = "yyyy-MM-dd"
+
+                    let startStr = formatter.string(from: monthStart)
+                    let endStr = formatter.string(from: lastDay)
+
+                    let response: PostgrestResponse<[ReadingRecordsTableRow]> = try await client
+                        .from(table)
+                        .select()
+                        .gte("date", value: startStr)
+                        .lte("date", value: endStr)
+                        .order("date", ascending: true)
+                        .order("created_at", ascending: false)
+                        .execute()
+
+                    let records = try response.value.map { try $0.toDomain() }
+
+                    var byDate: [Date: ReadingRecord?] = [:]
+                    let startOfMonth = calendar.startOfDay(for: monthStart)
+
+                    for offset in 0 ..< dayCount {
+                        if let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth) {
+                            let existing = records.first(where: { calendar.isDate($0.date, inSameDayAs: date) })
+                            byDate[date] = existing
+                        }
+                    }
+
+                    return .success(byDate)
+                } catch let error as AppError {
+                    return .failure(error)
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "UNKNOWN",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
+                }
+            },
         )
     }
 }

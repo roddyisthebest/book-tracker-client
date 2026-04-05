@@ -186,6 +186,71 @@ struct BookPatch {
     var review: String? = nil
 }
 
+struct BookCalendarSummary: Equatable, Decodable, Hashable {
+    let id: UUID
+    let title: String?
+    let imageUrl: String?
+    let endedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case imageUrl = "image_url"
+        case endedAt = "ended_at"
+    }
+}
+
+private extension Array where Element == BookCalendarSummary {
+    func groupedByEndedDate() -> [Date: [BookCalendarSummary]] {
+        let calendar = Calendar(identifier: .gregorian)
+        var result: [Date: [BookCalendarSummary]] = [:]
+
+        for book in self {
+            guard let endedAt = book.endedAt else { continue }
+            let day = calendar.startOfDay(for: endedAt)
+            result[day, default: []].append(book)
+        }
+
+        return result
+    }
+
+    func groupedByEndedDate(year: Int, month: Int, calendar: Calendar = Calendar(identifier: .gregorian)) -> [Date: [BookCalendarSummary]] {
+        // First group only the days that have data
+        let grouped = groupedByEndedDate()
+
+        // Build a dictionary that includes every day of the given month
+        guard let start = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+              let range = calendar.range(of: .day, in: .month, for: start)
+        else {
+            return grouped
+        }
+
+        let startOfMonth = calendar.startOfDay(for: start)
+        var filled: [Date: [BookCalendarSummary]] = [:]
+        for day in range { // day is 1-based
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) {
+                let key = calendar.startOfDay(for: date)
+                filled[key] = grouped[key] ?? []
+            }
+        }
+        return filled
+    }
+}
+
+private struct BooksCalendarByMonthPayload: Encodable {
+    let pYear: Int
+    let pMonth: Int
+    let pStatus: String?
+    let pType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case pYear = "p_year"
+        case pMonth = "p_month"
+        case pStatus = "p_status"
+        case pType = "p_type"
+    }
+}
+
 private extension BooksUpsertRow {
     init(from patch: BookPatch) {
         self.id = nil
@@ -218,11 +283,19 @@ struct BookService {
     var delete: (_ id: UUID) async throws -> Result<UUID, AppError>
     var isAlreadyRegistered: (_ externalBookId: String) async throws -> Result<Bool, AppError>
     var statusCounts: () async throws -> Result<[BookStatus: Int], AppError>
+    var calendarByMonth: (
+        _ year: Int,
+        _ month: Int,
+        _ status: BookStatus?,
+        _ type: BookType?
+    ) async -> Result<[Date: [BookCalendarSummary]], AppError>
 }
 
 extension BookService {
     static func live(client: SupabaseClient) -> Self {
         let table = "books"
+        let byMonthRpcName = "books_calendar_by_month"
+
         return Self(
             create: { book in
                 let payload = BooksUpsertRow(from: book)
@@ -255,13 +328,17 @@ extension BookService {
                 }
 
                 var transformed: PostgrestTransformBuilder = filter.order("created_at", ascending: false)
-                if let limit = limit, let offset = offset {
+                if let limit, let offset {
+                    // inclusive upper bound → -1 필수
                     transformed = transformed.range(from: offset, to: offset + limit - 1)
-                } else if let limit = limit {
+                } else if let limit {
                     transformed = transformed.limit(limit)
+                } else if let offset {
+                    // offset만 있는 호출을 꼭 지원해야 한다면, 기본 limit을 정해서 range를 주거나
+                    // 이 블록을 아예 제거(=offset만으론 아무 것도 안 함)하는 게 안전합니다.
+                    // 예) 기본 50개
+                    transformed = transformed.range(from: offset, to: offset + 50 - 1)
                 }
-
-                if let offset = offset { transformed = transformed.range(from: offset, to: offset + (limit ?? 0)) }
 
                 let response: PostgrestResponse<[BooksTableRow]> = try await transformed.execute()
                 let books = response.value.map { $0.toDomain() }
@@ -366,6 +443,30 @@ extension BookService {
                     return .success(counts)
                 } catch {
                     return .failure(AppError.storage(code: "UNKNOWN", status: nil, message: error.localizedDescription))
+                }
+            },
+            calendarByMonth: { year, month, status, type in
+                do {
+                    let payload = BooksCalendarByMonthPayload(
+                        pYear: year,
+                        pMonth: month,
+                        pStatus: status.map { Self.mapStatusToDB($0) },
+                        pType: type.map { Self.mapTypeToDB($0) }
+                    )
+
+                    let response: PostgrestResponse<[BookCalendarSummary]> = try await client
+                        .rpc(byMonthRpcName, params: payload)
+                        .execute()
+
+                    return .success(response.value.groupedByEndedDate(year: year, month: month))
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "LOAD_BOOKS_CALENDAR_BY_MONTH_FAILED",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
                 }
             }
         )
