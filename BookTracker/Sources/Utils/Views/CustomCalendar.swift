@@ -33,7 +33,7 @@ public struct CustomCalendar<DayContent: View>: View {
 
     private var days: [Date?] {
         var result: [Date?] = Array(repeating: nil, count: leadingEmptyCount)
-        for day in 1...daysInMonth {
+        for day in 1 ... daysInMonth {
             if let d = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
                 result.append(d)
             }

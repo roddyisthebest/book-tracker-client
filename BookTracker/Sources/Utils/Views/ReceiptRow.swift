@@ -8,9 +8,29 @@
 import Foundation
 import SwiftUI
 
-struct ReceiptRow: Identifiable, View {
-    let id: UUID
+struct ReceiptRow: View {
     let idx: Int
+    let type: ReceiptType
+    let item: ReceiptDetailItem
+    
+    private func formattedPrice(price: Int, currencyCode: String?) -> String {
+        let code = (currencyCode?.uppercased()) ?? "KRW"
+        if code == "KRW" || code == "WON" {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.groupingSeparator = ","
+            formatter.maximumFractionDigits = 0
+            let value = formatter.string(from: NSNumber(value: price)) ?? "\(price)"
+            return "\(value)원"
+        } else {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = code
+            let value = formatter.string(from: NSNumber(value: price)) ?? "\(price) \(code)"
+            return value
+        }
+    }
+    
     var body: some View {
         HStack {
             VStack {
@@ -19,15 +39,23 @@ struct ReceiptRow: Identifiable, View {
                 Spacer()
             }.padding(.top, 2)
             VStack(alignment: .leading, spacing: 7.5) {
-                Text("너 정말 나쁜아이구나").foregroundStyle(.white).fontWeight(.bold).font(.subheadline).lineLimit(2).truncationMode(.tail)
+                Text(item.title ?? "-").foregroundStyle(.white).fontWeight(.bold).font(.subheadline).lineLimit(2).truncationMode(.tail)
                 HStack(spacing: 7) {
-                    Text("강영숙").foregroundStyle(.white.opacity(0.75)).font(.caption)
+                    Text(item.author ?? "-").foregroundStyle(.white.opacity(0.75)).font(.caption)
                     Circle().frame(width: 3).foregroundStyle(.white.opacity(0.75))
-                    Text("찬명교육").foregroundStyle(.white.opacity(0.75)).font(.caption2)
+                    Text(item.publisher ?? "-").foregroundStyle(.white.opacity(0.75)).font(.caption2)
                 }
             }
             Spacer()
+            if type == .purchase, let price = item.price, price > 0 {
+                Text(formattedPrice(price: price, currencyCode: item.currencyCode))
+                    .foregroundStyle(.white)
+                    .font(.subheadline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
         }
         .padding(.vertical, 12)
     }
 }
+

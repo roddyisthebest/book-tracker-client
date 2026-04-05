@@ -5,6 +5,7 @@ struct SelectBookRow: View {
     let author: String
     let publisher: String
     let isbn: String
+    let thumbnail: String?
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -25,6 +26,7 @@ struct SelectBookRow: View {
                             }
                         )
                 }
+
                 VStack(alignment: .leading) {
                     Text(title)
                         .font(.system(size: 18, weight: .bold))
@@ -33,34 +35,43 @@ struct SelectBookRow: View {
                         .foregroundStyle(.white)
 
                     HStack(alignment: .top, spacing: 10) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color(hex: "#2A2A33", default: .gray))
-                            .frame(width: 80, height: 100)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                            )
+                        thumbnailView
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 14, weight: .semibold))
-                                .lineLimit(2)
-                                .truncationMode(.tail)
-                            Text(publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 11, weight: .semibold))
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-
-                            HStack {
-                                Image(systemName: "barcode")
+                            if !author.isEmpty {
+                                Text(author)
+                                    .foregroundStyle(.white.opacity(0.7))
                                     .font(.system(size: 14, weight: .semibold))
-                                Text("ISBN \(isbn)").font(.caption2).lineLimit(1)
+                                    .lineLimit(2)
                                     .truncationMode(.tail)
-                                    .foregroundStyle(.white)
                             }
-                            .padding(6)
-                            .background(Color(hex: "#2A2A33", default: .gray)).cornerRadius(4)
-                            .padding(.top, 2)
+
+                            if !publisher.isEmpty {
+                                Text(publisher)
+                                    .foregroundStyle(.white.opacity(0.6))
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+
+                            if !isbn.isEmpty {
+                                HStack {
+                                    Image(systemName: "barcode")
+                                        .font(.system(size: 14, weight: .semibold))
+
+                                    Text("ISBN \(isbn)")
+                                        .font(.caption2)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                        .foregroundStyle(.white)
+                                }
+                                .padding(6)
+                                .background(Color(hex: "#2A2A33", default: .gray))
+                                .cornerRadius(4)
+                                .padding(.top, 2)
+                            }
                         }
+
                         Spacer()
                     }
                 }
@@ -75,6 +86,46 @@ struct SelectBookRow: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var thumbnailView: some View {
+        if let thumbnail,
+           let url = URL(string: thumbnail)
+        {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .empty:
+                    thumbnailPlaceholder
+
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+
+                case .failure:
+                    thumbnailPlaceholder
+
+                @unknown default:
+                    thumbnailPlaceholder
+                }
+            }
+            .frame(width: 80, height: 100)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        } else {
+            thumbnailPlaceholder
+        }
+    }
+
+    private var thumbnailPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(Color(hex: "#2A2A33", default: .gray))
+            .frame(width: 80, height: 100)
+            .overlay(
+                Image(systemName: "photo")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            )
+    }
 }
 
 #Preview("SelectBookRow Samples") {
@@ -84,6 +135,7 @@ struct SelectBookRow: View {
             author: "홍길동",
             publisher: "예제출판사",
             isbn: "9781234567890",
+            thumbnail: nil,
             isSelected: false,
             onTap: {}
         )
@@ -95,10 +147,10 @@ struct SelectBookRow: View {
             author: "이몽룡",
             publisher: "실무출판",
             isbn: "9780987654321",
+            thumbnail: "https://picsum.photos/80/100",
             isSelected: true,
             onTap: {}
         )
-//        .padding()
         .background(Color(hex: "#17171C"))
         .cornerRadius(10)
     }

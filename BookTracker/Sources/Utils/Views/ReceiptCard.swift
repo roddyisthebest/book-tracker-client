@@ -8,9 +8,17 @@
 import SwiftUI
 
 struct ReceiptCard: View {
-    let receipt: Receipt
+    let receipt: ReceiptSummary
     let onTapped: (() -> Void)?
     let onDelete: (() -> Void)?
+
+    private static let receiptDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy년 M월 d일"
+        return formatter
+    }()
 
     var body: some View {
         let isRental = receipt.type == .rental
@@ -41,15 +49,19 @@ struct ReceiptCard: View {
                 }
 
                 HStack(spacing: 2.5) {
-                    Text(receipt.title)
+                    let firstBookTitle = receipt.firstBookTitle ?? (receipt.type == .rental ? "대출증" : "영수증")
+                    Text(firstBookTitle)
                         .foregroundStyle(.white)
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
-                    Text("외 20건")
-                        .foregroundStyle(.white)
-                        .fontWeight(.bold).layoutPriority(1) //
+                    let restQuantity = max(receipt.totalQuantity - 1, 0)
+                    if restQuantity > 0 {
+                        Text("외 \(restQuantity)건")
+                            .foregroundStyle(.white)
+                            .fontWeight(.bold).layoutPriority(1)
+                    }
 
                     Spacer()
                 }.padding(.vertical, 7).padding(.leading, 5)
@@ -59,26 +71,32 @@ struct ReceiptCard: View {
                         Image(systemName: "building.columns.fill")
                             .font(.system(size: 14)).foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor))
 
-                        Text("우리도서관").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                        Text(receipt.source).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white).lineLimit(1).truncationMode(.tail)
                     }
                     else {
                         Image(systemName: "wonsign")
                             .font(.system(size: 14)).foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
 
-                        Text("12,000원").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                        if let totalPrice = receipt.totalPrice, totalPrice > 0 {
+                            Text("\(totalPrice)원").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white).lineLimit(1).truncationMode(.tail)
+                        }
                     }
 
                     Spacer()
                 }.padding(.leading, 3)
 
                 HStack {
-                    Text("2026년 1월 13일").foregroundStyle(.white.opacity(0.6)).font(.system(size: 14))
+                    if let date = receipt.receiptAt {
+                        Text(Self.receiptDateFormatter.string(from: date))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .font(.system(size: 14))
+                    }
                     Spacer()
                 }.padding(.leading, 5)
 
             }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 10).padding(.vertical, 15).background(Color(hex: "#33353D")).cornerRadius(10)
         }
-//        .buttonStyle(ScalableButtonStyle(pressedScale: 0.95))
+
         .contextMenu {
             Button(role: .destructive) {
                 onDelete?()
@@ -94,4 +112,48 @@ struct ReceiptCard: View {
             }
         }
     }
+}
+
+#Preview("Rental") {
+    let sample = ReceiptSummary(
+        id: UUID(),
+        createdAt: Date(),
+        receiptAt: Date(),
+        source: "서울시립도서관",
+        totalPrice: nil,
+        type: .rental,
+        firstBookTitle: "모비딕",
+        totalQuantity: 3
+    )
+    return ReceiptCard(
+        receipt: sample,
+        onTapped: {},
+        onDelete: {}
+    )
+    .padding()
+    .frame(width: 170)
+    .background(Color(hex: "#101013", default: .black))
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Purchase") {
+    let sample = ReceiptSummary(
+        id: UUID(),
+        createdAt: Date(),
+        receiptAt: Date(),
+        source: "교보문고",
+        totalPrice: 245000000000000,
+        type: .purchase,
+        firstBookTitle: "스위프트 TCA",
+        totalQuantity: 1
+    )
+    return ReceiptCard(
+        receipt: sample,
+        onTapped: {},
+        onDelete: {}
+    )
+    .padding()
+    .frame(width: 170)
+    .background(Color(hex: "#101013", default: .black))
+    .preferredColorScheme(.dark)
 }
