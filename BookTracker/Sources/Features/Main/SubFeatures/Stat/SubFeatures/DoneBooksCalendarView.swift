@@ -1,15 +1,8 @@
-//
-//  ReadingCalendarView.swift
-//  BookTracker
-//
-//  Created by 배성연 on 2/21/26.
-//
-
 import ComposableArchitecture
 import SwiftUI
 
-struct ReadingCalendarView: View {
-    @Bindable var store: StoreOf<ReadingCalendarFeature>
+struct DoneBooksCalendarView: View {
+    @Bindable var store: StoreOf<DoneBooksCalendarFeature>
 
     private var calendar: Calendar { Calendar.current }
     private var years: [Int] { Array(2000...2026) }
@@ -42,7 +35,7 @@ struct ReadingCalendarView: View {
         )
     }
 
-    private var mainContent: some View {
+    var body: some View {
         ScrollView {
             VStack(spacing: 15) {
                 VStack(spacing: 20) {
@@ -73,7 +66,7 @@ struct ReadingCalendarView: View {
                 }
                 .padding()
 
-                if store.isLoading && store.readingRecords == nil {
+                if store.isLoading && store.thumbnailsByDate == nil {
                     VStack(spacing: 8) {
                         ProgressView().tint(.white)
                         Text("불러오는 중…")
@@ -96,19 +89,14 @@ struct ReadingCalendarView: View {
                 } else {
                     let cal = Calendar.current
                     CustomCalendar(monthDate: $store.date, selection: .constant(nil), showsHeader: false) { date in
-                        let day = cal.component(.day, from: date)
                         let key = cal.startOfDay(for: date)
-                        let hasRecord = (store.readingRecords?[key] ?? nil) != nil
-                        VStack(spacing: 4) {
-                            if hasRecord {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                    .font(.system(size: 16, weight: .bold))
-                            } else {
-                                Text("\(day)")
-                                    .foregroundStyle(.white)
-                                    .font(.system(size: 16, weight: .semibold))
-                            }
+                        let items = store.thumbnailsByDate?[key] ?? []
+                        if items.isEmpty {
+                            Text("\(cal.component(.day, from: date))")
+                                .foregroundStyle(.white)
+                                .font(.system(size: 16, weight: .semibold))
+                        } else {
+                            DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -117,35 +105,16 @@ struct ReadingCalendarView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .refreshable {
-            store.send(.loadData)
-        }
+        .refreshable { store.send(.loadData) }
         .background(Color(hex: "#101013", default: .black))
-    }
-
-    var body: some View {
-        mainContent
-            .navigationTitle("완독 독서 캘린더")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button(role: .destructive, action: {}) {
-                            Label("전체 삭제", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-            .task { await store.send(.onAppear).finish() }
+        .navigationTitle("완독 독서 캘린더")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await store.send(.onAppear).finish() }
     }
 }
 
 #Preview {
     NavigationStack {
-        ReadingCalendarView(store: Store(initialState: ReadingCalendarFeature.State(), reducer: {
-            ReadingCalendarFeature()
-        }))
+        DoneBooksCalendarView(store: Store(initialState: DoneBooksCalendarFeature.State(), reducer: { DoneBooksCalendarFeature() }))
     }
 }
