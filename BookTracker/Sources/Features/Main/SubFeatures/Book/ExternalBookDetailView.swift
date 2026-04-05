@@ -139,38 +139,85 @@ struct ExternalBookDetailView: View {
 
                         VStack(spacing: 12) {
                             HStack(spacing: 12) {
-                                Button(action: {
-                                    store.send(.addButtonTapped(.receipt))
-                                }) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "person.text.rectangle.fill")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor))
-                                        Text("대출증에 추가")
-                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                            .fontWeight(.semibold)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color(hex: "#19191E", default: .black))
-                                    .cornerRadius(10)
-                                }
+                                if store.isRegisteredReceiptTypesLoading {
+                                    HStack(spacing: 10) {
+                                        ProgressView()
+                                            .controlSize(.small)
 
-                                Button(action: {
-                                    store.send(.addButtonTapped(.rental))
-                                }) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "receipt.fill")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
-                                        Text("영수증에 추가")
+                                        Text("대출/영수증 정보를 불러오는 중…")
+                                            .font(.system(size: 14, weight: .semibold))
                                             .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                            .fontWeight(.semibold)
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
+                                    .frame(maxWidth: .infinity, minHeight: 56)
+                                    .padding(.horizontal, 16)
                                     .background(Color(hex: "#19191E", default: .black))
-                                    .cornerRadius(10)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                } else if store.isRegisteredReceiptTypesLoadError {
+                                    VStack(spacing: 8) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(.orange)
+
+                                        Text("대출/영수증 정보를 불러오지 못했어요")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(.white)
+
+                                        Text("잠시 후 다시 시도해 주세요.")
+                                            .font(.system(size: 13, weight: .medium))
+                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                    }
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, minHeight: 88)
+                                    .padding(.horizontal, 16)
+                                    .background(Color(hex: "#19191E", default: .black))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                } else if store.isRegisteredReceiptTypesLoadSuccess {
+                                    Button(action: {
+                                        store.send(.addButtonTapped(.rental))
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            if store.isPurchasingSaving {
+                                                ProgressView()
+                                                    .controlSize(.small)
+                                            } else {
+                                                Image(systemName: "person.text.rectangle.fill")
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundStyle(
+                                                        Color(hex: "#7D7DFF", default: .accentColor))
+
+                                                Text("대출증에 추가")
+                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .fontWeight(.semibold)
+                                            }
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color(hex: "#19191E", default: .black))
+                                        .cornerRadius(10)
+                                    }.disabled(store.isPurchasingSaving)
+
+                                    Button(action: {
+                                        store.send(.addButtonTapped(.purchase))
+                                    }) {
+                                        if store.isRentalSaving {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        } else {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "receipt.fill")
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
+                                                Text("영수증에 추가")
+                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color(hex: "#19191E", default: .black))
+                                            .cornerRadius(10)
+                                        }
+
+                                    }.disabled(store.isRentalSaving)
                                 }
                             }
                             Button(action: {
@@ -192,8 +239,8 @@ struct ExternalBookDetailView: View {
                                             return "책장에 추가하기"
                                         }
                                     }())
-                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                    .fontWeight(.semibold)
+                                        .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                        .fontWeight(.semibold)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding()
@@ -255,9 +302,15 @@ struct ExternalBookDetailView: View {
                 BookFormView(store: formBookStore)
             }
         }
+        .sheet(store: store.scope(state: \.$destination.addPrice, action: \.destination.addPrice)) {
+            addPriceFeature in
+            NavigationStack {
+                AddPriceView(store: addPriceFeature)
+            }
+        }
         .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
         .task {
-            await store.send(.load).finish()
+            await store.send(.onAppear).finish()
         }
     }
 }
@@ -269,4 +322,3 @@ struct ExternalBookDetailView: View {
         }))
     }
 }
-
