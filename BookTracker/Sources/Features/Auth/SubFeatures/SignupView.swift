@@ -22,10 +22,10 @@ struct SignupView: View {
                 }
                 TextField("",
                           text: $store.email,
-                          prompt: Text("이메일을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
-                    .foregroundStyle(.white)
+                          prompt: Text("이메일을 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                    .foregroundStyle(Color.appPrimaryText)
                     .padding()
-                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .background(Color.appSurface)
                     .cornerRadius(15)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
@@ -49,40 +49,40 @@ struct SignupView: View {
                 if isPasswordVisible {
                     TextField("",
                               text: $store.password,
-                              prompt: Text("비밀번호를 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                              prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
                 } else {
                     SecureField("",
                                 text: $store.password,
-                                prompt: Text("비밀번호를 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                                prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
@@ -104,40 +104,40 @@ struct SignupView: View {
                 if isPasswordConfirmationVisible {
                     TextField("",
                               text: $store.passwordConfirmation,
-                              prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                              prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordConfirmationVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordConfirmationVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
                 } else {
                     SecureField("",
                                 text: $store.passwordConfirmation,
-                                prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                                prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordConfirmationVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordConfirmationVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
@@ -157,7 +157,7 @@ struct SignupView: View {
                         .opacity(store.isLoading ? 0 : 1)
                     if store.isLoading {
                         ProgressView()
-                            .tint(.white)
+                            .tint(Color.appAccent)
                     }
                 }
             }
@@ -166,7 +166,7 @@ struct SignupView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
         .navigationTitle("이메일 회원가입")
         .navigationBarTitleDisplayMode(.inline)
         .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))

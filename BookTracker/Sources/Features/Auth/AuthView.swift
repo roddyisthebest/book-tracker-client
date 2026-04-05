@@ -11,7 +11,7 @@ import SwiftUI
 struct PressTintButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? Color.blue.opacity(0.85) : Color.blue)
+            .background(configuration.isPressed ? Color.appAccent.opacity(0.85) : Color.appAccent)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
@@ -40,7 +40,7 @@ struct AuthView: View {
             VStack {
                 // 위 영역
                 VStack {
-                    Circle().foregroundStyle(.blue).frame(width: 200)
+                    Circle().foregroundStyle(Color.appAccent).frame(width: 200)
                 }
                 .frame(height: proxy.size.height * 0.7)
                 .frame(maxWidth: .infinity)
@@ -60,7 +60,7 @@ struct AuthView: View {
                         Group {
                             if store.isGoogleLoginLoading {
                                 HStack(spacing: 8) {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(Color.appAccent)
                                     Text("구글 로그인 중…")
                                         .fontWeight(.bold)
                                         .font(.headline)
@@ -82,8 +82,8 @@ struct AuthView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .disabled(store.isGoogleLoginLoading)
-                    .foregroundStyle(.white)
-                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .foregroundStyle(Color.appPrimaryText)
+                    .background(Color.appSurface)
                     .cornerRadius(10)
 
                     Button(action: {
@@ -92,7 +92,7 @@ struct AuthView: View {
                         Group {
                             if store.isAppleLoginLoading {
                                 HStack(spacing: 8) {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(Color.appAccent)
                                     Text("애플 로그인 중…")
                                         .fontWeight(.bold)
                                         .font(.headline)
@@ -107,13 +107,13 @@ struct AuthView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .disabled(store.isAppleLoginLoading)
-                    .foregroundStyle(.white)
-                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .foregroundStyle(Color.appPrimaryText)
+                    .background(Color.appSurface)
                     .cornerRadius(10)
 
                 }.frame(height: proxy.size.height * 0.3).padding(.horizontal)
             }
-            .background(Color(hex: "#101013", default: .black))
+            .background(Color.appBackground)
         }
     }
 

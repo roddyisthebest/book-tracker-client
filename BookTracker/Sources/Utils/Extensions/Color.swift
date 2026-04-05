@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension Color {
     // Initialize a Color from common hex string formats:
@@ -145,3 +146,89 @@ extension Color {
      }
  }
  */
+
+// MARK: - App Theme Dynamic Colors (Light/Dark aware)
+
+extension Color {
+    static var appBackground: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.06, green: 0.06, blue: 0.08, alpha: 1.0)
+                : UIColor(red: 0.97, green: 0.97, blue: 0.99, alpha: 1.0)
+        })
+    }
+
+    static var appSurface: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.16, green: 0.16, blue: 0.20, alpha: 1.0)
+                : UIColor(red: 0.92, green: 0.92, blue: 0.95, alpha: 1.0)
+        })
+    }
+
+    static var appPrimaryText: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark ? UIColor(white: 0.92, alpha: 1.0) : UIColor(white: 0.10, alpha: 1.0)
+        })
+    }
+
+    static var appSecondaryText: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark ? UIColor(white: 0.70, alpha: 1.0) : UIColor(white: 0.40, alpha: 1.0)
+        })
+    }
+
+    static var appAccent: Color {
+        Color(UIColor { _ in
+            UIColor(red: 0.00, green: 0.55, blue: 1.00, alpha: 1.0)
+        })
+    }
+
+    static var appSeparator: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark ? UIColor(white: 0.28, alpha: 1.0) : UIColor(white: 0.80, alpha: 1.0)
+        })
+    }
+}
+
+// MARK: - App Theme: Badge Backgrounds
+extension Color {
+    /// Background for rental badge icons (dark: #2F2F49, light: soft indigo tint)
+    static var appRentalBadgeBackground: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.184, green: 0.184, blue: 0.286, alpha: 1.0) // #2F2F49
+                : UIColor(red: 0.86, green: 0.90, blue: 0.96, alpha: 1.0)     // slightly deeper indigo-ish
+        })
+    }
+
+    /// Background for purchase badge icons (dark: #343D39, light: soft green tint)
+    static var appPurchaseBadgeBackground: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.204, green: 0.239, blue: 0.224, alpha: 1.0) // #343D39
+                : UIColor(red: 0.87, green: 0.93, blue: 0.90, alpha: 1.0)     // slightly deeper green-ish
+        })
+    }
+}
+
+// MARK: - App Theme: Deep Surface
+extension Color {
+    /// A deeper surface background than `appSurface`.
+    /// Dark mode: #17171C, Light mode: a slightly darker light surface.
+    static var appSurfaceDeep: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.090, green: 0.090, blue: 0.110, alpha: 1.0) // #17171C
+                : UIColor(red: 0.94, green: 0.94, blue: 0.96, alpha: 1.0)
+        })
+    }
+}
