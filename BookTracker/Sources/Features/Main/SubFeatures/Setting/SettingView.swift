@@ -16,17 +16,107 @@ struct SettingView: View {
             Button(action: {
                 store.send(.navigateButtonTapped(.myInfo))
             }) {
-                HStack {
-                    Circle().fill(Color(hex: "#33353D", default: .gray)).frame(width: 60, height: 60).overlay {
-                        Image(systemName: "person.fill").foregroundStyle(.gray).font(.system(size: 30))
+                if store.isFetching {
+                    HStack {
+                        Circle()
+                            .fill(Color(hex: "#33353D", default: .gray))
+                            .frame(width: 60, height: 60)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(hex: "#33353D", default: .gray))
+                                .frame(width: 120, height: 20)
+
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(hex: "#33353D", default: .gray))
+                                .frame(width: 80, height: 16)
+                        }
+
+                        Spacer()
                     }
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("배성연").font(.title2).fontWeight(.bold).lineLimit(1).foregroundStyle(.white)
-                        Text("내 정보 관리").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color(hex: "#7E7E87", default: .gray)).lineLimit(1)
+                    .padding(.horizontal)
+                    .redacted(reason: .placeholder)
+
+                } else if store.isError {
+                    VStack(spacing: 10) {
+                        Text("프로필을 불러오지 못했어요")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white)
+
+                        Button {
+                            store.send(.onRefresh)
+                        } label: {
+                            Text("다시 시도")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(hex: "#33353D", default: .gray))
+                                )
+                        }
                     }
-                    Spacer()
-                    Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color(hex: "#62626D", default: .gray)).font(.system(size: 16))
-                }.padding(.horizontal)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
+
+                } else if let profile = store.profile {
+                    HStack {
+                        Circle()
+                            .fill(Color(hex: "#33353D", default: .gray))
+                            .frame(width: 60, height: 60)
+                            .overlay {
+                                Image(systemName: "person.fill")
+                                    .foregroundStyle(.gray)
+                                    .font(.system(size: 30))
+                            }
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(profile.name ?? "unknown")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .lineLimit(1)
+                                .foregroundStyle(.white)
+
+                            Text("내 정보 관리")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Color(hex: "#7E7E87", default: .gray))
+                                .lineLimit(1)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 16))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color(hex: "#62626D", default: .gray))
+                    }
+                    .padding(.horizontal)
+
+                } else {
+                    VStack(spacing: 10) {
+                        Text("프로필 정보가 없어요")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white)
+
+                        Button {
+                            store.send(.onRefresh)
+                        } label: {
+                            Text("새로고침")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(hex: "#33353D", default: .gray))
+                                )
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
+                }
+
             }.padding(.bottom, 10)
 
             VStack(spacing: 15) {
@@ -245,6 +335,7 @@ struct SettingView: View {
                 }
             }
         }
+        .onAppear { store.send(.onAppear) }
         .alert($store.scope(state: \.alert, action: \.alert))
     }
 }

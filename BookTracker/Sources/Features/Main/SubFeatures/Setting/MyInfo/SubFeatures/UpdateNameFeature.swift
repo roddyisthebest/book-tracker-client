@@ -10,11 +10,17 @@ import Foundation
 
 @Reducer
 struct UpdateNameFeature {
+    @Dependency(\.myInfoService) var myInfoService
+
     @ObservableState
     struct State: Equatable {
+        var isLoading: Bool = false
+
         var name: String
         private var initialName: String
         var isSubmittable: Bool { name.trimmingCharacters(in: .whitespacesAndNewlines) != initialName && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+        @Presents var alert: AlertState<UpdateNameFeature.Action.Alert>?
 
         init(name: String = "") {
             self.name = name
@@ -26,10 +32,15 @@ struct UpdateNameFeature {
         case updateButtonTapped
         case binding(BindingAction<State>)
 
+        case updateResponse(Result<MyProfile, AppError>)
+
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case setName(name: String)
+            case updateProfile(profile: MyProfile)
         }
+
+        case alert(PresentationAction<Alert>)
+        enum Alert: Equatable {}
     }
 
     var body: some Reducer<State, Action> {
@@ -38,12 +49,37 @@ struct UpdateNameFeature {
             state, action in
             switch action {
             case .updateButtonTapped:
-                return .send(.delegate(.setName(name: state.name.trimmingCharacters(in: .whitespacesAndNewlines))))
+                state.isLoading = true
+                let name = state.name
+                return .run {
+                    send in
+                    let result = await myInfoService.updateName(name)
+                    await send(.updateResponse(result))
+                }
+            case .updateResponse(.success(let profile)):
+                state.isLoading = false
+                return .send(.delegate(.updateProfile(profile: profile)))
+            case .updateResponse(.failure(let error)):
+                print(error, "error")
+                state.isLoading = false
+                state.alert = .showUpdateErrorAlert()
+                return .none
             case .delegate:
                 return .none
             case .binding:
                 return .none
+            case .alert:
+                return .none
             }
+        }
+        .ifLet(\.$alert, action: \.alert)
+    }
+}
+
+extension AlertState where Action == UpdateNameFeature.Action.Alert {
+    static func showUpdateErrorAlert() -> Self {
+        Self {
+            TextState("Failed to update name. Please try again.")
         }
     }
 }

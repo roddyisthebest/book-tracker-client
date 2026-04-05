@@ -15,12 +15,19 @@ enum LoginMethod: Equatable {
 
 @Reducer
 struct MyInfoFeature {
+    @Dependency(\.myInfoService) var myInfoService
+
     @ObservableState
     struct State: Equatable {
-        var name: String = "배성연"
+        var profile: MyProfile?
+
         var email: String?
-        var imageUrl: String?
         var loginMethod: LoginMethod?
+
+        var myAuthInfo: MyAuthInfo?
+
+        var isFetching: Bool = false
+        var isError: Bool = false
 
         @Presents var destination: Destination.State?
     }
@@ -29,6 +36,11 @@ struct MyInfoFeature {
         case nameEditButtonTapped
         case profileImageViewTapped
 
+        case onAppear
+        case onRefresh
+        case loadAuthInfo
+        case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
+
         case destination(PresentationAction<Destination.Action>)
     }
 
@@ -36,14 +48,34 @@ struct MyInfoFeature {
         Reduce<State, Action> {
             state, action in
             switch action {
+            case .onAppear:
+                return .send(.loadAuthInfo)
+            case .onRefresh:
+                return .send(.onAppear)
+            case .loadAuthInfo:
+                state.isFetching = true
+                state.isError = false
+                return .run { send in
+                    let result = await myInfoService.loadAuthInfo()
+                    await send(.loadAuthInfoResponse(result))
+                }
+            case .loadAuthInfoResponse(.success(let myAuthInfo)):
+                state.isFetching = false
+                state.myAuthInfo = myAuthInfo
+                return .none
+            case .loadAuthInfoResponse(.failure):
+                state.isFetching = false
+                state.isError = true
+                state.myAuthInfo = nil
+                return .none
             case .nameEditButtonTapped:
-                state.destination = .updateName(UpdateNameFeature.State(name: state.name))
+                state.destination = .updateName(UpdateNameFeature.State(name: state.profile?.name ?? ""))
                 return .none
             case .profileImageViewTapped:
                 return .none
-            case .destination(.presented(.updateName(.delegate(.setName(let updated))))):
+            case .destination(.presented(.updateName(.delegate(.updateProfile(let profile))))):
                 state.destination = nil
-                state.name = updated
+                state.profile = profile
                 return .none
             case .destination:
                 return .none

@@ -67,14 +67,27 @@ struct UpdateNameView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("저장하기") {
+                    Button {
                         store.send(.updateButtonTapped)
+                    } label: {
+                        ZStack {
+                            Text("저장하기")
+                                .opacity(store.isLoading ? 0 : 1)
+
+                            if store.isLoading {
+                                ProgressView()
+                                    .controlSize(.small)
+                                    .tint(.white)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
-                    .disabled(!store.isSubmittable)
+                    .disabled(!store.isSubmittable || store.isLoading)
                 }
             }
             .scrollContentBackground(.hidden) // 추가
             .background(Color(hex: "#2C2C35", default: .black))
+            .alert($store.scope(state: \.alert, action: \.alert))
         }
     }
 }
