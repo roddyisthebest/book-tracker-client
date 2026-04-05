@@ -9,6 +9,7 @@ import Supabase
 
 enum AppError: Error, Equatable {
     case auth(code: String?, status: Int?, message: String)
+    case client(code: String, message: String)
     case storage(code: String?, status: Int?, message: String)
     case function(status: Int?, message: String)
     case network(message: String)

@@ -26,6 +26,10 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "SUPABASE_URL": "$(SUPABASE_URL)",
+                    "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
+                    "ENV": "$(ENV)",
+                    "GOOGLE_BOOKS_API_KEY": "$(GOOGLE_BOOKS_API_KEY)",
                 ]
             ),
             sources: ["BookTracker/Sources/**"],

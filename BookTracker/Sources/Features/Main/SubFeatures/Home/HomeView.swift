@@ -50,7 +50,7 @@ struct HomeView: View {
                                 Text("에러가 발생했어요. 다시 시도해 보세요.")
                                     .foregroundStyle(.red)
                                 Button("다시 시도하기") {
-                                    store.send(.loadRecentWeekRequested)
+                                    store.send(.loadRecentWeek)
                                 }
                             }
                         case (false, false):
@@ -135,42 +135,57 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         VStack(alignment: .leading, spacing: 15) {
-                            Button(action: {
-                                store.send(.receiptIssueButtonTapped(type: .rental))
-                            }) {
-                                HStack {
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(Color(hex: "#2F2F49", default: .black))
-                                        .frame(width: 40, height: 40)
-                                        .overlay(Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor)))
+                            if store.isBookCountFetching {
+                                ProgressView()
+                            } else {
+                                Button(action: {
+                                    store.send(.receiptIssueButtonTapped(type: .rental))
+                                }) {
+                                    HStack {
+                                        RoundedRectangle(cornerRadius: 15)
+                                            .fill(Color(hex: "#2F2F49", default: .black))
+                                            .frame(width: 40, height: 40)
+                                            .overlay(Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor)))
 
-                                    Text("대출증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color(hex: "#C3C3C6", default: .gray))
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .fill(.red)
-                                        .frame(width: 20, height: 20)
-                                        .overlay(Text("15").font(.caption).fontWeight(.semibold).foregroundStyle(.white)
-                                        )
-                                    Spacer()
-                                    Image(systemName: "chevron.forward").foregroundStyle(.gray).fontWeight(.semibold)
+                                        Text("대출증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color(hex: "#C3C3C6", default: .gray))
+
+                                        if store.rentalBookCount > 0 {
+                                            RoundedRectangle(cornerRadius: 5)
+                                                .fill(.red)
+                                                .frame(width: 20, height: 20)
+                                                .overlay(Text("\(store.rentalBookCount)").font(.caption).fontWeight(.semibold).foregroundStyle(.white)
+                                                )
+                                        }
+
+                                        Spacer()
+                                        Image(systemName: "chevron.forward").foregroundStyle(.gray).fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            }
 
-                            Button(action: {
-                                store.send(.receiptIssueButtonTapped(type: .purchase))
-                            }) {
-                                HStack {
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(Color(hex: "#343D39", default: .black))
-                                        .frame(width: 40, height: 40)
-                                        .overlay(Image(systemName: "receipt.fill").foregroundStyle(Color(hex: "#67E9AF", default: .accentColor)))
+                                Button(action: {
+                                    store.send(.receiptIssueButtonTapped(type: .purchase))
+                                }) {
+                                    HStack {
+                                        RoundedRectangle(cornerRadius: 15)
+                                            .fill(Color(hex: "#343D39", default: .black))
+                                            .frame(width: 40, height: 40)
+                                            .overlay(Image(systemName: "receipt.fill").foregroundStyle(Color(hex: "#67E9AF", default: .accentColor)))
 
-                                    Text("영수증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color(hex: "#C3C3C6", default: .gray))
+                                        Text("영수증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color(hex: "#C3C3C6", default: .gray))
 
-                                    Spacer()
-                                    Image(systemName: "chevron.forward").foregroundStyle(.gray).fontWeight(.semibold)
+                                        if store.purchaseBookCount > 0 {
+                                            RoundedRectangle(cornerRadius: 5)
+                                                .fill(.red)
+                                                .frame(width: 20, height: 20)
+                                                .overlay(Text("\(store.purchaseBookCount)").font(.caption).fontWeight(.semibold).foregroundStyle(.white)
+                                                )
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.forward").foregroundStyle(.gray).fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
@@ -187,7 +202,7 @@ struct HomeView: View {
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
             .task {
-                store.send(.loadRecentWeekRequested)
+                store.send(.onAppear)
             }
         } destination: { destinationStore in
             destinationView(for: destinationStore)

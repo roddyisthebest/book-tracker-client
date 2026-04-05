@@ -1,30 +1,23 @@
-//
-//  ReadingReportFeature.swift
-//  BookTracker
-//
-//  Created by 배성연 on 2/21/26.
-//
 import ComposableArchitecture
 import Foundation
 
 @Reducer
-struct ReadingReportFeature {
-    @Dependency(\.readingRecordService) var readingRecordService
+struct DoneBooksCalendarFeature {
+    @Dependency(\.bookService) var bookService
 
     @ObservableState
     struct State: Equatable {
         var date: Date = .init()
-        var monthlyReadingReport: MonthlyReadingReport?
-
         var isLoading: Bool = false
         var isError: Bool = false
+        var thumbnailsByDate: [Date: [BookCalendarSummary]]?
     }
 
     enum Action: Equatable, BindableAction {
         case binding(BindingAction<State>)
         case onAppear
         case loadData
-        case loadDataResponse(Result<MonthlyReadingReport, AppError>)
+        case loadDataResponse(Result<[Date: [BookCalendarSummary]], AppError>)
     }
 
     var body: some Reducer<State, Action> {
@@ -40,19 +33,20 @@ struct ReadingReportFeature {
             case .loadData:
                 state.isLoading = true
                 state.isError = false
-                let components = Calendar.current.dateComponents([.year, .month], from: state.date)
-                let year = components.year ?? Calendar.current.component(.year, from: Date())
-                let month = components.month ?? Calendar.current.component(.month, from: Date())
-                return .run {
-                    send in
-                    let result = await readingRecordService.monthlyReport(year, month)
+                state.thumbnailsByDate = nil
+                let calendar = Calendar(identifier: .gregorian)
+                let comps = calendar.dateComponents([.year, .month], from: state.date)
+                let year = comps.year ?? calendar.component(.year, from: Date())
+                let month = comps.month ?? calendar.component(.month, from: Date())
+                return .run { send in
+                    let result = await bookService.calendarByMonth(year, month, .done, nil)
                     await send(.loadDataResponse(result))
                 }
             case .loadDataResponse(let result):
                 state.isLoading = false
                 switch result {
-                case .success(let data):
-                    state.monthlyReadingReport = data
+                case .success(let dict):
+                    state.thumbnailsByDate = dict
                 case .failure:
                     state.isError = true
                 }

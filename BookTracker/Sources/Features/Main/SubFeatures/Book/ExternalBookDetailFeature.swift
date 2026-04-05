@@ -12,6 +12,7 @@ import Foundation
 struct ExternalBookDetailFeature {
     @Dependency(\.externalBookService) var bookService
     @Dependency(\.bookService) var myBookService
+    @Dependency(\.localReceiptService) var localReceiptService
 
     @ObservableState
     struct State: Equatable {
@@ -25,17 +26,33 @@ struct ExternalBookDetailFeature {
         var isExtended: Bool = false
         var isExtendable: Bool = false
 
+        var registeredReceiptTypes: [ReceiptType] = []
+
+        var isRegisteredReceiptTypesLoading: Bool = false
+        var isRegisteredReceiptTypesLoadError: Bool = false
+        var isRegisteredReceiptTypesLoadSuccess: Bool = false
+
+        var isPurchasingSaving: Bool = false
+        var isRentalSaving: Bool = false
+
         @Presents var destination: Destination.State?
     }
 
     enum Action: Equatable {
         enum AddType: Equatable {
-            case receipt
+            case purchase
             case rental
             case mybooks(externalId: String)
         }
 
-        case load
+        case onAppear
+
+        case loadReceiptTypes
+        case loadReceiptTypesResponse(Result<[ReceiptType], LocalReceiptError>)
+
+        case saveReceiptResponse(Result<ReceiptType, LocalReceiptError>)
+
+        case loadDetail
         case detailResponse(Result<ExternalBook, ExternalBookService.ServiceError>)
         case alreadyRegisteredResponse(Result<Bool, AppError>)
         case addButtonTapped(AddType)
@@ -45,12 +62,12 @@ struct ExternalBookDetailFeature {
         enum Alert: Equatable {
             case confirmReceipt
             case confirmRental
+            case addPrice
         }
 
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case addBookToReceipt(book: ExternalBook)
-            case addBookToRental(book: ExternalBook)
+            case addBookToReceipt(receiptBook: ReceiptBook)
         }
     }
 
@@ -59,7 +76,33 @@ struct ExternalBookDetailFeature {
     var body: some Reducer<State, Action> {
         Reduce<State, Action> { state, action in
             switch action {
-            case .load:
+            case .onAppear:
+                return .merge(
+                    .send(.loadDetail),
+                    .send(.loadReceiptTypes)
+                )
+            case .loadReceiptTypes:
+                state.isRegisteredReceiptTypesLoading = true
+                state.isRegisteredReceiptTypesLoadError = false
+                state.isRegisteredReceiptTypesLoadSuccess = false
+                let bookId = state.id
+                return .run {
+                    send in
+                    let result = await localReceiptService.registeredTypes(bookId)
+                    await send(.loadReceiptTypesResponse(result))
+                }
+            case .loadReceiptTypesResponse(.success(let receiptTypes)):
+                state.isRegisteredReceiptTypesLoading = false
+                state.isRegisteredReceiptTypesLoadSuccess = true
+                state.registeredReceiptTypes = receiptTypes
+                return .none
+            case .loadReceiptTypesResponse(.failure):
+                state.isRegisteredReceiptTypesLoading = false
+                state.isRegisteredReceiptTypesLoadSuccess = false
+                state.registeredReceiptTypes = []
+                state.isRegisteredReceiptTypesLoadError = true
+                return .none
+            case .loadDetail:
                 state.isLoading = true
                 state.errorMessage = nil
                 return .run { [id = state.id] send in
@@ -104,23 +147,69 @@ struct ExternalBookDetailFeature {
                     // Registration status unknown; do nothing or trigger re-check if desired
                     return .none
                 }
-            case .addButtonTapped(.receipt):
-                state.destination = .alert(.receiptConfirmation())
-                guard let book = state.book else {
-                    return .none
-                }
-                return .send(.delegate(.addBookToReceipt(book: book)))
-            case .addButtonTapped(.rental):
-                state.destination = .alert(.rentalConfirmation())
+            case .addButtonTapped(let receiptType):
                 guard let book = state.book else {
                     return .none
                 }
 
-                return .send(.delegate(.addBookToRental(book: book)))
+                let type: ReceiptType = receiptType == .purchase ? .purchase : .rental
+                let isRegistered = state.registeredReceiptTypes.contains(where: { $0 == type })
+
+                if isRegistered {
+                    state.destination = .alert(.alreadyRegisteredReceipt(type: type))
+                    return .none
+                }
+
+                if type == .purchase {
+                    if state.book?.saleInfo?.saleability != "FOR_SALE" {
+                        state.destination = .alert(.notRegisteredPrice())
+                        return .none
+                    }
+
+                    state.isPurchasingSaving = true
+
+                } else {
+                    state.isRentalSaving = true
+                }
+
+                return .run {
+                    send in
+                    let result = await localReceiptService.save(book, type)
+                    await send(.saveReceiptResponse(result))
+                }
+            case .saveReceiptResponse(let result):
+                state.isRentalSaving = false
+                state.isPurchasingSaving = false
+
+                switch result {
+                case .success(let receiptType):
+                    state.registeredReceiptTypes.append(receiptType)
+                    state.destination = .alert(.saveSuccessed(type: receiptType))
+
+                    guard let book = state.book else {
+                        return .none
+                    }
+
+                    let receiptBook = book.toReceiptBook(type: receiptType)
+                    return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+
+                case .failure:
+                    state.destination = .alert(.saveFailed())
+                    return .none
+                }
             case .extendButtonTapped:
                 state.isExtended.toggle()
                 return .none
-            case .destination(.presented(.alert(.confirmReceipt))):
+            case .destination(.presented(.addPrice(.delegate(.addBookToReceipt(let receiptBook))))):
+                state.destination = nil
+                state.registeredReceiptTypes.append(.purchase)
+                return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+            case .destination(.presented(.alert(.addPrice))):
+                guard let book = state.book else {
+                    return .none
+                }
+
+                state.destination = .addPrice(AddPriceFeature.State(externalBook: book))
                 return .none
             case .destination:
                 return .none
@@ -136,6 +225,7 @@ extension ExternalBookDetailFeature {
     @Reducer(state: .equatable, action: .equatable)
     enum Destination {
         case formBook(BookFormFeature)
+        case addPrice(AddPriceFeature)
         case alert(AlertState<ExternalBookDetailFeature.Action.Alert>)
     }
 }
@@ -153,9 +243,40 @@ extension AlertState where Action == ExternalBookDetailFeature.Action.Alert {
         } actions: {}
     }
 
+    static func saveSuccessed(type: ReceiptType) -> Self {
+        Self {
+            TextState(type == .rental ? "대출증 목록에 추가되었습니다." : "영수증 목록에 추가되었습니다.")
+        }
+    }
+
+    static func saveFailed() -> Self {
+        Self {
+            TextState("추가에 실패하였습니다. 다시 시도해 주세요.")
+        }
+    }
+
     static func alreadyRegistered() -> Self {
         Self {
-            TextState("이미 등록된 책입니다.")
+            TextState("이미 책장에 등록된 책입니다.")
         } actions: {}
+    }
+
+    static func alreadyRegisteredReceipt(type: ReceiptType) -> Self {
+        Self {
+            TextState(type == .rental ? "대출증 대기 목록에 등록된 책입니다." : "영수증 대기 목록에 등록된 책입니다.")
+        }
+    }
+
+    static func notRegisteredPrice() -> Self {
+        Self {
+            TextState("가격이 설정되지 않았습니다. 가격을 설정하시고 영수증에 추가하시겠습니까?")
+        } actions: {
+            ButtonState(role: .cancel, action: .addPrice) {
+                TextState("확인")
+            }
+            ButtonState(role: .destructive) {
+                TextState("취소")
+            }
+        }
     }
 }

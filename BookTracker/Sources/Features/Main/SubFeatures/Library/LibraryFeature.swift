@@ -11,14 +11,14 @@ import Foundation
 @Reducer
 struct LibraryFeature {
     @Dependency(\.bookService) var bookService
+    @Dependency(\.collectionService) var collectionService
+    @Dependency(\.receiptService) var receiptService
 
     @ObservableState
     struct State: Equatable {
-        var collections: [Collection] = [
-            Collection(id: UUID(1), isDefault: false, title: "as", description: "fasds"),
-            Collection(id: UUID(2), isDefault: false, title: "as", description: "fasds"),
-            Collection(id: UUID(3), isDefault: false, title: "as", description: "fasds")
-        ]
+        var collections: Result<[UserCollectionSummary], AppError> = .success([])
+        var isLoadingCollections: Bool = false
+
         var receipts: [Receipt] = [
             Receipt(id: UUID(1), type: .purchase, title: "alsdkkks"),
             Receipt(id: UUID(2), type: .rental, title: "2asds")
@@ -33,12 +33,17 @@ struct LibraryFeature {
 
         var isLoadingStatusCounts: Bool = false
 
+        var recentReceipts: Result<[ReceiptSummary], AppError> = .success([])
+        var isLoadingRecentReceipts: Bool = false
+
         var path = StackState<Path.State>()
 
         @Presents var destination: Destination.State?
     }
 
     enum Action: Equatable {
+        case onAppear
+
         case sectionTapped(Section)
         case path(StackAction<Path.State, Path.Action>)
 
@@ -47,6 +52,12 @@ struct LibraryFeature {
 
         case loadStatusCounts
         case statusCountsResponse(Result<[BookStatus: Int], AppError>)
+
+        case loadCollections
+        case collectionsResponse(Result<[UserCollectionSummary], AppError>)
+
+        case loadRecentReceipts
+        case recentReceiptsResponse(Result<[ReceiptSummary], AppError>)
 
         case destination(PresentationAction<Destination.Action>)
 
@@ -57,17 +68,38 @@ struct LibraryFeature {
         }
     }
 
-    private enum CancelID { case loadStatusCounts }
+    private enum CancelID {
+        case loadStatusCounts
+        case loadCollections
+        case loadRecentReceipts
+    }
 
     var body: some Reducer<State, Action> {
         Reduce<State, Action> {
             state, action in
             switch action {
+            case .onAppear:
+                return .merge(
+                    .send(.loadStatusCounts),
+                    .send(.loadCollections),
+                    .send(.loadRecentReceipts)
+                )
             case .collectionCardTapped(let id):
-                state.destination = .collectionDetail(CollectionDetailFeature.State())
+//                state.destination = .collectionDetail(CollectionDetailFeature.State())
                 return .none
             case .receiptCardTapped(let id):
                 state.destination = .receiptDetail(ReceiptDetailFeature.State(id: id))
+                return .none
+            case .loadCollections:
+                state.isLoadingCollections = true
+                return .run { send in
+                    let result = await collectionService.listSummaries(20, 0)
+                    await send(.collectionsResponse(result))
+                }
+                .cancellable(id: CancelID.loadCollections, cancelInFlight: true)
+            case .collectionsResponse(let result):
+                state.isLoadingCollections = false
+                state.collections = result
                 return .none
             case .loadStatusCounts:
                 state.isLoadingStatusCounts = true
@@ -84,6 +116,17 @@ struct LibraryFeature {
                 state.isLoadingStatusCounts = false
                 state.statusCounts = .failure(error)
                 return .none
+            case .loadRecentReceipts:
+                state.isLoadingRecentReceipts = true
+                return .run { send in
+                    let result = await receiptService.loadReceipts(nil, 20, 0)
+                    await send(.recentReceiptsResponse(result))
+                }
+                .cancellable(id: CancelID.loadRecentReceipts, cancelInFlight: true)
+            case .recentReceiptsResponse(let result):
+                state.isLoadingRecentReceipts = false
+                state.recentReceipts = result
+                return .none
             case .sectionTapped(.collections):
                 state.path.append(.collections(CollectionListFeature.State()))
                 return .none
@@ -93,6 +136,9 @@ struct LibraryFeature {
             case .sectionTapped(.receipts):
                 state.path.append(.receipts(ReceiptListFeature.State()))
                 return .none
+            case .destination(.presented(.receiptDetail(.delegate(.deleteReceipt)))):
+                state.destination = nil
+                return .send(.loadRecentReceipts)
             case .destination:
                 return .none
             case .path:

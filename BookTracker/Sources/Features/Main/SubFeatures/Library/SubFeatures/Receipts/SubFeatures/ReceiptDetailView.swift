@@ -9,6 +9,22 @@ import ComposableArchitecture
 import SwiftUI
 
 struct ReceiptDetailView: View {
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy년 M월 d일"
+        return formatter
+    }()
+    
+    private static let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+    
     @Bindable var store: StoreOf<ReceiptDetailFeature>
     @Environment(\.dismiss) private var dismiss
 
@@ -16,47 +32,79 @@ struct ReceiptDetailView: View {
         NavigationStack {
             ZStack {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(0 ..< 5, id: \.self) { idx in
-                            ReceiptRow(id: UUID(), idx: idx)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+                    VStack(spacing: 0) {
+                        if store.isLoading && store.detail == nil && !store.isError {
+                            VStack(spacing: 14) {
+                                ProgressView().tint(.white)
+                                Text("불러오는 중이에요...")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.8))
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.vertical, 40)
+                        } else if store.isError {
+                            VStack(spacing: 14) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.yellow)
+                                Text("상세를 불러오지 못했어요.")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                Button(action: { store.send(.onRefresh) }) {
+                                    Text("다시 시도")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .frame(maxWidth: 180)
+                                        .padding(.vertical, 12)
+                                        .background(Color.white)
+                                        .foregroundStyle(.black)
+                                        .cornerRadius(10)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.vertical, 40)
+                        } else if let detail = store.detail {
+                            LazyVStack(alignment: .leading, spacing: 12) {
+                                ForEach(Array(detail.items.enumerated()), id: \.offset) { idx, item in
+                                    ReceiptRow(idx: idx, type: detail.type, item: item)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
 
-                    Divider().background(.white.opacity(0.7))
-                    HStack {
-                        Spacer()
-                        Text("총 2권").foregroundStyle(.white).font(.headline)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    Divider().frame(height: 15).background(.black.opacity(0.8))
+                            Divider().background(.white.opacity(0.7))
+                            HStack {
+                                Spacer()
+                                Text("총 \(detail.items.count)권").foregroundStyle(.white).font(.headline)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            Divider().frame(height: 15).background(.black.opacity(0.8))
 
-                    VStack {
-                        HStack {
-                            Text("상태값").foregroundStyle(.white).font(.system(size: 25)).fontWeight(.black)
-                            Spacer()
+                            VStack {
+                                HStack {
+                                    Text("상태값").foregroundStyle(.white).font(.system(size: 25)).fontWeight(.black)
+                                    Spacer()
+                                }
+                                .padding(.top, 5)
+                                VStack(spacing: 17.5) {
+                                    StatusRow(key: (detail.type == .rental ? "대출일자" : "구매일자"), value: detail.receiptAt.map { Self.dateFormatter.string(from: $0) } ?? "-")
+                                    StatusRow(key: detail.type == .rental ? "도서관" : "구매처", value: detail.source)
+                                    if let price = detail.totalPrice, detail.type == .purchase {
+                                        StatusRow(key: "금액", value: (Self.numberFormatter.string(from: NSNumber(value: price)) ?? "\(price)") + "원")
+                                    }
+                                }
+                                .padding(.vertical, 10)
+                                .padding(.bottom, 80)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical)
                         }
-                        .padding(.top, 5)
-                        VStack(spacing: 17.5) {
-                            StatusRow(key: "대출날짜", value: "2026년 02월 01일")
-                            StatusRow(key: "반납날짜", value: "2026년 02월 01일")
-                            StatusRow(key: "도서관", value: "이지메 도서관")
-                        }
-                        .padding(.vertical, 10)
-                        .padding(.bottom, 80)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical)
+                    .refreshable {
+                        store.send(.onRefresh)
+                    }
                 }
-                VStack {
-                    Spacer()
-                    DefaultButton(action: {
-                        store.send(.deleteButtonTapped)
-                    }, label: { Text("삭제하기") })
-                }.padding(.horizontal, 20)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(hex: "#2C2C35", default: .black))
@@ -70,8 +118,18 @@ struct ReceiptDetailView: View {
                         Label("뒤로가기", systemImage: "chevron.left")
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(role: .destructive) {
+                        store.send(.deleteButtonTapped)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
+                    }
+                }
             }
             .alert($store.scope(state: \.alert, action: \.alert))
+            .task {
+                await store.send(.onAppear).finish()
+            }
         }
     }
 }
@@ -81,3 +139,4 @@ struct ReceiptDetailView: View {
         ReceiptDetailFeature()
     }))
 }
+

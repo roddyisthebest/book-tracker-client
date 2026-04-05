@@ -19,7 +19,7 @@ struct StatFeature {
         case path(StackAction<Path.State, Path.Action>)
 
         enum PathCase: Equatable {
-            case readingCalendar
+            case doneBookCalandar
             case readingTrakcer
             case readingReport
         }
@@ -31,8 +31,8 @@ struct StatFeature {
             switch action {
             case .navigateButtonTapped(let path):
                 switch path {
-                case .readingCalendar:
-                    state.path.append(.readingCalendar(ReadingCalendarFeature.State()))
+                case .doneBookCalandar:
+                    state.path.append(.doneBookCalandar(DoneBooksCalendarFeature.State()))
                 case .readingReport:
                     state.path.append(.readingReport(ReadingReportFeature.State()))
                 case .readingTrakcer:
@@ -57,11 +57,13 @@ extension StatFeature {
         enum State: Equatable {
             case readingCalendar(ReadingCalendarFeature.State = .init())
             case readingReport(ReadingReportFeature.State = .init())
+            case doneBookCalandar(DoneBooksCalendarFeature.State = .init())
         }
 
         enum Action: Equatable {
             case readingCalendar(ReadingCalendarFeature.Action)
             case readingReport(ReadingReportFeature.Action)
+            case doneBookCalendar(DoneBooksCalendarFeature.Action)
         }
 
         var body: some ReducerOf<Self> {
@@ -71,6 +73,10 @@ extension StatFeature {
 
             Scope(state: \.readingReport, action: \.readingReport) {
                 ReadingReportFeature()
+            }
+
+            Scope(state: \.doneBookCalandar, action: \.doneBookCalendar) {
+                DoneBooksCalendarFeature()
             }
         }
     }

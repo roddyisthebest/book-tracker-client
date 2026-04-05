@@ -178,7 +178,7 @@ extension BookFormFeature.State {
             status: status,
             type: type,
             startedAt: status == .reading || status == .done ? startedAt : nil,
-            readCount: Int(page),
+            readCount: status == .reading ? Int(page) : nil,
             memo: note.isEmpty ? nil : note,
             endedAt: status == .done ? endedAt : nil,
             score: status == .done ? (rating == 0 ? nil : rating) : nil,

@@ -11,42 +11,38 @@ import SwiftUI
 
 @Reducer
 struct ReceiptListFeature {
+    @Dependency(\.receiptService) var receiptService
+
     @ObservableState
     struct State: Equatable {
         @Presents var receiptDetail: ReceiptDetailFeature.State?
         @Presents var alert: AlertState<ReceiptListFeature.Action.Alert>?
 
         var sortOption: BookSortOption = .newest
-
         var receiptType: ReceiptType = .rental
-        var list: [Receipt] = [
-            Receipt(id: UUID(1), type: .purchase, title: "효진이는"),
-            Receipt(id: UUID(2), type: .rental, title: "집을 알아봅니다."),
-            Receipt(id: UUID(3), type: .rental, title: "하지만"),
-            Receipt(id: UUID(4), type: .purchase, title: "쉽지않아보입니다"),
-            Receipt(id: UUID(5), type: .purchase, title: "화이팅")
-        ]
+        var list: [ReceiptSummary] = []
 
-        var computedList: [Receipt] {
-            let filtered = list.filter { $0.type == receiptType }
-            switch sortOption {
-            case .oldest:
-                return filtered
-            case .newest:
-                return Array(filtered.reversed())
-            case .titleAsc:
-                return filtered.sorted(by: { (lhs: Receipt, rhs: Receipt) in
-                    lhs.title < rhs.title
-                })
-            case .titleDesc:
-                return filtered.sorted(by: { (lhs: Receipt, rhs: Receipt) in
-                    lhs.title > rhs.title
-                })
-            }
-        }
+        var isLoading: Bool = false
+        var isLoadingMore: Bool = false
+
+        var isError: Bool = false
+
+        var nextIndex: Int = 0
+        var pageSize: Int = 40
+        var hasMore: Bool = true
     }
 
     enum Action: Equatable, BindableAction {
+        case onAppear
+
+        case loadReceipts
+        case loadReceiptResponse(Result<[ReceiptSummary], AppError>)
+
+        case loadMore
+        case loadMoreResponse(Result<[ReceiptSummary], AppError>)
+
+        case onRefresh
+
         case binding(BindingAction<State>)
         case recepitCardTapped(ReceiptType, UUID)
         case shareTapped
@@ -56,14 +52,77 @@ struct ReceiptListFeature {
         case alert(PresentationAction<Alert>)
         enum Alert: Equatable {
             case confirmAllDeletion
-            case confirmDeletion(UUID)
+            case confirmDeletion(id: UUID)
         }
+    }
+
+    private enum CancelID {
+        case loadReceipts
+        case loadMore
     }
 
     var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .send(.loadReceipts)
+            case .onRefresh:
+                return .send(.loadReceipts)
+            case .loadReceipts:
+                state.isLoading = true
+                state.isError = false
+                state.nextIndex = 0
+                state.hasMore = true
+                let pageSize = state.pageSize
+                let type = state.receiptType
+                return .merge(
+                    .cancel(id: CancelID.loadReceipts),
+                    .run {
+                        send in
+                        let result = await receiptService.loadReceipts(type, pageSize, 0)
+                        await send(.loadReceiptResponse(result))
+                    }
+                )
+            case .loadReceiptResponse(.success(let receipts)):
+                state.isLoading = false
+                state.list = receipts
+                state.nextIndex = receipts.count
+                state.hasMore = receipts.count == state.pageSize
+                return .none
+            case .loadReceiptResponse(.failure(let error)):
+                state.isLoading = false
+                state.list = []
+                state.isError = true
+                state.nextIndex = 0
+                state.hasMore = false
+                return .none
+            case .loadMore:
+                guard !state.isLoading,
+                      !state.isLoadingMore,
+                      state.hasMore
+                else {
+                    return .none
+                }
+                state.isLoadingMore = true
+                let type = state.receiptType
+                let pageSize = state.pageSize
+                let nextIndex = state.nextIndex
+                return .run { send in
+                    let result = await receiptService.loadReceipts(type, pageSize, nextIndex)
+                    await send(.loadMoreResponse(result))
+                }
+                .cancellable(id: CancelID.loadMore, cancelInFlight: true)
+            case .loadMoreResponse(.success(let receipts)):
+                state.isLoadingMore = false
+                state.list.append(contentsOf: receipts)
+                state.nextIndex += receipts.count
+                state.hasMore = receipts.count == state.pageSize
+                return .none
+            case .loadMoreResponse(.failure(let error)):
+                state.isLoadingMore = false
+                state.alert = .loadMoreFailed(message: error.localizedDescription)
+                return .none
             case .recepitCardTapped(let type, let id):
                 state.receiptDetail = ReceiptDetailFeature.State(id: id)
                 return .none
@@ -82,17 +141,14 @@ struct ReceiptListFeature {
                 state.alert = AlertState {
                     TextState("Are you sure?")
                 } actions: {
-                    ButtonState(role: .destructive, action: .confirmDeletion(id)) {
+                    ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
                         TextState("Delete")
                     }
                 }
                 return .none
-            case .receiptDetail(.presented(.delegate(.deleteReceipt(let id)))):
+            case .receiptDetail(.presented(.delegate(.deleteReceipt))):
                 state.receiptDetail = nil
-                state.list = state.list.filter { $0.id != id }
-                // TODO: toast 메세지 필요
-
-                return .none
+                return .send(.onRefresh)
             case .receiptDetail:
                 return .none
             case .alert(.presented(.confirmAllDeletion)):
@@ -102,6 +158,8 @@ struct ReceiptListFeature {
                 return .none
             case .alert:
                 return .none
+            case .binding(\.receiptType):
+                return .send(.loadReceipts)
             case .binding:
                 return .none
             }
@@ -109,5 +167,29 @@ struct ReceiptListFeature {
         .ifLet(\.$receiptDetail, action: \.receiptDetail) {
             ReceiptDetailFeature()
         }.ifLet(\.$alert, action: \.alert)
+    }
+}
+
+extension AlertState where Action == ReceiptListFeature.Action.Alert {
+    static func deleteConfirmation(id: UUID) -> Self {
+        Self {
+            TextState("Are you sure?")
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
+                TextState("Delete")
+            }
+        }
+    }
+
+    static func loadMoreFailed(message: String) -> Self {
+        Self {
+            TextState("더 불러오기에 실패했어요")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("확인")
+            }
+        } message: {
+            TextState(message)
+        }
     }
 }

@@ -43,7 +43,7 @@ struct StatView: View {
 
                         VStack(spacing: 18) {
                             Button(action: {
-                                store.send(.navigateButtonTapped(.readingCalendar))
+                                store.send(.navigateButtonTapped(.doneBookCalandar))
 
                             }) {
                                 HStack(spacing: 10) {
@@ -96,6 +96,10 @@ struct StatView: View {
         case .readingReport:
             if let store = destinationStore.scope(state: \.readingReport, action: \.readingReport) {
                 ReadingReportView(store: store)
+            }
+        case .doneBookCalandar:
+            if let store = destinationStore.scope(state: \.doneBookCalandar, action: \.doneBookCalendar) {
+                DoneBooksCalendarView(store: store)
             }
         }
     }

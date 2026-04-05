@@ -14,6 +14,8 @@ private struct BookRowView: View {
     let publisher: String
     let isbn: String
     let isSelected: Bool
+    let thumbnail: String?
+
     let onTap: () -> Void
 
     var body: some View {
@@ -22,6 +24,7 @@ private struct BookRowView: View {
             author: author,
             publisher: publisher,
             isbn: isbn,
+            thumbnail: thumbnail,
             isSelected: isSelected,
             onTap: onTap
         )
@@ -40,7 +43,28 @@ struct CollectionSelectBooksView: View {
     private typealias Feature = CollectionSelectBooksFeature
 
     @ViewBuilder
-    private var booksList: some View {
+    private var errorView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 28))
+                .foregroundStyle(.yellow)
+
+            Text("문제가 발생했어요")
+                .font(.headline)
+                .foregroundStyle(.white)
+
+            Button("다시 시도") {
+                store.send(.onRefresh)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#2C2C35", default: .black))
+    }
+
+    @ViewBuilder
+    private var bookList: some View {
         List {
             ForEach(store.books, id: \.id) { book in
                 BookRowView(
@@ -49,7 +73,7 @@ struct CollectionSelectBooksView: View {
                     publisher: book.publisher,
                     isbn: book.isbn,
                     isSelected: store.selectedIds.contains(book.id),
-                    onTap: { store.send(.bookSelected(id: book.id)) }
+                    thumbnail: book.imageUrl, onTap: { store.send(.bookSelected(id: book.id)) }
                 )
             }
         }
@@ -61,17 +85,37 @@ struct CollectionSelectBooksView: View {
 
     var body: some View {
         NavigationStack {
-            booksList
-                .navigationTitle("구매한책")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationBarBackButtonHidden(true)
-                .navigationSubtitle("책을 삭제하거나 추가해보세요.")
-                .toolbar { toolbarContent }
-                .overlay(alignment: .bottom) { bottomBar }
-                .sheet(store: store.scope(state: \.$addBooks, action: \.addBooks)) { addBooksStore in
+            Group {
+                if store.isError {
+                    errorView
+                }
+                else {
+                    bookList
+                }
+            }
+            .overlay {
+                if store.isLoading {
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .navigationTitle("구매한책")
+            .navigationBarTitleDisplayMode(.large)
+            .navigationBarBackButtonHidden(true)
+            .navigationSubtitle("책을 삭제하거나 추가해보세요.")
+            .toolbar { toolbarContent }
+            .task {
+                await store.send(.onAppear).finish()
+            }
+            .overlay(alignment: .bottom) { bottomBar }
+            .sheet(store: store.scope(state: \.$addBooks, action: \.addBooks)) { addBooksStore in
+                NavigationStack {
                     AddBooksView(store: addBooksStore)
                 }
-                .alert(store: store.scope(state: \.$alert, action: \.alert))
+            }
+            .alert(store: store.scope(state: \.$alert, action: \.alert))
         }
     }
 
@@ -101,8 +145,15 @@ struct CollectionSelectBooksView: View {
             Button {
                 store.send(.saveButtonTapped)
             } label: {
-                Text("저장하기")
+                HStack(spacing: 6) {
+                    if store.isSyncing {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text("저장하기")
+                }
             }
+            .disabled(store.isSyncing)
         }
     }
 
@@ -124,7 +175,7 @@ struct CollectionSelectBooksView: View {
 }
 
 #Preview {
-    CollectionSelectBooksView(store: Store(initialState: CollectionSelectBooksFeature.State(), reducer: {
+    CollectionSelectBooksView(store: Store(initialState: CollectionSelectBooksFeature.State(collection: UserCollection.make()), reducer: {
         CollectionSelectBooksFeature()
     }))
 }

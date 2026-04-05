@@ -114,3 +114,25 @@ extension Book {
         Book.make(title: "ddasds", author: "asdasdsssasd")
     }
 }
+
+extension BookStatus {
+    init(dbValue: String?) {
+        switch dbValue {
+        case "reading": self = .reading
+        case "want": self = .want
+        case "done": self = .done
+        case "dropped": self = .dropped
+        default: self = .want
+        }
+    }
+}
+
+extension BookType {
+    init(dbValue: String?) {
+        switch dbValue {
+        case "ebook": self = .ebook
+        case "paper": self = .paper
+        default: self = .paper
+        }
+    }
+}
