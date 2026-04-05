@@ -29,46 +29,99 @@ struct CollectionDetailView: View {
     private typealias Feature = CollectionDetailFeature
 
     @ViewBuilder
+    private var errorView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 28))
+                .foregroundStyle(.yellow)
+
+            Text("문제가 발생했어요")
+                .font(.headline)
+                .foregroundStyle(.white)
+
+            Button("다시 시도") {
+                store.send(.onAppear)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(hex: "#2C2C35", default: .black))
+    }
+
+    @ViewBuilder
     private var booksList: some View {
-        List {
-            ForEach(store.books, id: \.id) { book in
-                BookRowView(
-                    book: book,
-                    onTap: {
-                        store.send(.bookCardTapped(book.id))
-                    },
-                    onDelete: {
-                        store.send(.deleteButtonTapped(book.id))
-                    }
-                )
+        ZStack {
+            List {
+                ForEach(store.books, id: \.id) { book in
+                    BookRowView(
+                        book: book,
+                        onTap: {
+                            store.send(.bookCardTapped(book.id))
+                        },
+                        onDelete: {
+                            store.send(.deleteButtonTapped)
+                        }
+                    )
+                }
+
+                if store.isLoadingMore {
+                    ProgressView()
+                        .padding(.vertical, 12)
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Color.clear)
+            .background(Color(hex: "#2C2C35", default: .black))
+            .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
+            .refreshable {
+                await store.send(.onRefresh).finish()
+            }
+
+            if store.isDeleting {
+                ProgressView()
+                    .progressViewStyle(.circular)
             }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .disabled(store.isDeleting)
     }
 
     var body: some View {
         NavigationStack {
-            booksList
-                .navigationTitle("구매한책")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationBarBackButtonHidden(true)
-                .navigationSubtitle("영수증 내역으로 자동 생성되는 컬렉션입니다.")
-                .toolbar { toolbarContent }
-                .sheet(item: $store.scope(state: \.destination?.formCollection, action: \.destination.formCollection)) { formCollectionStore in
-                    NavigationStack {
-                        CollectionFormView(store: formCollectionStore)
-                    }
+            Group {
+                if store.errorMessage != nil {
+                    errorView
+                } else {
+                    booksList
                 }
-                .sheet(item: $store.scope(state: \.destination?.selectBooks, action: \.destination.selectBooks)) {
-                    selectBookStore in
-                    NavigationStack {
-                        CollectionSelectBooksView(store: selectBookStore)
-                    }
+            }
+            .overlay {
+                if store.isLoading && store.books.isEmpty {
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
-                .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+            }
+            .navigationTitle(store.collection.name ?? "컬렉션")
+            .navigationBarTitleDisplayMode(.large)
+            .navigationBarBackButtonHidden(true)
+            .navigationSubtitle(store.collection.description ?? "")
+            .toolbar { toolbarContent }
+            .task {
+                await store.send(.onAppear).finish()
+            }
+            .sheet(item: $store.scope(state: \.destination?.formCollection, action: \.destination.formCollection)) { formCollectionStore in
+                CollectionFormView(store: formCollectionStore)
+            }
+            .sheet(item: $store.scope(state: \.destination?.selectBooks, action: \.destination.selectBooks)) {
+                selectBookStore in
+                NavigationStack {
+                    CollectionSelectBooksView(store: selectBookStore)
+                }
+            }
+            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
         }
     }
 
@@ -96,6 +149,13 @@ struct CollectionDetailView: View {
                     Image(systemName: "pencil.circle")
                     Text("편집하기")
                 }
+                Button(role: .destructive) {
+                    store.send(.deleteButtonTapped)
+                } label: {
+                    Label("삭제하기", systemImage: "trash")
+                }
+                .tint(.red)
+
                 Picker("정렬", selection: $store.sortOption) {
                     Text("오래된순").tag(BookSortOption.oldest)
                     Text("최신순").tag(BookSortOption.newest)
@@ -112,7 +172,25 @@ struct CollectionDetailView: View {
 }
 
 #Preview {
-    CollectionDetailView(store: Store(initialState: CollectionDetailFeature.State(), reducer: {
-        CollectionDetailFeature()
-    }))
+    NavigationStack {
+        CollectionDetailView(
+            store: Store(
+                initialState: CollectionDetailFeature.State(
+                    collection: UserCollectionSummary(
+                        id: UUID(),
+                        userId: UUID(),
+                        name: "읽고 싶은 책",
+                        isDefault: false,
+                        createdAt: Date(),
+                        description: "나중에 읽을 책들을 모아둔 컬렉션",
+                        previewBooks: [],
+                        bookCount: 0
+                    )
+                ),
+                reducer: {
+                    CollectionDetailFeature()
+                }
+            )
+        )
+    }
 }

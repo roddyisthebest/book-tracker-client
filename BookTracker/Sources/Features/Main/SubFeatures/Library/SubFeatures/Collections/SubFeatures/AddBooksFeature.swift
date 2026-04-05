@@ -10,54 +10,38 @@ import Foundation
 
 @Reducer
 struct AddBooksFeature {
+    @Dependency(\.bookService) var bookService
+
     @ObservableState
     struct State: Equatable {
-        var books: [Book] = [
-            Book.make(
-                id: UUID(1),
-                title: "모비 딕",
-                author: "허먼 멜빌",
-                publisher: "문학사상",
-                isbn: "9781234567001",
-                status: .want,
-                type: .paper
-            ),
-            Book.make(
-                id: UUID(2),
-                title: "데미안",
-                author: "헤르만 헤세",
-                publisher: "민음사",
-                isbn: "9781234567002",
-                status: .reading,
-                type: .ebook
-            ),
-            Book.make(
-                id: UUID(3),
-                title: "자기 개발서",
-                author: "홍길동",
-                publisher: "한빛미디어",
-                isbn: "9781234567003",
-                status: .done,
-                type: .paper
-            ),
-            Book.make(
-                id: UUID(4),
-                title: "스위프트 마스터",
-                author: "애플",
-                publisher: "애플프레스",
-                isbn: "9781234567004",
-                status: .dropped,
-                type: .ebook
-            )
-        ]
+        var books: [Book] = []
         var selectedIds: Set<UUID> = []
+        var unSelectableIds: Set<UUID> = []
+
         var keyword: String = ""
 
-        let unSelectableIds: Set<UUID>?
+        var isLoading: Bool = false
+        var isLoadingMore: Bool = false
+        var errorMessage: String? = nil
+
+        var nextIndex: Int = 0
+        var pageSize: Int = 20
+        var hasMore: Bool = true
     }
 
     enum Action: Equatable, BindableAction {
         case binding(BindingAction<State>)
+
+        case onAppear
+
+        case loadBooks
+        case loadBooksResponse(Result<[Book], AppError>)
+
+        case loadMore
+        case loadMoreResponse(Result<[Book], AppError>)
+
+        case refresh
+
         case bookSelected(UUID)
         case delegate(Delegate)
         case addButtonTapped
@@ -66,10 +50,76 @@ struct AddBooksFeature {
         }
     }
 
+    private enum CancelID {
+        case loadBooks
+        case loadMore
+    }
+
     var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .send(.loadBooks)
+            case .loadBooks:
+                state.isLoading = true
+                state.errorMessage = nil
+                state.nextIndex = 0
+                state.hasMore = true
+
+                let pageSize = state.pageSize
+
+                return .merge(
+                    .cancel(id: CancelID.loadMore),
+                    .run { send in
+                        let result = try await bookService.list(nil, pageSize, 0)
+                        await send(.loadBooksResponse(result))
+                    }
+                    .cancellable(id: CancelID.loadBooks, cancelInFlight: true)
+                )
+            case .loadBooksResponse(.success(let books)):
+                state.isLoading = false
+                state.books = books
+                state.nextIndex = books.count
+                state.hasMore = books.count == state.pageSize
+                return .none
+            case .loadBooksResponse(.failure(let error)):
+                state.isLoading = false
+                state.books = []
+                state.errorMessage = error.localizedDescription
+                state.nextIndex = 0
+                state.hasMore = false
+                return .none
+            case .loadMore:
+                guard !state.isLoading,
+                      !state.isLoadingMore,
+                      state.hasMore
+                else {
+                    return .none
+                }
+
+                state.isLoadingMore = true
+
+                let pageSize = state.pageSize
+                let nextIndex = state.nextIndex
+
+                return .run { send in
+                    let result = try await bookService.list(nil, pageSize, nextIndex)
+                    await send(.loadMoreResponse(result))
+                }
+                .cancellable(id: CancelID.loadMore, cancelInFlight: true)
+            case .loadMoreResponse(.success(let books)):
+                state.isLoadingMore = false
+                state.books.append(contentsOf: books)
+                state.nextIndex += books.count
+                state.hasMore = books.count == state.pageSize
+                return .none
+            case .loadMoreResponse(.failure(let error)):
+                state.isLoadingMore = false
+                state.errorMessage = error.localizedDescription
+                return .none
+            case .refresh:
+                return .send(.loadBooks)
             case .bookSelected(let id):
                 let isSelected = state.selectedIds.contains(id)
                 if isSelected {
@@ -93,11 +143,6 @@ struct AddBooksFeature {
 extension AddBooksFeature.State {
     var filteredBooks: [Book] {
         books.filter {
-            let bookId = $0.id
-            if let unSelectableIds, unSelectableIds.contains(bookId) {
-                return false
-            }
-
             if keyword.isEmpty {
                 return true
             }

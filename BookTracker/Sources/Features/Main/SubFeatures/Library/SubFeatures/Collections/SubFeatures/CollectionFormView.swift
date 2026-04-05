@@ -12,14 +12,14 @@ struct CollectionFormView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-            NavigationStack {
-                VStack(spacing: 30) {
-                    VStack {
-                        HStack {
-                            FormLabel(text: "이름")
-                            Spacer()
-                        }
-                        TextField("이름",
+        NavigationStack {
+            VStack(spacing: 30) {
+                VStack {
+                    HStack {
+                        FormLabel(text: "이름")
+                        Spacer()
+                    }
+                    TextField("이름",
                               text: $store.title,
                               prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
                         .foregroundStyle(.white)
@@ -55,12 +55,38 @@ struct CollectionFormView: View {
                     .background(Color(hex: "#17171C", default: .accentColor))
                     .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
-                Spacer()
-                if store.isEditing {
-                    DefaultButton(action: {
-                        store.send(.deleteButtonTapped)
-                    }) { Text("삭제하기") }
+
+                if !store.isEditing {
+                    VStack(alignment: .leading) {
+                        FormLabel(text: "초기 책 선택 (선택 사항)")
+
+                        Button(action: {
+                            store.send(.presentBookPickerButtonTapped)
+                        }) {
+                            HStack {
+                                Text("책 선택")
+                                Spacer()
+
+                                HStack(spacing: 10) {
+                                    let selectedBookIds = store.selectedBookIds
+                                    if !selectedBookIds.isEmpty {
+                                        Text("\(selectedBookIds.count)권 선택됨").foregroundStyle(.foreground)
+                                    }
+
+                                    Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(.foreground)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .background(Color(hex: "#17171C", default: .accentColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+
+                    }.frame(maxWidth: .infinity, alignment: .leading)
                 }
+
+                Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 20)
@@ -77,16 +103,25 @@ struct CollectionFormView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    if store.isEditing {
+                    if store.isLoading {
+                        ProgressView()
+                    } else if store.isEditing {
                         Button("수정하기") {
                             store.send(.updateButtonTapped)
                         }
-                        .disabled(!store.isSubmitEnabled)
+                        .disabled(!store.isSubmitEnabled || store.isLoading)
+
                     } else {
-                        Button("만들기") {
+                        Button("생성하기") {
                             store.send(.createButtonTapped)
                         }
+                        .disabled(!store.isSubmitEnabled || store.isLoading)
                     }
+                }
+            }
+            .sheet(item: $store.scope(state: \.addBooks, action: \.addBooks)) { addBooksStore in
+                NavigationStack {
+                    AddBooksView(store: addBooksStore)
                 }
             }
             .alert($store.scope(state: \.alert, action: \.alert))
@@ -97,7 +132,7 @@ struct CollectionFormView: View {
 #Preview {
     CollectionFormView(
         store: Store(
-            initialState: CollectionFormFeature.State(collection: Collection(id: UUID(1), isDefault: false, title: "asdd", description: "asdsdsd")),
+            initialState: CollectionFormFeature.State(collection: UserCollection(id: UUID(), userId: UUID(), name: "My Collection", isDefault: false, createdAt: Date(), description: "")),
             reducer: { CollectionFormFeature() }
         )
     )
