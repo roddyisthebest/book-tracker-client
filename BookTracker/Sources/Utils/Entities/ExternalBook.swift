@@ -112,14 +112,14 @@ struct ExternalBook: Equatable, Identifiable, Decodable {
 
         init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
-            country = try? c.decode(String.self, forKey: .country)
-            saleability = try? c.decode(String.self, forKey: .saleability)
-            isEbook = try? c.decode(Bool.self, forKey: .isEbook)
-            listPrice = try? c.decode(Money.self, forKey: .listPrice)
-            retailPrice = try? c.decode(Money.self, forKey: .retailPrice)
+            self.country = try? c.decode(String.self, forKey: .country)
+            self.saleability = try? c.decode(String.self, forKey: .saleability)
+            self.isEbook = try? c.decode(Bool.self, forKey: .isEbook)
+            self.listPrice = try? c.decode(Money.self, forKey: .listPrice)
+            self.retailPrice = try? c.decode(Money.self, forKey: .retailPrice)
             let rawBuy = try? c.decode(URL.self, forKey: .buyLink)
-            buyLink = ExternalBook.upgradeToHTTPS(rawBuy)
-            offers = try? c.decode([Offer].self, forKey: .offers)
+            self.buyLink = ExternalBook.upgradeToHTTPS(rawBuy)
+            self.offers = try? c.decode([Offer].self, forKey: .offers)
         }
     }
 
@@ -159,36 +159,36 @@ struct ExternalBook: Equatable, Identifiable, Decodable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
+        self.id = try container.decode(String.self, forKey: .id)
 
         let volume = try container.nestedContainer(keyedBy: VolumeInfoKeys.self, forKey: .volumeInfo)
-        title = (try? volume.decode(String.self, forKey: .title)) ?? ""
+        self.title = (try? volume.decode(String.self, forKey: .title)) ?? ""
 
-        authors = try? volume.decode([String].self, forKey: .authors)
-        publisher = try? volume.decode(String.self, forKey: .publisher)
-        publishedDate = try? volume.decode(String.self, forKey: .publishedDate)
-        description = try? volume.decode(String.self, forKey: .description)
-        pageCount = try? volume.decode(Int.self, forKey: .pageCount)
-        categories = try? volume.decode([String].self, forKey: .categories)
-        language = try? volume.decode(String.self, forKey: .language)
-        previewLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .previewLink))
-        infoLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .infoLink))
-        canonicalVolumeLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .canonicalVolumeLink))
+        self.authors = try? volume.decode([String].self, forKey: .authors)
+        self.publisher = try? volume.decode(String.self, forKey: .publisher)
+        self.publishedDate = try? volume.decode(String.self, forKey: .publishedDate)
+        self.description = try? volume.decode(String.self, forKey: .description)
+        self.pageCount = try? volume.decode(Int.self, forKey: .pageCount)
+        self.categories = try? volume.decode([String].self, forKey: .categories)
+        self.language = try? volume.decode(String.self, forKey: .language)
+        self.previewLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .previewLink))
+        self.infoLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .infoLink))
+        self.canonicalVolumeLink = Self.upgradeToHTTPS(try? volume.decode(URL.self, forKey: .canonicalVolumeLink))
 
         if let imageLinks = try? volume.nestedContainer(keyedBy: ImageLinksKeys.self, forKey: .imageLinks) {
-            smallThumbnail = Self.upgradeToHTTPS(try? imageLinks.decode(URL.self, forKey: .smallThumbnail))
-            thumbnail = Self.upgradeToHTTPS(try? imageLinks.decode(URL.self, forKey: .thumbnail))
+            self.smallThumbnail = Self.upgradeToHTTPS(try? imageLinks.decode(URL.self, forKey: .smallThumbnail))
+            self.thumbnail = Self.upgradeToHTTPS(try? imageLinks.decode(URL.self, forKey: .thumbnail))
         } else {
-            smallThumbnail = nil
-            thumbnail = nil
+            self.smallThumbnail = nil
+            self.thumbnail = nil
         }
 
         if let identifiers = try? volume.decode([IndustryIdentifier].self, forKey: .industryIdentifiers) {
-            isbn13 = identifiers.first(where: { $0.type == "ISBN_13" })?.identifier
+            self.isbn13 = identifiers.first(where: { $0.type == "ISBN_13" })?.identifier
         } else {
-            isbn13 = nil
+            self.isbn13 = nil
         }
-        saleInfo = try? container.decode(SaleInfo.self, forKey: .saleInfo)
+        self.saleInfo = try? container.decode(SaleInfo.self, forKey: .saleInfo)
     }
 }
 
@@ -248,3 +248,50 @@ extension ExternalBook {
         )
     )
 }
+
+extension ExternalBook {
+    func toReceiptBook(type: ReceiptType) -> ReceiptBook {
+        ReceiptBook(
+            externalBook: self,
+            type: type
+        )
+    }
+
+    func toReceiptBook(type: ReceiptType, price: Int, currencyCode: String) -> ReceiptBook {
+        ReceiptBook(
+            externalBook: self,
+            type: type,
+            price: price,
+            currencyCode: currencyCode
+        )
+    }
+}
+
+//
+// extension ReceiptBook {
+//    func toBook(
+//        memo: String
+//    ) -> Book {
+//        Book(
+//            id: UUID(),
+//            userId: UUID(),
+//            externalBookId: id,
+//            title: title,
+//            author: authorText ?? "",
+//            publisher: publisher ?? "",
+//            pageCount: pageCount,
+//            pageCountEditable: pageCount != nil,
+//            imageUrl: thumbnailURL ?? "",
+//            isbn: isbn13 ?? "",
+//            status: .want,
+//            type: .paper,
+//            startedAt: nil,
+//            readCount: nil,
+//            memo: memo,
+//            endedAt: nil,
+//            score: nil,
+//            review: nil,
+//            droppedReason: nil
+//        )
+//    }
+// }
