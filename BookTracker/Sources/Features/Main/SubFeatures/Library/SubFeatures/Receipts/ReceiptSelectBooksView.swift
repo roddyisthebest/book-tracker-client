@@ -8,27 +8,124 @@ import ComposableArchitecture
 import SwiftUI
 
 private struct BookRowView: View {
-    let title: String
-    let author: String
-    let publisher: String
-    let isbn: String
+    let book: ReceiptBook
     let onTap: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
-        DeleteExternalBookRow(
-            title: title,
-            author: author,
-            publisher: publisher,
-            isbn: isbn,
+        DeleteReceiptBookRow(
+            book: book,
             onTap: onTap,
             onDelete: onDelete
         )
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 7.5, leading: 20, bottom: 7.5, trailing: 20))
-        .background(Color(hex: "#17171C"))
-        .cornerRadius(10)
+        .background(Color.clear)
+    }
+}
+
+private struct ReceiptBooksLoadingView: View {
+    var body: some View {
+        VStack(spacing: 14) {
+            ProgressView()
+                .tint(.white)
+
+            Text("책 목록을 불러오는 중이에요.")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct ReceiptBooksErrorView: View {
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 28))
+                .foregroundStyle(.yellow)
+
+            Text("책 목록을 불러오지 못했어요.")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+
+            Text("잠시 후 다시 시도해주세요.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white.opacity(0.6))
+
+            Button(action: onRetry) {
+                Text("다시 시도")
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(maxWidth: 180)
+                    .padding(.vertical, 12)
+                    .background(Color.white)
+                    .foregroundStyle(.black)
+                    .cornerRadius(10)
+            }
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct ReceiptBooksEmptyView: View {
+    let onAdd: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "books.vertical")
+                .font(.system(size: 28))
+                .foregroundStyle(.white.opacity(0.8))
+
+            Text("추가된 책이 없어요.")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+
+            Text("책을 추가해서 영수증이나 대출증 발급을 시작해보세요.")
+                .font(.system(size: 13, weight: .medium))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white.opacity(0.6))
+
+            Button(action: onAdd) {
+                Text("책 추가하기")
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(maxWidth: 180)
+                    .padding(.vertical, 12)
+                    .background(Color.white)
+                    .foregroundStyle(.black)
+                    .cornerRadius(10)
+            }
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct FullScreenLoadingOverlay: View {
+    let title: String
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                ProgressView()
+                    .tint(.white)
+                    .scaleEffect(1.1)
+
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .background(Color(hex: "#17171C"))
+            .cornerRadius(14)
+        }
     }
 }
 
@@ -36,36 +133,71 @@ struct ReceiptSelectBooksView: View {
     @Bindable var store: StoreOf<ReceiptSelectBooksFeature>
     @Environment(\.dismiss) private var dismiss
 
-    private typealias Feature = ReceiptSelectBooksFeature
+    @ViewBuilder
+    private var contentView: some View {
+        if store.isFetching && store.books.isEmpty && !store.isError {
+            ReceiptBooksLoadingView()
+        } else if store.isError && store.books.isEmpty {
+            ReceiptBooksErrorView {
+                store.send(.onRefresh)
+            }
+        } else if store.books.isEmpty {
+            ReceiptBooksEmptyView {
+                store.send(.addButtonTapped)
+            }
+        } else {
+            booksList
+        }
+    }
 
     @ViewBuilder
     private var booksList: some View {
         List {
-            ForEach(store.externalBooks, id: \.id) { book in
+            ForEach(store.books, id: \.id) { book in
                 BookRowView(
-                    title: book.title,
-                    author: "저자",
-                    publisher: "publisher",
-                    isbn: "52434341234134134234234",
+                    book: book,
                     onTap: {},
-                    onDelete: { store.send(.deleteButtonTapped(id: book.id)) },
+                    onDelete: { store.send(.deleteButtonTapped(id: book.id)) }
                 )
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
         .background(Color(hex: "#2C2C35", default: .black))
+        .refreshable {
+            store.send(.onRefresh)
+        }
+        .overlay(alignment: .top) {
+            if store.isFetching {
+                ProgressView()
+                    .tint(.white)
+                    .padding(.top, 8)
+            }
+        }
     }
 
     var body: some View {
-        booksList
-            .navigationTitle("대출증 발급")
+        contentView
+            .background(Color(hex: "#2C2C35", default: .black).ignoresSafeArea())
+            .navigationTitle(store.type == .purchase ? "영수증 발급" : "대출증 발급")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle("책을 추가하여 대출증을 발급해보세요.")
+            .navigationSubtitle(
+                store.type == .purchase
+                    ? "책을 추가하여 영수증을 발급해보세요."
+                    : "책을 추가하여 대출증을 발급해보세요."
+            )
             .toolbar { toolbarContent }
-            .overlay(alignment: .bottom) { bottomBar }
+            .overlay(alignment: .bottom) {
+                if !store.books.isEmpty {
+                    bottomBar
+                }
+            }
+            .overlay {
+                if store.isDeleting {
+                    FullScreenLoadingOverlay(title: "삭제 중이에요...")
+                }
+            }
             .sheet(
                 item: $store.scope(state: \.destination?.issueReceipt, action: \.destination.issueReceipt)
             ) { issueReceiptStore in
@@ -81,6 +213,9 @@ struct ReceiptSelectBooksView: View {
                 }
             }
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+            .task {
+                store.send(.onAppear)
+            }
     }
 
     @ToolbarContentBuilder
@@ -97,6 +232,7 @@ struct ReceiptSelectBooksView: View {
             Button("발급하기") {
                 store.send(.issueButtonTapped)
             }
+            .disabled(store.books.isEmpty || store.isFetching)
         }
     }
 
@@ -105,16 +241,24 @@ struct ReceiptSelectBooksView: View {
         HStack(spacing: 10) {
             DefaultButton(action: {
                 store.send(.addButtonTapped)
-            }) { Text("추가하기") }
+            }) {
+                Text("추가하기")
+            }
         }
         .padding(.horizontal, 25)
+        .padding(.bottom, 10)
     }
 }
 
 #Preview {
     NavigationStack {
-        ReceiptSelectBooksView(store: Store(initialState: ReceiptSelectBooksFeature.State(), reducer: {
-            ReceiptSelectBooksFeature()
-        }))
+        ReceiptSelectBooksView(
+            store: Store(
+                initialState: ReceiptSelectBooksFeature.State(),
+                reducer: {
+                    ReceiptSelectBooksFeature()
+                }
+            )
+        )
     }
 }

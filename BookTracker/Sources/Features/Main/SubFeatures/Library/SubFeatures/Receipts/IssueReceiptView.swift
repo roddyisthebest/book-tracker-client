@@ -16,12 +16,12 @@ struct IssueReceiptView: View {
     private var typeSpecific: some View {
         if case .purchase = store.type {
             FormCard(labelText: "구매처") {
-                FormTextField(placeholder: "구매처를 입력해주세요", text: $store.storeName)
+                FormTextField(placeholder: "구매처를 입력해주세요", text: $store.source)
             }
             FormCard(labelText: "구매날짜") {
                 DatePicker(
                     "",
-                    selection: $store.payedAt,
+                    selection: $store.receiptAt,
                     in: ...Date(),
                     displayedComponents: [.date]
                 )
@@ -35,15 +35,16 @@ struct IssueReceiptView: View {
             FormCard(labelText: "실제 구매 금액") {
                 FormTextField(placeholder: "23,000원", text: $store.price, keyboardType: .numberPad)
             }
+            Text("총 계산된 금액:\(store.totalPrice)")
         }
         if case .rental = store.type {
             FormCard(labelText: "도서관") {
-                FormTextField(placeholder: "도서관을 입력해주세요", text: $store.libraryName)
+                FormTextField(placeholder: "도서관을 입력해주세요", text: $store.source)
             }
             FormCard(labelText: "대출날짜") {
                 DatePicker(
                     "",
-                    selection: $store.borrowedAt,
+                    selection: $store.receiptAt,
                     in: ...Date(),
                     displayedComponents: [.date]
                 )
@@ -76,14 +77,20 @@ struct IssueReceiptView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("발급하기") {
-                        store.send(.issueButtonTapped)
+                    if store.isLoading {
+                        ProgressView()
+                    }
+                    else {
+                        Button("발급하기") {
+                            store.send(.issueButtonTapped)
+                        }
                     }
                 }
             }
             .scrollContentBackground(.hidden) // 추가
             .background(Color(hex: "#2C2C35", default: .black))
         }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 

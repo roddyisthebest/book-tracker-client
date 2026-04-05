@@ -10,14 +10,30 @@ import Foundation
 
 @Reducer
 struct ReceiptDetailFeature {
+    @Dependency(\.receiptService) var receiptService
+    
     @ObservableState
     struct State: Equatable {
         let id: UUID
+        
+        var detail: ReceiptDetail? = nil
+
+        var isLoading: Bool = false
+        var isError: Bool = false
+        var isDeleting: Bool = false
+
         @Presents var alert: AlertState<ReceiptDetailFeature.Action.Alert>?
     }
 
     enum Action: Equatable {
+        case onAppear
+        case onRefresh
+
+        case loadReceipt
+        case loadReceiptResponse(Result<ReceiptDetail, AppError>)
+        
         case deleteButtonTapped
+        case deleteResponse(Result<Bool, AppError>)
         case alert(PresentationAction<Alert>)
         case delegate(Delegate)
         enum Alert: Equatable {
@@ -28,30 +44,74 @@ struct ReceiptDetailFeature {
             case deleteReceipt(UUID)
         }
     }
+    
+    private enum CancelID { case loadReceipt }
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-                case .deleteButtonTapped:
-                    state.alert = AlertState {
-                        TextState("Are you sure?")
-                    } actions: {
-                        ButtonState(role: .destructive, action: .confirmDeletion) {
-                            TextState("Delete")
-                        }
+            case .onAppear:
+                return .send(.loadReceipt)
+            case .onRefresh:
+                return .send(.loadReceipt)
+            case .loadReceipt:
+                state.isLoading = true
+                state.isError = false
+                return .run { [id = state.id] send in
+                    let result = await receiptService.loadReceiptDetail(id)
+                    await send(.loadReceiptResponse(result))
+                }
+                .cancellable(id: CancelID.loadReceipt, cancelInFlight: true)
+            case .loadReceiptResponse(.success(let detail)):
+                state.isLoading = false
+                state.isError = false
+                state.detail = detail
+                return .none
+            case .loadReceiptResponse(.failure):
+                state.isLoading = false
+                state.isError = true
+                return .none
+                
+            case .deleteButtonTapped:
+                state.alert = AlertState {
+                    TextState("Are you sure?")
+                } actions: {
+                    ButtonState(role: .destructive, action: .confirmDeletion) {
+                        TextState("Delete")
                     }
-                    return .none
-                case .alert(.presented(.confirmDeletion)):
-                    state.alert = nil
-                    return .run {
-                        [id = state.id] send in
-                        await send(.delegate(.deleteReceipt(id)))
+                }
+                return .none
+            case .alert(.presented(.confirmDeletion)):
+                state.alert = nil
+                state.isDeleting = true
+                return .run { [id = state.id] send in
+                    let result = await receiptService.deleteReceipt(id)
+                    switch result {
+                    case .success:
+                        await send(.deleteResponse(.success(true)))
+                    case .failure(let error):
+                        await send(.deleteResponse(.failure(error)))
                     }
-                case .alert:
-                    return .none
-                case .delegate:
-                    return .none
+                }
+            case .deleteResponse(.success):
+                state.isDeleting = false
+                return .run { [id = state.id] send in
+                    await send(.delegate(.deleteReceipt(id)))
+                }
+            case .deleteResponse(.failure(let error)):
+                state.isDeleting = false
+                state.alert = AlertState {
+                    TextState("삭제에 실패했어요")
+                } message: {
+                    TextState(error.localizedDescription)
+                }
+                return .none
+            case .alert:
+                return .none
+            case .delegate:
+                return .none
             }
         }.ifLet(\.$alert, action: \.alert)
     }
 }
+
