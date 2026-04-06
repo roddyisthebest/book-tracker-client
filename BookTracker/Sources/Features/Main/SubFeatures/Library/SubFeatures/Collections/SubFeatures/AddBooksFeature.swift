@@ -68,11 +68,11 @@ struct AddBooksFeature {
                 state.hasMore = true
 
                 let pageSize = state.pageSize
-
+                let sort: BookSortOption = .newest
                 return .merge(
                     .cancel(id: CancelID.loadMore),
                     .run { send in
-                        let result = try await bookService.list(nil, pageSize, 0)
+                        let result = try await bookService.list(nil, sort, pageSize, 0)
                         await send(.loadBooksResponse(result))
                     }
                     .cancellable(id: CancelID.loadBooks, cancelInFlight: true)
@@ -102,9 +102,10 @@ struct AddBooksFeature {
 
                 let pageSize = state.pageSize
                 let nextIndex = state.nextIndex
+                let sort: BookSortOption = .newest
 
                 return .run { send in
-                    let result = try await bookService.list(nil, pageSize, nextIndex)
+                    let result = try await bookService.list(nil, sort, pageSize, nextIndex)
                     await send(.loadMoreResponse(result))
                 }
                 .cancellable(id: CancelID.loadMore, cancelInFlight: true)

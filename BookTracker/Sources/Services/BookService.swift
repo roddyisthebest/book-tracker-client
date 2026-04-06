@@ -278,7 +278,12 @@ private extension BooksUpsertRow {
 struct BookService {
     var create: (_ book: Book) async throws -> Result<Book, AppError>
     var fetch: (_ id: UUID) async throws -> Result<Book, AppError>
-    var list: (_ status: BookStatus?, _ limit: Int?, _ offset: Int?) async throws -> Result<[Book], AppError>
+    var list: (
+        _ status: BookStatus?,
+        _ sort: BookSortOption,
+        _ limit: Int?,
+        _ offset: Int?
+    ) async throws -> Result<[Book], AppError>
     var update: (_ id: UUID, _ patch: BookPatch) async throws -> Result<Book, AppError>
     var delete: (_ id: UUID) async throws -> Result<UUID, AppError>
     var isAlreadyRegistered: (_ externalBookId: String) async throws -> Result<Bool, AppError>
@@ -318,7 +323,7 @@ extension BookService {
                 let book = response.value.toDomain()
                 return .success(book)
             },
-            list: { status, limit, offset in
+            list: { status, sort, limit, offset in
                 var filter: PostgrestFilterBuilder = client
                     .from(table)
                     .select()
@@ -327,16 +332,33 @@ extension BookService {
                     filter = filter.eq("status", value: Self.mapStatusToDB(status))
                 }
 
-                var transformed: PostgrestTransformBuilder = filter.order("created_at", ascending: false)
+                let transformedBase: PostgrestTransformBuilder
+
+                switch sort {
+                case .oldest:
+                    transformedBase = filter.order("created_at", ascending: true)
+
+                case .newest:
+                    transformedBase = filter.order("created_at", ascending: false)
+
+                case .titleAsc:
+                    transformedBase = filter
+                        .order("title", ascending: true)
+                        .order("created_at", ascending: false)
+
+                case .titleDesc:
+                    transformedBase = filter
+                        .order("title", ascending: false)
+                        .order("created_at", ascending: false)
+                }
+
+                var transformed = transformedBase
+
                 if let limit, let offset {
-                    // inclusive upper bound → -1 필수
                     transformed = transformed.range(from: offset, to: offset + limit - 1)
                 } else if let limit {
                     transformed = transformed.limit(limit)
                 } else if let offset {
-                    // offset만 있는 호출을 꼭 지원해야 한다면, 기본 limit을 정해서 range를 주거나
-                    // 이 블록을 아예 제거(=offset만으론 아무 것도 안 함)하는 게 안전합니다.
-                    // 예) 기본 50개
                     transformed = transformed.range(from: offset, to: offset + 50 - 1)
                 }
 
