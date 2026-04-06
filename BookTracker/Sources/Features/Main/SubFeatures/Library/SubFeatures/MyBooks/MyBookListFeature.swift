@@ -183,21 +183,7 @@ struct MyBookListFeature {
 
             case .destination(.presented(.viewBookDetail(.delegate(.confirmDeletion(let deletedId))))):
                 state.destination = nil
-                guard let deleted = state.books.first(where: { book in
-                    book.id == deletedId
-                }) else {
-                    return .none
-                }
-
-                state.books = state.books.filter { $0.id != deleted.id }
-                // Ensure dictionary exists
-                if state.statusCounts == nil {
-                    state.statusCounts = [:]
-                }
-
-                state.statusCounts![deleted.status, default: 0] = max(0, state.statusCounts![deleted.status, default: 0] - 1)
-
-                return .none
+                return .send(.onAppear)
 
             case .destination(.presented(.viewBookDetail(.destination(.presented(.formBook(.delegate(.confirmUpdate))))))):
                 return .run { send in

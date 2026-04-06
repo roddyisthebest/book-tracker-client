@@ -158,7 +158,7 @@ struct BookDetailFeature {
                 state.isDeleting = true
                 return .run {
                     [id = id] send in
-                    let result = try await self.bookService.delete(id)
+                    let result = await self.bookService.delete(id)
                     await send(.deletionResponse(result))
                 }
 

@@ -285,7 +285,7 @@ struct BookService {
         _ offset: Int?
     ) async throws -> Result<[Book], AppError>
     var update: (_ id: UUID, _ patch: BookPatch) async throws -> Result<Book, AppError>
-    var delete: (_ id: UUID) async throws -> Result<UUID, AppError>
+    var delete: (_ id: UUID) async -> Result<UUID, AppError>
     var isAlreadyRegistered: (_ externalBookId: String) async throws -> Result<Bool, AppError>
     var statusCounts: () async throws -> Result<[BookStatus: Int], AppError>
     var calendarByMonth: (
