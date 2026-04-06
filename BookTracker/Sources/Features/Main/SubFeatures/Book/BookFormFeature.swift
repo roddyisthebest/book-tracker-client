@@ -18,6 +18,8 @@ struct BookFormFeature {
         var externalBook: ExternalBook?
         let bookId: UUID?
 
+        var changeMode: BookStatus? = nil
+
         var status: BookStatus = .done
         var type: BookType = .paper
 
@@ -35,6 +37,26 @@ struct BookFormFeature {
         var isLoading: Bool = false
 
         var pageCountEditable: Bool = false
+
+        // Change-mode helpers
+        var isChangeModeActive: Bool { changeMode != nil }
+        var title: String {
+            guard let mode = changeMode else {
+                if isEditing {
+                    return "책 수정"
+                } else {
+                    return "책 추가"
+                }
+            }
+            let label: String
+            switch mode {
+            case .done: label = "완료"
+            case .reading: label = "읽는 중"
+            case .dropped: label = "중단"
+            case .want: label = "보고 싶음"
+            }
+            return "상태 변경: \(label)"
+        }
 
         @Presents var destination: Destination.State?
     }
@@ -126,6 +148,12 @@ struct BookFormFeature {
                     send in
                     await send(.delegate(.confirmUpdate(book)))
                 }
+            case .binding(\.status):
+                if let forced = state.changeMode {
+                    // Prevent changing status when change mode is active
+                    state.status = forced
+                }
+                return .none
             case .binding(\.progress):
                 let pageValue = Double(max(Int(state.entirePage) ?? 100, 0)) * (max(state.progress, 0) * 0.01)
                 let pageInt = Int(pageValue)
@@ -216,11 +244,16 @@ extension BookFormFeature.State {
     }
 
     // update
-    init(externalId: String, bookId: UUID, book: Book) {
+    init(externalId: String, bookId: UUID, book: Book, changeMode: BookStatus?) {
         self.bookId = bookId
         self.externalId = externalId
 
-        self.status = book.status
+        if let changeMode = changeMode {
+            self.status = changeMode
+            self.changeMode = changeMode
+        } else {
+            self.status = book.status
+        }
         self.type = book.type
 
         let pageCount = book.pageCount ?? 100

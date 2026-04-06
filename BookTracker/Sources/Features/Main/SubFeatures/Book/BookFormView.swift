@@ -37,15 +37,16 @@ struct BookFormView: View {
     var body: some View {
         NavigationStack {
             List {
-                FormCard(labelText: "책종류") { TypeSectionView(store: store) }
-                FormCard(labelText: "상태") { StatusSectionView(store: store) }
+                if !store.isChangeModeActive {
+                    FormCard(labelText: "책종류") { TypeSectionView(store: store) }
+                    FormCard(labelText: "상태") { StatusSectionView(store: store) }
+                }
 
                 statusSpecific
             }
-            .listStyle(.plain)
+            .conditionalListStyle(isPlain: store.isChangeModeActive)
             .padding(0)
-            .listStyle(.insetGrouped)
-            .navigationTitle(store.isEditing ? "책 수정" : "책 추가")
+            .navigationTitle(store.title)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -72,6 +73,17 @@ struct BookFormView: View {
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .scrollContentBackground(.hidden) // 추가
             .background(Color.appSurface)
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func conditionalListStyle(isPlain: Bool) -> some View {
+        if isPlain {
+            self.listStyle(.plain)
+        } else {
+            self.listStyle(.insetGrouped)
         }
     }
 }

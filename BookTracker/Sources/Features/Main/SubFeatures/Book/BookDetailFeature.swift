@@ -28,6 +28,8 @@ struct BookDetailFeature {
         case updateButtonTapped
         case moreButtonTapped
 
+        case changeStatusButtonTapped(BookStatus)
+
         case onAppear
         case fetch
         case fetchResponse(Result<Book, AppError>)
@@ -68,7 +70,19 @@ struct BookDetailFeature {
                     return .none
                 }
 
-                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book))
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: nil))
+                return .none
+
+            case let .changeStatusButtonTapped(bookStatus):
+                guard
+                    let book = state.book,
+                    let externalBookId = book.externalBookId
+                else {
+                    state.destination = .alert(.showUpdateAccessDeniedAlert())
+                    return .none
+                }
+
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: bookStatus))
                 return .none
 
             case .moreButtonTapped:

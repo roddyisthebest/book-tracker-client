@@ -192,27 +192,48 @@ struct BookDetailView: View {
                                 .padding(.top, 5)
                                 VStack(spacing: 12) {
                                     HStack(spacing: 12) {
-                                        Button(action: {}) {
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundStyle(.green)
-                                                Text("다 읽었어요")
-                                                    .foregroundStyle(Color.appSecondaryText)
-                                                    .fontWeight(.semibold)
+                                        if book.status != .done {
+                                            Button(action: { store.send(.changeStatusButtonTapped(.done)) }) {
+                                                HStack(spacing: 8) {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .foregroundStyle(.green)
+                                                    Text("다 읽었어요")
+                                                        .foregroundStyle(Color.appSecondaryText)
+                                                        .fontWeight(.semibold)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(Color.appButtonSurface)
+                                                .cornerRadius(10)
                                             }
-                                            .frame(maxWidth: .infinity)
-                                            .padding()
-                                            .background(Color.appButtonSurface)
-                                            .cornerRadius(10)
                                         }
 
-                                        Button(action: {}) {
+                                        if book.status != .dropped {
+                                            Button(action: { store.send(.changeStatusButtonTapped(.dropped)) }) {
+                                                HStack(spacing: 8) {
+                                                    Image(systemName: "multiply.circle.fill")
+                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .foregroundStyle(.red)
+                                                    Text("그만 읽고싶어요")
+                                                        .foregroundStyle(Color.appSecondaryText)
+                                                        .fontWeight(.semibold)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(Color.appButtonSurface)
+                                                .cornerRadius(10)
+                                            }
+                                        }
+                                    }
+
+                                    if book.status != .reading {
+                                        Button(action: { store.send(.changeStatusButtonTapped(.reading)) }) {
                                             HStack(spacing: 8) {
-                                                Image(systemName: "multiply.circle.fill")
+                                                Image(systemName: "apple.books.pages.fill")
                                                     .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundStyle(.red)
-                                                Text("그만 읽고싶어요")
+                                                    .foregroundStyle(.blue)
+                                                Text("읽고있어요")
                                                     .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
@@ -221,34 +242,6 @@ struct BookDetailView: View {
                                             .background(Color.appButtonSurface)
                                             .cornerRadius(10)
                                         }
-                                    }
-                                    Button(action: {}) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
-                                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
-                                            Text("책을 반납했어요")
-                                                .foregroundStyle(Color.appSecondaryText)
-                                                .fontWeight(.semibold)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.appButtonSurface)
-                                        .cornerRadius(10)
-                                    }
-                                    Button(action: {}) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "apple.books.pages.fill")
-                                                .font(.system(size: 16, weight: .semibold))
-                                                .foregroundStyle(.blue)
-                                            Text("읽고있어요")
-                                                .foregroundStyle(Color.appSecondaryText)
-                                                .fontWeight(.semibold)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.appButtonSurface)
-                                        .cornerRadius(10)
                                     }
                                 }
                                 .padding(.vertical, 10)
@@ -309,3 +302,4 @@ struct BookDetailView: View {
         BookDetailFeature()
     }))
 }
+
