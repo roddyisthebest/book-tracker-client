@@ -93,21 +93,6 @@ struct MyBookListView: View {
             .pickerStyle(.segmented)
             .controlSize(.large)
             .padding(.horizontal)
-            .onAppear {
-                UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.systemBlue
-
-                let selectedAttrs: [NSAttributedString.Key: Any] = [
-                    .foregroundColor: UIColor.white,
-                    .font: UIFont.systemFont(ofSize: 14, weight: .bold)
-                ]
-                let normalAttrs: [NSAttributedString.Key: Any] = [
-                    .foregroundColor: UIColor.white.withAlphaComponent(0.8),
-                    .font: UIFont.systemFont(ofSize: 14, weight: .medium)
-                ]
-
-                UISegmentedControl.appearance().setTitleTextAttributes(normalAttrs, for: .normal)
-                UISegmentedControl.appearance().setTitleTextAttributes(selectedAttrs, for: .selected)
-            }
             .padding(.bottom, 10)
         }
     }
