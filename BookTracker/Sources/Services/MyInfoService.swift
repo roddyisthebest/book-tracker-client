@@ -53,15 +53,26 @@ private extension ProfilesTableRow {
     }
 }
 
+struct DeleteAllMyBookRelatedDataResult: Equatable, Codable, Hashable {
+    let collectionItemsDeleted: Int
+    let receiptItemsDeleted: Int
+    let readingRecordsDeleted: Int
+    let booksDeleted: Int
+    let receiptsDeleted: Int
+    let collectionsDeleted: Int
+}
+
 struct MyInfoService {
     var loadProfile: () async -> Result<MyProfile, AppError>
     var loadAuthInfo: () async -> Result<MyAuthInfo, AppError>
     var updateName: (_ name: String) async -> Result<MyProfile, AppError>
+    var deleteAllMyBookRelatedData: () async -> Result<DeleteAllMyBookRelatedDataResult, AppError>
 }
 
 extension MyInfoService {
     static func live(client: SupabaseClient) -> Self {
         let profilesTable = "profiles"
+        let deleteAllMyBookRelatedDataRpc = "delete_all_my_book_related_data"
 
         return Self(
             loadProfile: {
@@ -145,6 +156,24 @@ extension MyInfoService {
                     return .failure(
                         .storage(
                             code: "UPDATE_MY_PROFILE_NAME_FAILED",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
+                }
+            },
+
+            deleteAllMyBookRelatedData: {
+                do {
+                    let response: PostgrestResponse<DeleteAllMyBookRelatedDataResult> = try await client
+                        .rpc(deleteAllMyBookRelatedDataRpc)
+                        .execute()
+
+                    return .success(response.value)
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "DELETE_ALL_MY_BOOK_RELATED_DATA_FAILED",
                             status: nil,
                             message: error.localizedDescription
                         )
