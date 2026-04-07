@@ -74,6 +74,7 @@ struct Book: Equatable {
 
     // .dropped
     let droppedReason: String?
+    let createdAt: Date? = nil
 }
 
 extension Book {
@@ -136,3 +137,4 @@ extension BookType {
         }
     }
 }
+

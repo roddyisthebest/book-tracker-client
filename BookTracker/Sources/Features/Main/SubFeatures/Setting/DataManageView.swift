@@ -20,7 +20,9 @@ struct DataManageView: View {
                         Text("독서기록을 파일로 저장합니다").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.csvExportButtonTapped)
+                            }) {
                                 HStack(spacing: 10) {
                                     Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
@@ -80,6 +82,21 @@ struct DataManageView: View {
         mainContent
             .navigationTitle("데이터 관리")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: Binding(
+                get: { store.isSharePresented },
+                set: { presented in
+                    if !presented { store.send(.shareDismissed) }
+                }
+            )) {
+                if let path = store.exportFilePath {
+                    ShareView(url: URL(fileURLWithPath: path)) {
+                        store.send(.shareDismissed)
+                    }
+                } else {
+                    VStack { Text("파일이 없습니다") }
+                        .onDisappear { store.send(.shareDismissed) }
+                }
+            }
             .alert(store: store.scope(state: \.$alert, action: \.alert))
     }
 }
