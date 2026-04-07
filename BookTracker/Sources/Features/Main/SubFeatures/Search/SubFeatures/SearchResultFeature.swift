@@ -47,6 +47,8 @@ struct SearchResultFeature {
     @Dependency(\.externalBookService) var bookService
     @Dependency(\.continuousClock) var clock
     @Dependency(\.searchHistory) var searchHistory
+    @Dependency(\.searchKeywordService) var searchKeywordService
+
     @Dependency(\.date) var date
     private enum CancelID { case search, loadMore }
 
@@ -120,7 +122,14 @@ struct SearchResultFeature {
                 state.externalBooks = books
                 state.nextIndex = books.count
                 state.hasMore = books.count == state.pageSize
-                return .none
+                let trimmed = state.keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                return .run {
+                    _ in
+                    if !trimmed.isEmpty {
+                        await searchKeywordService.record(trimmed)
+                    }
+                }
 
             case .searchResponse(.failure(let error)):
                 state.isLoading = false

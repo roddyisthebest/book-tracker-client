@@ -10,13 +10,13 @@ import SwiftUI
 
 struct RecommendedSearchBadge: View {
     let id: String
-    let book: ExternalBook
+    let keyword: String
 
     let onTapped: () -> Void
 
     var body: some View {
         Button(action: onTapped) {
-            Text(book.title)
+            Text(keyword)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .allowsTightening(true)
@@ -30,5 +30,5 @@ struct RecommendedSearchBadge: View {
 }
 
 #Preview {
-    RecommendedSearchBadge(id: "23123", book: ExternalBook(id: "asd", title: "괜찮아.. 괜찮아"), onTapped: {})
+    RecommendedSearchBadge(id: "23123", keyword: "괜찮아", onTapped: {})
 }
