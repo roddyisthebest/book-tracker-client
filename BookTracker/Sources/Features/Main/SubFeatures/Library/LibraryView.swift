@@ -42,8 +42,12 @@ struct LibraryView: View {
                     ForEach(collections, id: \.id) { collection in
                         CollectionCard(
                             summary: collection,
-                            onTap: {},
-                            onDelete: {}
+                            onTap: {
+                                store.send(.collectionCardTapped(collection: collection))
+                            },
+                            onDelete: {
+                                store.send(.deleteCollectionButtonTapped(id: collection.id))
+                            }
                         )
                         .frame(width: 150)
                     }
@@ -282,8 +286,29 @@ struct LibraryView: View {
         .sheet(store: store.scope(state: \.$destination.receiptDetail, action: \.destination.receiptDetail)) { receiptDetailStore in
             ReceiptDetailView(store: receiptDetailStore)
         }
+        .alert(
+            store: store.scope(
+                state: \.$destination.alert,
+                action: \.destination.alert
+            )
+        )
         .navigationTitle("서재")
         .navigationBarTitleDisplayMode(.inline)
+        .disabled(store.isDeletingCollection)
+        .overlay {
+            if store.isDeletingCollection {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.default, value: store.isDeletingCollection)
     }
 }
 
@@ -294,4 +319,3 @@ struct LibraryView: View {
         }))
     }
 }
-

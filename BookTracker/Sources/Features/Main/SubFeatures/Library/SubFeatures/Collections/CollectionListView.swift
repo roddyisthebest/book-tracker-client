@@ -47,6 +47,22 @@ struct CollectionListView: View {
                 action: \.destination.alert
             )
         )
+        .disabled(store.isDeleting)
+        .overlay {
+            if store.isDeleting {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.default, value: store.isDeleting)
     }
 
     private static let gridColumns: [GridItem] = Array(
@@ -225,3 +241,4 @@ struct CollectionListView: View {
         )
     }
 }
+
