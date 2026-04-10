@@ -56,16 +56,16 @@ struct AddBooksView: View {
             }
         }
         .background(Color.appSurface)
-        .navigationTitle("책 추가")
+        .navigationTitle("add_books")
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
-        .navigationSubtitle("컬렉션에 책을 추가해보세요")
+        .navigationSubtitle(String(localized: "add_books_subtitle"))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Label("뒤로가기", systemImage: "chevron.left")
+                    Label("back", systemImage: "chevron.left")
                 }
             }
         }
@@ -74,7 +74,7 @@ struct AddBooksView: View {
                 if store.isSubmitEnabled {
                     DefaultButton(action: {
                         store.send(.addButtonTapped)
-                    }) { Text("추가하기") }
+                    }) { Text("add") }
                 }
             }
             .padding(.horizontal, 20)

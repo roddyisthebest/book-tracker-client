@@ -19,7 +19,7 @@ struct ReceiptListView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
-        .navigationTitle("대출증/영수증")
+        .navigationTitle("rental_receipt_slash")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
@@ -37,18 +37,18 @@ struct ReceiptListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Picker("정렬", selection: $store.sortOption) {
-                    Text("오래된순").tag(BookSortOption.oldest)
-                    Text("최신순").tag(BookSortOption.newest)
-                    Text("제목순(가나다)").tag(BookSortOption.titleAsc)
-                    Text("제목순(반대)").tag(BookSortOption.titleDesc)
+                Picker("sort", selection: $store.sortOption) {
+                    Text("sort_oldest").tag(BookSortOption.oldest)
+                    Text("sort_newest").tag(BookSortOption.newest)
+                    Text("sort_title_asc").tag(BookSortOption.titleAsc)
+                    Text("sort_title_desc").tag(BookSortOption.titleDesc)
                 }
                 .pickerStyle(.inline)
 
                 Divider()
 
                 Button(role: .destructive, action: { store.send(.allDeleteButtonTapped) }) {
-                    Label("전체 삭제", systemImage: "trash")
+                    Label("delete_all", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -76,7 +76,7 @@ struct ReceiptListView: View {
     private var loadingView: some View {
         VStack(spacing: 14) {
             ProgressView().tint(.white)
-            Text("불러오는 중이에요...")
+            Text("loading")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
         }
@@ -88,14 +88,14 @@ struct ReceiptListView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
-            Text("목록을 불러오지 못했어요.")
+            Text("list_load_failed")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.appPrimaryText)
-            Text("잠시 후 다시 시도해주세요.")
+            Text("try_again_later")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
             Button(action: { store.send(.onRefresh) }) {
-                Text("다시 시도")
+                Text("retry")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: 180)
                     .padding(.vertical, 12)
@@ -113,15 +113,15 @@ struct ReceiptListView: View {
             Image(systemName: "doc.text")
                 .font(.system(size: 28))
                 .foregroundStyle(Color.appSecondaryText)
-            Text("표시할 항목이 없어요.")
+            Text("no_items_to_display")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.appPrimaryText)
-            Text("다른 탭을 선택하거나 새로고침 해보세요.")
+            Text("try_other_tab_or_refresh")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.appSecondaryText)
             Button(action: { store.send(.onRefresh) }) {
-                Text("새로고침")
+                Text("refresh")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: 180)
                     .padding(.vertical, 12)
@@ -135,9 +135,9 @@ struct ReceiptListView: View {
     }
 
     private var segmentedPicker: some View {
-        Picker("탭", selection: $store.receiptType) {
-            Label("대출증", systemImage: "book").tag(ReceiptType.rental)
-            Label("영수증", systemImage: "doc.text").tag(ReceiptType.purchase)
+        Picker("tab", selection: $store.receiptType) {
+            Label("rental_receipt", systemImage: "book").tag(ReceiptType.rental)
+            Label("purchase_receipt", systemImage: "doc.text").tag(ReceiptType.purchase)
         }
         .pickerStyle(.segmented)
         .controlSize(.large)

@@ -24,10 +24,10 @@ struct StatView: View {
                                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                         Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
                                     }
-                                Text("독서 리포트").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                Text("reading_report").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                 Spacer()
                             }
-                            Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
+                            Text("reading_report_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
                         }
                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
 
@@ -38,8 +38,8 @@ struct StatView: View {
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("나의 독서 기록").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText).lineLimit(1)
-                        Text("독서 통계와 그래프로 나의 독서 패턴을 분석해보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                        Text("my_reading_record").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText).lineLimit(1)
+                        Text("reading_report_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {
@@ -53,7 +53,7 @@ struct StatView: View {
                                         }
 
                                     HStack {
-                                        Text("완독 독서 캘린더").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("done_reading_calendar").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -70,7 +70,7 @@ struct StatView: View {
                                         }
 
                                     HStack {
-                                        Text("독서 트래커").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("reading_tracker").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -111,7 +111,7 @@ struct StatView: View {
             destinationView(for: destinationStore)
         }
 
-        .navigationTitle("통계")
+        .navigationTitle("statistics")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

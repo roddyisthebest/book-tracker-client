@@ -51,7 +51,7 @@ struct AuthView: View {
                     DefaultButton(action: {
                         store.send(.emailLoginButtonTapped)
                     }) {
-                        Text("이메일 로그인")
+                        Text("email_login")
                     }
 
                     Button(action: {
@@ -61,7 +61,7 @@ struct AuthView: View {
                             if store.isGoogleLoginLoading {
                                 HStack(spacing: 8) {
                                     ProgressView().tint(Color.appAccent)
-                                    Text("구글 로그인 중…")
+                                    Text("google_login_loading")
                                         .fontWeight(.bold)
                                         .font(.headline)
                                 }
@@ -72,7 +72,7 @@ struct AuthView: View {
                                         .renderingMode(.original)
                                         .frame(width: 20, height: 20)
 
-                                    Text("구글 로그인")
+                                    Text("google_login")
                                         .fontWeight(.bold)
                                         .font(.headline)
                                 }
@@ -93,12 +93,12 @@ struct AuthView: View {
                             if store.isAppleLoginLoading {
                                 HStack(spacing: 8) {
                                     ProgressView().tint(Color.appAccent)
-                                    Text("애플 로그인 중…")
+                                    Text("apple_login_loading")
                                         .fontWeight(.bold)
                                         .font(.headline)
                                 }
                             } else {
-                                Label("애플 로그인", systemImage: "apple.logo")
+                                Label("apple_login", systemImage: "apple.logo")
                                     .fontWeight(.bold)
                                     .font(.headline)
                             }

@@ -12,7 +12,7 @@ struct FormTextField: View {
     var body: some View {
         ZStack(alignment: .leading) {
             if text.isEmpty {
-                Text(placeholder)
+                Text(LocalizedStringKey(placeholder))
                     .foregroundStyle(Color.appSecondaryText)
                     .padding(.horizontal, 16)
             }

@@ -17,12 +17,12 @@ struct SignupView: View {
         VStack(spacing: 30) {
             VStack {
                 HStack {
-                    FormLabel(text: "이메일")
+                    FormLabel(text: String(localized: "email"))
                     Spacer()
                 }
                 TextField("",
                           text: $store.email,
-                          prompt: Text("이메일을 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                          prompt: Text("enter_email_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                     .foregroundStyle(Color.appPrimaryText)
                     .padding()
                     .background(Color.appSurface)
@@ -42,14 +42,14 @@ struct SignupView: View {
 
             VStack {
                 HStack {
-                    FormLabel(text: "비밀번호")
+                    FormLabel(text: String(localized: "password"))
                     Spacer()
                 }
 
                 if isPasswordVisible {
                     TextField("",
                               text: $store.password,
-                              prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                              prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -69,7 +69,7 @@ struct SignupView: View {
                 } else {
                     SecureField("",
                                 text: $store.password,
-                                prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                                prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -97,14 +97,14 @@ struct SignupView: View {
 
             VStack {
                 HStack {
-                    FormLabel(text: "비밀번호 확인")
+                    FormLabel(text: String(localized: "password_confirm"))
                     Spacer()
                 }
 
                 if isPasswordConfirmationVisible {
                     TextField("",
                               text: $store.passwordConfirmation,
-                              prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                              prompt: Text("reenter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -124,7 +124,7 @@ struct SignupView: View {
                 } else {
                     SecureField("",
                                 text: $store.passwordConfirmation,
-                                prompt: Text("비밀번호를 다시 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                                prompt: Text("reenter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -153,7 +153,7 @@ struct SignupView: View {
             Spacer()
             DefaultButton(action: { store.send(.submitButtonTapped) }) {
                 ZStack {
-                    Text("회원가입")
+                    Text("signup")
                         .opacity(store.isLoading ? 0 : 1)
                     if store.isLoading {
                         ProgressView()
@@ -167,7 +167,7 @@ struct SignupView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(Color.appBackground)
-        .navigationTitle("이메일 회원가입")
+        .navigationTitle("email_signup")
         .navigationBarTitleDisplayMode(.inline)
         .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     }

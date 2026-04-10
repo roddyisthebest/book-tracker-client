@@ -47,9 +47,9 @@ struct ReadingCalendarView: View {
             VStack(spacing: 15) {
                 VStack(spacing: 20) {
                     HStack(alignment: .center, spacing: 10) {
-                        Picker("년", selection: yearBinding) {
+                        Picker("year", selection: yearBinding) {
                             ForEach(years, id: \.self) { year in
-                                (Text(year, format: .number.grouping(.never)) + Text("년"))
+                                (Text(year, format: .number.grouping(.never)) + Text("year_suffix"))
                                     .tag(year)
                             }
                         }
@@ -59,9 +59,9 @@ struct ReadingCalendarView: View {
                         .background(Color.appSurface)
                         .cornerRadius(10)
 
-                        Picker("월", selection: monthBinding) {
+                        Picker("month", selection: monthBinding) {
                             ForEach(1...12, id: \.self) { month in
-                                Text("\(month)월").tag(month)
+                                Text(String(format: String(localized: "month_format %@"), "\(month)")).tag(month)
                             }
                         }
                         .pickerStyle(.menu)
@@ -76,7 +76,7 @@ struct ReadingCalendarView: View {
                 if store.isLoading && store.readingRecords == nil {
                     VStack(spacing: 8) {
                         ProgressView().tint(.white)
-                        Text("불러오는 중…")
+                        Text("loading")
                             .font(.footnote)
                             .foregroundStyle(Color.appSecondaryText)
                     }
@@ -84,11 +84,11 @@ struct ReadingCalendarView: View {
                     .padding()
                 } else if store.isError {
                     VStack(spacing: 8) {
-                        Text("달력을 불러오지 못했어요")
+                        Text("calendar_load_failed")
                             .font(.footnote)
                             .foregroundStyle(.red.opacity(0.85))
                         Button(action: { store.send(.loadData) }) {
-                            Text("다시 가져오기").font(.caption)
+                            Text("retry").font(.caption)
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 200)
@@ -124,13 +124,13 @@ struct ReadingCalendarView: View {
 
     var body: some View {
         mainContent
-            .navigationTitle("완독 독서 캘린더")
+            .navigationTitle("done_reading_calendar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button(role: .destructive, action: {}) {
-                            Label("전체 삭제", systemImage: "trash")
+                            Label("delete_all", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")

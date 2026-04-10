@@ -16,7 +16,9 @@ struct ReceiptCard: View {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.dateFormat = "yyyy년 M월 d일"
+        formatter.locale = Locale.current
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
         return formatter
     }()
 
@@ -34,7 +36,7 @@ struct ReceiptCard: View {
                         HStack {
                             Image(systemName: "person.text.rectangle.fill")
                                 .font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appRentalAccent)
-                            Text("대출증").foregroundStyle(Color.appRentalAccent).font(.system(size: 14, weight: .bold))
+                            Text("rental_receipt").foregroundStyle(Color.appRentalAccent).font(.system(size: 14, weight: .bold))
 
                         }.padding(10).background(Color.appRentalBadgeFill).cornerRadius(15)
                     }
@@ -42,14 +44,14 @@ struct ReceiptCard: View {
                         HStack {
                             Image(systemName: "receipt.fill")
                                 .font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.appPurchaseAccent)
-                            Text("영수증").foregroundStyle(Color.appPurchaseAccent).font(.system(size: 14, weight: .bold))
+                            Text("purchase_receipt").foregroundStyle(Color.appPurchaseAccent).font(.system(size: 14, weight: .bold))
                         }.padding(10).background(Color.appPurchaseBadgeFill).cornerRadius(15)
                     }
                     Spacer()
                 }
 
                 HStack(spacing: 2.5) {
-                    let firstBookTitle = receipt.firstBookTitle ?? (receipt.type == .rental ? "대출증" : "영수증")
+                    let firstBookTitle = receipt.firstBookTitle ?? (receipt.type == .rental ? String(localized: "rental_receipt") : String(localized: "purchase_receipt"))
                     Text(firstBookTitle)
                         .foregroundStyle(Color.appPrimaryText)
                         .fontWeight(.semibold)
@@ -58,7 +60,7 @@ struct ReceiptCard: View {
 
                     let restQuantity = max(receipt.totalQuantity - 1, 0)
                     if restQuantity > 0 {
-                        Text("외 \(restQuantity)건")
+                        Text(String(format: String(localized: "and_more_count %@"), "\(restQuantity)"))
                             .foregroundStyle(Color.appPrimaryText)
                             .fontWeight(.bold).layoutPriority(1)
                     }
@@ -78,7 +80,7 @@ struct ReceiptCard: View {
                             .font(.system(size: 14)).foregroundStyle(Color.appPurchaseAccent)
 
                         if let totalPrice = receipt.totalPrice, totalPrice > 0 {
-                            Text("\(totalPrice)원").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
+                            Text("price_won \(totalPrice)").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
                         }
                     }
 
@@ -101,14 +103,14 @@ struct ReceiptCard: View {
             Button(role: .destructive) {
                 onDelete?()
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label("delete", systemImage: "trash")
             }
 
             // 필요하면 다른 메뉴도 추가 가능 (예: 공유)
             Button {
                 // 공유 등 다른 액션
             } label: {
-                Label("공유", systemImage: "square.and.arrow.up")
+                Label("share", systemImage: "square.and.arrow.up")
             }
         }
     }

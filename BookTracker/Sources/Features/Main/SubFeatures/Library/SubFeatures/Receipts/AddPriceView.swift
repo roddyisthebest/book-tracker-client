@@ -17,7 +17,7 @@ struct AddPriceView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("가격")
+                    Text("price")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
@@ -26,7 +26,7 @@ struct AddPriceView: View {
                             TextField(
                                 "",
                                 text: priceBinding,
-                                prompt: Text("가격 입력").foregroundStyle(Color.appSecondaryText)
+                                prompt: Text("enter_price").foregroundStyle(Color.appSecondaryText)
                             )
                             .keyboardType(.numberPad)
                             .foregroundStyle(Color.appPrimaryText)
@@ -49,7 +49,7 @@ struct AddPriceView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("화폐 코드")
+                    Text("currency_code")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
@@ -85,7 +85,7 @@ struct AddPriceView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("미리보기")
+                    Text("preview")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
@@ -103,14 +103,14 @@ struct AddPriceView: View {
         }
         .listStyle(.plain)
         .padding(0)
-        .navigationTitle("영수증 가격 추가")
+        .navigationTitle("add_receipt_price")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Label("뒤로가기", systemImage: "chevron.left")
+                    Label("back", systemImage: "chevron.left")
                 }
             }
 
@@ -119,7 +119,7 @@ struct AddPriceView: View {
                     store.send(.addButtonTapped)
                 } label: {
                     ZStack {
-                        Text("추가하기")
+                        Text("add")
                             .opacity(store.isLoading ? 0 : 1)
 
                         if store.isLoading {

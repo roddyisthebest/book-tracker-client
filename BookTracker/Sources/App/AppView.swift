@@ -38,7 +38,7 @@ struct AppView: View {
 
         case .launching:
             VStack {
-                Text("Loading...")
+                Text("loading")
             }
             .task {
                 store.send(.onAppear)
@@ -48,7 +48,7 @@ struct AppView: View {
             VStack {
                 ProgressView()
                     .progressViewStyle(.circular)
-                Text("Signing out...")
+                Text("signing_out")
             }
         }
     }

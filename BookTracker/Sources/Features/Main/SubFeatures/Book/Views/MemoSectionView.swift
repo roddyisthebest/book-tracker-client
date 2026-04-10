@@ -13,7 +13,7 @@ struct MemoSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            FormTextEditor(placeholder: "메모를 입력해주세요", text: $store.note)
+            FormTextEditor(placeholder: "enter_memo_placeholder", text: $store.note)
         }
         .frame(maxWidth: .infinity)
         .listRowBackground(Color.clear)

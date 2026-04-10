@@ -132,7 +132,7 @@ extension ReceiptSelectBooksFeature {
 extension AlertState where Action == ReceiptSelectBooksFeature.Action.Alert {
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

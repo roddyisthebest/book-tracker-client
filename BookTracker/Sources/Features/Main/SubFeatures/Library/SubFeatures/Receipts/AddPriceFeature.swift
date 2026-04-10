@@ -51,7 +51,7 @@ struct AddPriceFeature {
             switch action {
             case .addButtonTapped:
                 guard let price = Int(state.price), price > 0 else {
-                    state.alert = .showAddErrorAlert(message: "가격을 올바르게 입력해주세요.")
+                    state.alert = .showAddErrorAlert(message: String(localized: "invalid_price_message"))
                     return .none
                 }
 
@@ -77,7 +77,7 @@ struct AddPriceFeature {
 
             case .addResponse(.failure):
                 state.isLoading = false
-                state.alert = .showAddErrorAlert(message: "가격 추가에 실패했어요. 다시 시도해주세요.")
+                state.alert = .showAddErrorAlert(message: String(localized: "price_add_failed"))
                 return .none
 
             case .alert(.presented(.confirmAdded(let receiptBook))):
@@ -106,10 +106,10 @@ extension AlertState where Action == AddPriceFeature.Action.Alert {
 
     static func showAddSuccessAlert(book: ReceiptBook) -> Self {
         Self {
-            TextState("영수증에 추가되었습니다.")
+            TextState("added_to_receipt")
         } actions: {
             ButtonState(role: .cancel, action: .confirmAdded(receiptBook: book)) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

@@ -21,7 +21,7 @@ struct ReceiptRow: View {
             formatter.groupingSeparator = ","
             formatter.maximumFractionDigits = 0
             let value = formatter.string(from: NSNumber(value: price)) ?? "\(price)"
-            return "\(value)원"
+            return "\(value)" + String(localized: "won_unit")
         } else {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency

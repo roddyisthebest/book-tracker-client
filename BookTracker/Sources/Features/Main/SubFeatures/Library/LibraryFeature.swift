@@ -228,17 +228,17 @@ extension LibraryFeature {
 extension AlertState where Action == LibraryFeature.Action.Alert {
     static func deleteCollectionConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmCollectionDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showCollectionDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the collection.")
+            TextState("collection_delete_failed")
         }
     }
 }

@@ -11,7 +11,7 @@ struct FormTextEditor: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             if text.isEmpty {
-                Text(placeholder)
+                Text(LocalizedStringKey(placeholder))
                     .foregroundStyle(Color.appSecondaryText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 20)

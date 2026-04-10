@@ -249,17 +249,17 @@ extension MyBookListFeature {
 extension AlertState where Action == MyBookListFeature.Action.Alert {
     static func deleteConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

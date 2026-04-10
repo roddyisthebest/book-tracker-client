@@ -15,10 +15,10 @@ struct IssueReceiptView: View {
     @ViewBuilder
     private var typeSpecific: some View {
         if case .purchase = store.type {
-            FormCard(labelText: "구매처") {
-                FormTextField(placeholder: "구매처를 입력해주세요", text: $store.source)
+            FormCard(labelText: String(localized: "purchase_place_label")) {
+                FormTextField(placeholder: String(localized: "enter_purchase_place"), text: $store.source)
             }
-            FormCard(labelText: "구매날짜") {
+            FormCard(labelText: String(localized: "purchase_date_label")) {
                 DatePicker(
                     "",
                     selection: $store.receiptAt,
@@ -32,16 +32,16 @@ struct IssueReceiptView: View {
                 .background(Color.appSurfaceDeep)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             }
-            FormCard(labelText: "실제 구매 금액") {
-                FormTextField(placeholder: "23,000원", text: $store.price, keyboardType: .numberPad)
+            FormCard(labelText: String(localized: "actual_purchase_amount")) {
+                FormTextField(placeholder: String(localized: "enter_price_placeholder"), text: $store.price, keyboardType: .numberPad)
             }
             HStack(spacing: 6) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.appSecondaryText)
                 Text(store.price.isEmpty
-                     ? "미입력 시 책 가격 합산(\(store.totalPrice)원)으로 자동 계산돼요"
-                     : "총 계산된 금액: \(store.price)원 (책 가격 합산: \(store.totalPrice)원)")
+                    ? String(format: String(localized: "price_auto_calc %@"), "\(store.totalPrice)")
+                    : String(format: String(localized: "price_with_sum %@ %@"), "\(store.price)", "\(store.totalPrice)"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.appSecondaryText)
             }
@@ -49,10 +49,10 @@ struct IssueReceiptView: View {
             .listRowSeparator(.hidden)
         }
         if case .rental = store.type {
-            FormCard(labelText: "도서관") {
-                FormTextField(placeholder: "도서관을 입력해주세요", text: $store.source)
+            FormCard(labelText: String(localized: "library_label")) {
+                FormTextField(placeholder: String(localized: "enter_library"), text: $store.source)
             }
-            FormCard(labelText: "대출날짜") {
+            FormCard(labelText: String(localized: "rental_date_label")) {
                 DatePicker(
                     "",
                     selection: $store.receiptAt,
@@ -77,14 +77,14 @@ struct IssueReceiptView: View {
             .listStyle(.plain)
             .padding(0)
             .listStyle(.insetGrouped)
-            .navigationTitle(store.type == .purchase ? "영수증 발급" : "대출증 발급")
+            .navigationTitle(store.type == .purchase ? "issue_purchase_receipt" : "issue_rental_receipt")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -92,7 +92,7 @@ struct IssueReceiptView: View {
                         ProgressView()
                     }
                     else {
-                        Button("발급하기") {
+                        Button(String(localized: "issue")) {
                             store.send(.issueButtonTapped)
                         }
                     }

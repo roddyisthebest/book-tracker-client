@@ -70,7 +70,7 @@ struct ExternalBookRow: View {
 
                         if let micros = book.saleInfo?.offers?.first?.retailPrice?.amountInMicros {
                             let amount = Double(micros) / 1_000_000
-                            Text("\(Int(amount))원").fontWeight(.semibold)
+                            Text("price_won \(Int(amount))").fontWeight(.semibold)
                         }
                     }
                     Spacer()

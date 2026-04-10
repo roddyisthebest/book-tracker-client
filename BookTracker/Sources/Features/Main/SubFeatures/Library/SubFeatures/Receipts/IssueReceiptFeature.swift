@@ -97,17 +97,17 @@ struct IssueReceiptFeature {
 extension AlertState where Action == IssueReceiptFeature.Action.Alert {
     static func showCreationErrorAlert() -> Self {
         Self {
-            TextState("Failed to create the receipt.")
+            TextState("receipt_create_failed")
         }
     }
 
     static func showCreationSuccessAlert() -> Self {
         Self {
-            TextState("성공적으로 발급되었습니다.")
+            TextState("receipt_issued_success")
         }
         actions: {
             ButtonState(role: .cancel, action: .confirmCreation) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

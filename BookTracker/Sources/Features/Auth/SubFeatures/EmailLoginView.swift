@@ -17,12 +17,12 @@ struct EmailLoginView: View {
         VStack(spacing: 30) {
             VStack {
                 HStack {
-                    FormLabel(text: "이메일")
+                    FormLabel(text: String(localized: "email"))
                     Spacer()
                 }
                 TextField("",
                           text: $store.email,
-                          prompt: Text("이메일을 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                          prompt: Text("enter_email_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                     .foregroundStyle(Color.appPrimaryText)
                     .padding()
                     .background(Color.appSurface)
@@ -42,14 +42,14 @@ struct EmailLoginView: View {
 
             VStack {
                 HStack {
-                    FormLabel(text: "비밀번호")
+                    FormLabel(text: String(localized: "password"))
                     Spacer()
                 }
 
                 if isPasswordVisible {
                     TextField("",
                               text: $store.password,
-                              prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                              prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -69,7 +69,7 @@ struct EmailLoginView: View {
                 } else {
                     SecureField("",
                                 text: $store.password,
-                                prompt: Text("비밀번호를 입력해주세요").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                                prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
@@ -99,7 +99,7 @@ struct EmailLoginView: View {
             VStack(spacing: 20) {
                 DefaultButton(action: { store.send(.submitButtonTapped) }) {
                     ZStack {
-                        Text("로그인")
+                        Text("login")
                             .opacity(store.isLoading ? 0 : 1)
                         if store.isLoading {
                             ProgressView()
@@ -111,7 +111,7 @@ struct EmailLoginView: View {
                 Button(action: {
                     store.send(.signupButtonTapped)
                 }) {
-                    Text("회원가입").foregroundStyle(.gray).fontWeight(.semibold)
+                    Text("signup").foregroundStyle(.gray).fontWeight(.semibold)
                 }
             }
         }
@@ -119,7 +119,7 @@ struct EmailLoginView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(Color.appBackground)
-        .navigationTitle("이메일 로그인")
+        .navigationTitle("email_login")
         .navigationBarTitleDisplayMode(.inline)
         .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     }

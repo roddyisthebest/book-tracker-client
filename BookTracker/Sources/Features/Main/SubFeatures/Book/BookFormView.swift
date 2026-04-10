@@ -14,23 +14,23 @@ struct BookFormView: View {
     @ViewBuilder
     private var statusSpecific: some View {
         if case .reading = store.status {
-            FormCard(labelText: "독서기간") { DateSectionView(store: store) }
-            FormCard(labelText: "진행률") {
+            FormCard(labelText: String(localized: "reading_period_label")) { DateSectionView(store: store) }
+            FormCard(labelText: String(localized: "progress_label")) {
                 ProgressSectionView(store: store)
             }
-            FormCard(labelText: "메모") { MemoSectionView(store: store) }
+            FormCard(labelText: String(localized: "memo_label")) { MemoSectionView(store: store) }
         }
         if case .done = store.status {
-            FormCard(labelText: "독서기간") { DateRangeSectionView(store: store) }
-            FormCard(labelText: "별점 (옆으로 스크롤 가능)") { RatingSectionView(store: store) }
+            FormCard(labelText: String(localized: "reading_period_label")) { DateRangeSectionView(store: store) }
+            FormCard(labelText: String(localized: "rating_label")) { RatingSectionView(store: store) }
 
-            FormCard(labelText: "리뷰") { ReviewSectionView(store: store) }
+            FormCard(labelText: String(localized: "review_label")) { ReviewSectionView(store: store) }
         }
         if case .want = store.status {
-            FormCard(labelText: "메모") { MemoSectionView(store: store) }
+            FormCard(labelText: String(localized: "memo_label")) { MemoSectionView(store: store) }
         }
         if case .dropped = store.status {
-            FormCard(labelText: "중단이유") { ReasonSectionView(store: store) }
+            FormCard(labelText: String(localized: "drop_reason_label")) { ReasonSectionView(store: store) }
         }
     }
 
@@ -38,8 +38,8 @@ struct BookFormView: View {
         NavigationStack {
             List {
                 if !store.isChangeModeActive {
-                    FormCard(labelText: "책종류") { TypeSectionView(store: store) }
-                    FormCard(labelText: "상태") { StatusSectionView(store: store) }
+                    FormCard(labelText: String(localized: "book_type_label")) { TypeSectionView(store: store) }
+                    FormCard(labelText: String(localized: "status_label")) { StatusSectionView(store: store) }
                 }
 
                 statusSpecific
@@ -53,18 +53,18 @@ struct BookFormView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if store.isLoading {
                         ProgressView()
                     } else if store.isEditing {
-                        Button("저장하기") {
+                        Button(String(localized: "update")) {
                             store.send(.saveButtonTapped)
                         }
                     } else {
-                        Button("생성하기") {
+                        Button(String(localized: "create")) {
                             store.send(.addButtonTapped)
                         }
                     }

@@ -117,12 +117,12 @@ extension EmailLoginFeature.State {
 
     // 뷰 표시용 에러 메시지(필요 시)
     var emailError: String? {
-        if email.isEmpty { return "이메일을 입력해주세요" }
-        return isEmailValid ? nil : "올바른 이메일 형식이 아니에요."
+        if email.isEmpty { return String(localized: "enter_email_placeholder") }
+        return isEmailValid ? nil : String(localized: "invalid_email_format")
     }
 
     var passwordError: String? {
-        if password.isEmpty { return "비밀번호를 입력해주세요" }
+        if password.isEmpty { return String(localized: "enter_password_placeholder") }
 
         return nil
     }
@@ -139,10 +139,10 @@ extension EmailLoginFeature.State {
 extension AlertState where Action == EmailLoginFeature.Action.Alert {
     static func showErrorMessage(message: String?) -> Self {
         Self {
-            TextState(message ?? "에러발생")
+            TextState(message ?? String(localized: "error_title"))
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

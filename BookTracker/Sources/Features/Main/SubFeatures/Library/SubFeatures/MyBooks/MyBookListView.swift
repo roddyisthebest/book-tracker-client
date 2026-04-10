@@ -27,7 +27,7 @@ struct MyBookListView: View {
         .animation(.easeInOut, value: store.isDeleting)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
-        .navigationTitle("책장")
+        .navigationTitle("bookshelf")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .sheet(store: store.scope(state: \.$destination.viewBookDetail, action: \.destination.viewBookDetail)) { bookDetailStore in
@@ -43,11 +43,11 @@ struct MyBookListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Picker("정렬", selection: $store.sortOption) {
-                    Text("오래된순").tag(BookSortOption.oldest)
-                    Text("최신순").tag(BookSortOption.newest)
-                    Text("제목순(가나다)").tag(BookSortOption.titleAsc)
-                    Text("제목순(반대)").tag(BookSortOption.titleDesc)
+                Picker("sort", selection: $store.sortOption) {
+                    Text("sort_oldest").tag(BookSortOption.oldest)
+                    Text("sort_newest").tag(BookSortOption.newest)
+                    Text("sort_title_asc").tag(BookSortOption.titleAsc)
+                    Text("sort_title_desc").tag(BookSortOption.titleDesc)
                 }
                 .pickerStyle(.inline)
 
@@ -56,7 +56,7 @@ struct MyBookListView: View {
                 Button(role: .destructive, action: {
                     // store.send(.allDeleteButtonTapped)
                 }) {
-                    Label("전체 삭제", systemImage: "trash")
+                    Label("delete_all", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -84,11 +84,11 @@ struct MyBookListView: View {
             .frame(height: 50)
 
         } else {
-            Picker("탭", selection: $store.bookStatus) {
-                Text("완독(\((store.statusCounts?[.done]) ?? 0))").tag(BookStatus.done)
-                Text("읽는 중(\((store.statusCounts?[.reading]) ?? 0))").tag(BookStatus.reading)
-                Text("읽고 싶은(\((store.statusCounts?[.want]) ?? 0))").tag(BookStatus.want)
-                Text("읽다 만(\((store.statusCounts?[.dropped]) ?? 0))").tag(BookStatus.dropped)
+            Picker("tab", selection: $store.bookStatus) {
+                Text("\(String(localized: "status_done")) (\((store.statusCounts?[.done]) ?? 0))").tag(BookStatus.done)
+                Text("\(String(localized: "status_reading")) (\((store.statusCounts?[.reading]) ?? 0))").tag(BookStatus.reading)
+                Text("\(String(localized: "status_want")) (\((store.statusCounts?[.want]) ?? 0))").tag(BookStatus.want)
+                Text("\(String(localized: "status_dropped")) (\((store.statusCounts?[.dropped]) ?? 0))").tag(BookStatus.dropped)
             }
             .pickerStyle(.segmented)
             .controlSize(.large)

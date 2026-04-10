@@ -17,10 +17,10 @@ enum BookStatus: Equatable, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .reading: return "읽는 중"
-        case .want: return "읽고 싶은"
-        case .done: return "완독"
-        case .dropped: return "읽다 만"
+        case .reading: return String(localized: "status_reading")
+        case .want: return String(localized: "status_want")
+        case .done: return String(localized: "status_done")
+        case .dropped: return String(localized: "status_dropped")
         }
     }
 }
@@ -33,8 +33,8 @@ enum BookType: Equatable, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .ebook: return "전자책"
-        case .paper: return "종이책"
+        case .ebook: return String(localized: "ebook")
+        case .paper: return String(localized: "paper_book")
         }
     }
 }

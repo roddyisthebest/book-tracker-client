@@ -30,6 +30,8 @@ let project = Project(
                     "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
                     "ENV": "$(ENV)",
                     "GOOGLE_BOOKS_API_KEY": "$(GOOGLE_BOOKS_API_KEY)",
+                    "CFBundleLocalizations": ["ko", "en", "ja"],
+                    "CFBundleDevelopmentRegion": "ko",
                 ]
             ),
             sources: ["BookTracker/Sources/**"],

@@ -29,11 +29,11 @@ struct CollectionCard: View {
         if let name = summary.name, !name.isEmpty {
             return name
         }
-        return "이름 없는 컬렉션"
+        return String(localized: "unnamed_collection")
     }
 
     private var countText: String {
-        "\(summary.bookCount)권"
+        String(format: String(localized: "book_count %@"), "\(summary.bookCount)")
     }
 
     private var previewBooks: [CollectionPreviewBook] {
@@ -68,14 +68,14 @@ struct CollectionCard: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label("delete", systemImage: "trash")
             }
 
             if let onShare {
                 Button {
                     onShare()
                 } label: {
-                    Label("공유", systemImage: "square.and.arrow.up")
+                    Label("share", systemImage: "square.and.arrow.up")
                 }
             }
         }
@@ -109,7 +109,7 @@ struct CollectionCard: View {
                         .font(.system(size: 20))
                         .foregroundStyle(Color.appSecondaryText)
 
-                    Text("책이 아직 없어요")
+                    Text("no_books_yet")
                         .font(.caption)
                         .foregroundStyle(Color.appSecondaryText)
                 }

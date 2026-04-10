@@ -35,11 +35,11 @@ struct CollectionDetailView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
 
-            Text("문제가 발생했어요")
+            Text("error_occurred")
                 .font(.headline)
                 .foregroundStyle(Color.appPrimaryText)
 
-            Button("다시 시도") {
+            Button(String(localized: "retry")) {
                 store.send(.onAppear)
             }
             .buttonStyle(.borderedProminent)
@@ -104,7 +104,7 @@ struct CollectionDetailView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .navigationTitle(store.collection.name ?? "컬렉션")
+            .navigationTitle(store.collection.name ?? String(localized: "collection"))
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
             .navigationSubtitle(store.collection.description ?? "")
@@ -131,36 +131,36 @@ struct CollectionDetailView: View {
             Button {
                 dismiss()
             } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
+                Label("back", systemImage: "chevron.left")
             }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Menu {
-                    Button("컬렉션 편집하기", systemImage: "books.vertical.circle") {
+                    Button(String(localized: "edit_collection"), systemImage: "books.vertical.circle") {
                         store.send(.editButtonTapped(.collection))
                     }
-                    Button("책 편집하기", systemImage: "apple.books.pages") {
+                    Button(String(localized: "edit_books"), systemImage: "apple.books.pages") {
                         store.send(.editButtonTapped(.books))
                     }
 
                 } label: {
                     Image(systemName: "pencil.circle")
-                    Text("편집하기")
+                    Text("edit")
                 }
                 Button(role: .destructive) {
                     store.send(.deleteButtonTapped)
                 } label: {
-                    Label("삭제하기", systemImage: "trash")
+                    Label("delete", systemImage: "trash")
                 }
                 .tint(.red)
 
-                Picker("정렬", selection: $store.sortOption) {
-                    Text("오래된순").tag(BookSortOption.oldest)
-                    Text("최신순").tag(BookSortOption.newest)
-                    Text("제목순(가나다)").tag(BookSortOption.titleAsc)
-                    Text("제목순(반대)").tag(BookSortOption.titleDesc)
+                Picker("sort", selection: $store.sortOption) {
+                    Text("sort_oldest").tag(BookSortOption.oldest)
+                    Text("sort_newest").tag(BookSortOption.newest)
+                    Text("sort_title_asc").tag(BookSortOption.titleAsc)
+                    Text("sort_title_desc").tag(BookSortOption.titleDesc)
                 }
                 .pickerStyle(.inline)
                 // 여기 정렬 양뱡향 바인딩 추가해바

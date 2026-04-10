@@ -94,7 +94,7 @@ struct BookDetailFeature {
             case .fetch:
                 guard let id = state.id else {
                     state.isLoading = false
-                    state.errorMessage = "잘못된 요청입니다. 책 ID가 없습니다."
+                    state.errorMessage = String(localized: "invalid_book_request")
                     return .none
                 }
                 state.isLoading = true
@@ -192,23 +192,23 @@ extension BookDetailFeature {
 extension AlertState where Action == BookDetailFeature.Action.Alert {
     static func deleteConfirmation() -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showUpdateAccessDeniedAlert() -> Self {
         Self {
-            TextState("You don't have permission to update this book.")
+            TextState("no_permission_update")
         }
     }
 
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

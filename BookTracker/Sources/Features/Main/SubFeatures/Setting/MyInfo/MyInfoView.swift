@@ -75,7 +75,7 @@ struct MyInfoView: View {
                                 store.send(.nameEditButtonTapped)
                             }) {
                                 HStack(spacing: 10) {
-                                    StatusRow(key: "이름", value: store.profile?.name ?? "unknown")
+                                    StatusRow(key: String(localized: "name_label"), value: store.profile?.name ?? "unknown")
                                     Image(systemName: "chevron.right")
                                         .foregroundStyle(.gray)
                                 }
@@ -90,14 +90,14 @@ struct MyInfoView: View {
 
                             } else if store.isError {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Text("계정 정보를 불러오지 못했어요")
+                                    Text("account_info_load_failed")
                                         .font(.system(size: 15, weight: .semibold))
                                         .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
-                                        Text("다시 시도")
+                                        Text("retry")
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
@@ -111,18 +111,18 @@ struct MyInfoView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             } else if let authInfo = store.myAuthInfo, let email = authInfo.email, let provider = authInfo.provider {
-                                StatusRow(key: "이메일", value: email)
-                                StatusRow(key: "로그인 수단", value: provider)
+                                StatusRow(key: String(localized: "email_label"), value: email)
+                                StatusRow(key: String(localized: "login_method"), value: provider)
                             } else {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Text("계정 정보가 없어요")
+                                    Text("no_account_info")
                                         .font(.system(size: 15, weight: .semibold))
                                         .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
-                                        Text("새로고침")
+                                        Text("refresh")
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
@@ -149,7 +149,7 @@ struct MyInfoView: View {
 
     var body: some View {
         mainContent
-            .navigationTitle("내 정보")
+            .navigationTitle("my_info")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(store: store.scope(state: \.$destination.updateName, action: \.destination.updateName)) {
                 updateNameStore in

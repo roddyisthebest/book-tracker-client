@@ -80,10 +80,10 @@ struct DataManageFeature {
 extension AlertState where Action == DataManageFeature.Action.Alert {
     static func confirmResetData() -> Self {
         Self {
-            TextState("정말 데이터를 리셋하시겠습니까?")
+            TextState("confirm_data_reset")
         } actions: {
             ButtonState(role: .destructive, action: .confirmResetData) {
-                TextState("리셋하기")
+                TextState("reset")
             }
         }
     }

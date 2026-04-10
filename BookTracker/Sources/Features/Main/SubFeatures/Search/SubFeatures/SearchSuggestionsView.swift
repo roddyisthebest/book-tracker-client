@@ -17,7 +17,7 @@ struct SearchSuggestionsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Recent Searches Section
-                Text("최근 검색어")
+                Text("recent_searches")
                     .font(.headline)
                     .foregroundStyle(Color.appPrimaryText)
                     .padding(.horizontal, 15)
@@ -48,16 +48,16 @@ struct SearchSuggestionsView: View {
                                 }
                             }
                         case .success:
-                            Text("최근 검색어가 없어요")
+                            Text("no_recent_searches")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.appSecondaryText)
                         case .failure:
                             VStack(spacing: 8) {
-                                Text("불러오지 못했어요")
+                                Text("load_failed")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.appSecondaryText)
                                 Button(action: { store.send(.loadRecents) }) {
-                                    Text("다시 시도")
+                                    Text("retry")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(Color.appPrimaryText)
                                 }
@@ -69,7 +69,7 @@ struct SearchSuggestionsView: View {
                 .padding(.bottom)
 
                 // Recommended Searches Section
-                Text("추천 검색어")
+                Text("recommended_searches")
                     .font(.headline)
                     .foregroundStyle(Color.appPrimaryText)
                     .padding(.horizontal, 15)
@@ -91,16 +91,16 @@ struct SearchSuggestionsView: View {
                                 }
                             }
                         case .success:
-                            Text("추천 검색어가 없어요")
+                            Text("no_recommended_searches")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.appSecondaryText)
                         case .failure:
                             VStack(spacing: 8) {
-                                Text("불러오지 못했어요")
+                                Text("load_failed")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.appSecondaryText)
                                 Button(action: { store.send(.loadSearchKeyword) }) {
-                                    Text("다시 시도")
+                                    Text("retry")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(Color.appPrimaryText)
                                 }

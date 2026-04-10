@@ -137,7 +137,7 @@ extension AuthFeature {
 extension AlertState where Action == AuthFeature.Action.Alert {
     static func showErrorMsg() -> Self {
         Self {
-            TextState("에러입니다.")
+            TextState("error_occurred")
         } actions: {}
     }
 }

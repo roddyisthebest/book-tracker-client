@@ -199,20 +199,20 @@ extension CollectionListFeature {
 extension AlertState where Action == CollectionListFeature.Action.Alert {
     static func deleteConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func loadMoreFailed(message: String) -> Self {
         Self {
-            TextState("더 불러오기에 실패했어요")
+            TextState("load_more_failed")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         } message: {
             TextState(message)
@@ -221,10 +221,10 @@ extension AlertState where Action == CollectionListFeature.Action.Alert {
 
     static func deleteFailed(message: String) -> Self {
         Self {
-            TextState("삭제에 실패했어요.")
+            TextState("delete_failed")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         } message: {
             TextState(message)

@@ -43,19 +43,19 @@ struct BookFormFeature {
         var title: String {
             guard let mode = changeMode else {
                 if isEditing {
-                    return "책 수정"
+                    return String(localized: "book_edit")
                 } else {
-                    return "책 추가"
+                    return String(localized: "book_add")
                 }
             }
             let label: String
             switch mode {
-            case .done: label = "완료"
-            case .reading: label = "읽는 중"
-            case .dropped: label = "중단"
-            case .want: label = "보고 싶음"
+            case .done: label = String(localized: "change_status_done")
+            case .reading: label = String(localized: "change_status_reading")
+            case .dropped: label = String(localized: "change_status_dropped")
+            case .want: label = String(localized: "change_status_want")
             }
-            return "상태 변경: \(label)"
+            return String(format: String(localized: "change_status_title %@"), label)
         }
 
         @Presents var destination: Destination.State?
@@ -278,30 +278,30 @@ extension BookFormFeature.State {
 extension AlertState where Action == BookFormFeature.Action.Alert {
     static func showErrorMessage(message: String?) -> Self {
         Self {
-            TextState(message ?? "에러발생")
+            TextState(message ?? String(localized: "error_title"))
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showCreationMessage(new: Book) -> Self {
         Self {
-            TextState("성공적으로 추가되었습니다.")
+            TextState("book_added_success")
         } actions: {
             ButtonState(role: .cancel, action: .confirmCreation(new)) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showUpdateMessage(updated: Book) -> Self {
         Self {
-            TextState("성공적으로 수정되었습니다.")
+            TextState("book_updated_success")
         } actions: {
             ButtonState(role: .cancel, action: .confirmUpdate(updated)) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

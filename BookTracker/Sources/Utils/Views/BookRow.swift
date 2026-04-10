@@ -153,14 +153,14 @@ struct BookRow: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label("delete", systemImage: "trash")
             }
 
             // 필요하면 다른 메뉴도 추가 가능 (예: 공유)
             Button {
                 // 공유 등 다른 액션
             } label: {
-                Label("공유", systemImage: "square.and.arrow.up")
+                Label("share", systemImage: "square.and.arrow.up")
             }
         }
     }

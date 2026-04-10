@@ -201,23 +201,23 @@ extension CollectionDetailFeature {
 extension AlertState where Action == CollectionDetailFeature.Action.Alert {
     static func deleteConfirmation() -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showDeletionFailedAlert() -> Self {
         Self {
-            TextState("Failed to delete the collection.")
+            TextState("collection_delete_failed")
         }
     }
 
     static func showInfiniteFetchingErrorMessage() -> Self {
         Self {
-            TextState("Failed to load more. Please try again.")
+            TextState("load_more_failed_retry")
         }
     }
 }

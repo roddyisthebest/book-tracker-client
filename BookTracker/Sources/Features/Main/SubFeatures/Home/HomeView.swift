@@ -27,11 +27,11 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 25) { // 상위 VStack도 leading
                         VStack(alignment: .leading, spacing: 5) {
-                            Text("독서 기록")
+                            Text("reading_record")
                                 .foregroundStyle(Color.appPrimaryText)
                                 .font(.title2)
                                 .fontWeight(.bold)
-                            Text("오늘 하루 독서 유무를 기록해보세요")
+                            Text("record_today_reading")
                                 .foregroundStyle(Color.appSecondaryText).fontWeight(.semibold).font(.subheadline).lineLimit(1)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -47,9 +47,9 @@ struct HomeView: View {
                             }.frame(maxWidth: .infinity, alignment: .center)
                         case (false, true):
                             HStack {
-                                Text("에러가 발생했어요. 다시 시도해 보세요.")
+                                Text("error_retry_message")
                                     .foregroundStyle(.red)
-                                Button("다시 시도하기") {
+                                Button(String(localized: "retry")) {
                                     store.send(.loadRecentWeek)
                                 }
                             }
@@ -87,8 +87,10 @@ struct HomeView: View {
                             }, label: {
                                 if store.isTodayRecordUpdating {
                                     ProgressView().tint(Color.appAccent)
+                                } else if store.didReadToday == true {
+                                    Text("did_read_today")
                                 } else {
-                                    Text(store.didReadToday == true ? "사실 독서를 하지 않았어요" : "독서를 했습니다")
+                                    Text("did_not_read_today")
                                 }
                             })
                             .disabled(store.isTodayRecordUpdating)
@@ -109,10 +111,10 @@ struct HomeView: View {
                                 .overlay(Image(systemName: "books.vertical.fill").foregroundStyle(Color.appAccent))
 
                             VStack(alignment: .leading, spacing: 2.5) {
-                                Text("내 서재 보기")
+                                Text("view_my_library")
                                     .foregroundStyle(Color.appPrimaryText).lineLimit(1)
                                     .font(.system(size: 18, weight: .bold))
-                                Text("독서 상태별로 책을 한눈에 볼 수 있어요")
+                                Text("library_status_description")
                                     .foregroundStyle(Color.appSecondaryText).fontWeight(.semibold).font(.system(size: 14)).lineLimit(1)
                             }
                             Spacer()
@@ -126,11 +128,11 @@ struct HomeView: View {
 
                     VStack(alignment: .leading, spacing: 25) { // 상위 VStack도 leading
                         VStack(alignment: .leading, spacing: 5) {
-                            Text("구매/대여")
+                            Text("purchase_rental")
                                 .foregroundStyle(Color.appPrimaryText)
                                 .font(.title2)
                                 .fontWeight(.bold)
-                            Text("한번에 책을 담고, 대출증 영수증을 발급 할 수 있어요")
+                            Text("purchase_rental_description")
                                 .foregroundStyle(Color.appSecondaryText).fontWeight(.semibold).font(.subheadline).lineLimit(1)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -147,7 +149,7 @@ struct HomeView: View {
                                             .frame(width: 40, height: 40)
                                             .overlay(Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color(hex: "#7D7DFF", default: .accentColor)))
 
-                                        Text("대출증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("issue_rental_receipt").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
 
                                         if store.rentalBookCount > 0 {
                                             RoundedRectangle(cornerRadius: 5)
@@ -172,7 +174,7 @@ struct HomeView: View {
                                             .frame(width: 40, height: 40)
                                             .overlay(Image(systemName: "receipt.fill").foregroundStyle(Color(hex: "#67E9AF", default: .accentColor)))
 
-                                        Text("영수증 발급").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("issue_purchase_receipt").font(.system(size: 18)).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
 
                                         if store.purchaseBookCount > 0 {
                                             RoundedRectangle(cornerRadius: 5)
@@ -199,7 +201,7 @@ struct HomeView: View {
             }
             .frame(maxWidth: .infinity)
             .background(Color.appBackground)
-            .navigationTitle("홈")
+            .navigationTitle("home")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 store.send(.onAppear)
@@ -224,4 +226,3 @@ struct HomeView: View {
         }))
     }
 }
-

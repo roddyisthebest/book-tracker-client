@@ -24,12 +24,12 @@ struct LibraryView: View {
 
         } else if case .failure = store.collections {
             VStack(alignment: .leading, spacing: 8) {
-                Text("컬렉션 목록을 불러오지 못했어요")
+                Text("collection_load_failed")
                     .font(.footnote)
                     .foregroundStyle(.red.opacity(0.8))
 
                 Button(action: { store.send(.loadCollections) }) {
-                    Text("다시 가져오기")
+                    Text("retry")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -73,12 +73,12 @@ struct LibraryView: View {
 
         } else if case .failure = store.statusCounts {
             VStack(alignment: .leading, spacing: 8) {
-                Text("상태 카운트를 불러오지 못했어요")
+                Text("status_count_load_failed")
                     .font(.footnote)
                     .foregroundStyle(.red.opacity(0.8))
 
                 Button(action: { store.send(.loadStatusCounts) }) {
-                    Text("다시 가져오기")
+                    Text("retry")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -92,7 +92,7 @@ struct LibraryView: View {
                 }) {
                     VStack(spacing: 10) {
                         Image(systemName: "book.pages.fill")
-                        Text("완독 \(counts[.done] ?? 0)")
+                        Text(String(format: String(localized: "status_done %@"), "\(counts[.done] ?? 0)"))
                             .font(.subheadline)
                     }
                     .frame(maxWidth: .infinity)
@@ -107,7 +107,7 @@ struct LibraryView: View {
                 }) {
                     VStack(spacing: 10) {
                         Image(systemName: "book.pages.fill")
-                        Text("읽는 중 \(counts[.reading] ?? 0)")
+                        Text(String(format: String(localized: "status_reading %@"), "\(counts[.reading] ?? 0)"))
                             .font(.subheadline)
                     }
                     .frame(maxWidth: .infinity)
@@ -122,7 +122,7 @@ struct LibraryView: View {
                 }) {
                     VStack(spacing: 10) {
                         Image(systemName: "book.pages.fill")
-                        Text("읽고싶은 \(counts[.want] ?? 0)")
+                        Text(String(format: String(localized: "status_want %@"), "\(counts[.want] ?? 0)"))
                             .font(.subheadline)
                     }
                     .frame(maxWidth: .infinity)
@@ -137,7 +137,7 @@ struct LibraryView: View {
                 }) {
                     VStack(spacing: 10) {
                         Image(systemName: "book.pages.fill")
-                        Text("읽다 만 \(counts[.dropped] ?? 0)")
+                        Text(String(format: String(localized: "status_dropped %@"), "\(counts[.dropped] ?? 0)"))
                             .font(.subheadline)
                     }
                     .frame(maxWidth: .infinity)
@@ -160,16 +160,16 @@ struct LibraryView: View {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
                         HStack {
-                            Text("내 책장 보기").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                            Text("view_my_bookshelf").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                             Button(action: {
                                 store.send(.sectionTapped(.myBooks(status: .done)))
                             }) {
-                                Text("전체보기")
+                                Text("view_all")
                                 Image(systemName: "chevron.right")
                             }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                         }
-                        Text("독서 상태별로 책을 한눈에 볼 수 있어요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
+                        Text("library_status_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
                         // Loading/Error/Success handled below
                     }
 
@@ -180,12 +180,12 @@ struct LibraryView: View {
 
                 VStack(spacing: 20) {
                     HStack {
-                        Text("컬렉션").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                        Text("collections").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                         Spacer()
                         Button(action: {
                             store.send(.sectionTapped(.collections))
                         }) {
-                            Text("전체보기")
+                            Text("view_all")
                             Image(systemName: "chevron.right")
                         }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
@@ -197,12 +197,12 @@ struct LibraryView: View {
 
                 VStack(spacing: 20) {
                     HStack {
-                        Text("대출증/영수증").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                        Text("rental_receipt_slash").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                         Spacer()
                         Button(action: {
                             store.send(.sectionTapped(.receipts))
                         }) {
-                            Text("전체보기")
+                            Text("view_all")
                             Image(systemName: "chevron.right")
                         }.fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                     }.padding(.top).padding(.horizontal)
@@ -217,12 +217,12 @@ struct LibraryView: View {
                         .frame(height: 120)
                     } else if case .failure = store.recentReceipts {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("대출증/영수증을 불러오지 못했어요")
+                            Text("receipt_load_failed")
                                 .font(.footnote)
                                 .foregroundStyle(.red.opacity(0.8))
 
                             Button(action: { store.send(.loadRecentReceipts) }) {
-                                Text("다시 가져오기")
+                                Text("retry")
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -243,7 +243,7 @@ struct LibraryView: View {
                         }
                         .frame(maxWidth: .infinity)
                     } else {
-                        Text("표시할 항목이 없어요")
+                        Text("no_items_to_display")
                             .font(.footnote)
                             .foregroundStyle(Color.appSecondaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -292,7 +292,7 @@ struct LibraryView: View {
                 action: \.destination.alert
             )
         )
-        .navigationTitle("서재")
+        .navigationTitle("library")
         .navigationBarTitleDisplayMode(.inline)
         .disabled(store.isDeletingCollection)
         .overlay {

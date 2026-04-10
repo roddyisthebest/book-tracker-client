@@ -19,7 +19,7 @@ struct CollectionListView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
-        .navigationTitle("컬렉션")
+        .navigationTitle("collections")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .task {
@@ -74,14 +74,14 @@ struct CollectionListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button("컬렉션 생성하기", systemImage: "books.vertical.circle") {
+                Button(String(localized: "create_collection"), systemImage: "books.vertical.circle") {
                     store.send(.addButtonTapped)
                 }
 
                 Button(role: .destructive, action: {
                     // store.send(.allDeleteButtonTapped)
                 }) {
-                    Label("전체 삭제", systemImage: "trash")
+                    Label("delete_all", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -144,7 +144,7 @@ struct CollectionListView: View {
     private var loadingView: some View {
         VStack(spacing: 12) {
             ProgressView()
-            Text("컬렉션을 불러오는 중...")
+            Text("loading_collections")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -163,7 +163,7 @@ struct CollectionListView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            Button("다시 시도") {
+            Button(String(localized: "retry")) {
                 store.send(.loadCollections)
             }
             .buttonStyle(.borderedProminent)
@@ -177,15 +177,15 @@ struct CollectionListView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(.secondary)
 
-            Text("아직 컬렉션이 없어요")
+            Text("no_collections_yet")
                 .font(.headline)
                 .foregroundStyle(.primary)
 
-            Text("새 컬렉션을 만들어 책을 정리해보세요.")
+            Text("create_collection_hint")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Button("컬렉션 생성하기") {
+            Button(String(localized: "create_collection")) {
                 store.send(.addButtonTapped)
             }
             .buttonStyle(.borderedProminent)

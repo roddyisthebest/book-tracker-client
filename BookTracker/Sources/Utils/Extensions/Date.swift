@@ -14,8 +14,9 @@ extension Date {
     }
 
     func toDayOfWeek() -> String {
-        let weekday = Calendar.current.component(.weekday, from: self)
-        let symbols = ["일", "월", "화", "수", "목", "금", "토"]
-        return symbols[weekday - 1]
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: self)
     }
 }

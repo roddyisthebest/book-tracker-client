@@ -79,7 +79,7 @@ struct UpdateNameFeature {
 extension AlertState where Action == UpdateNameFeature.Action.Alert {
     static func showUpdateErrorAlert() -> Self {
         Self {
-            TextState("Failed to update name. Please try again.")
+            TextState("update_name_failed")
         }
     }
 }

@@ -136,10 +136,10 @@ struct SearchResultFeature {
                 state.errorMessage = error.localizedDescription
                 state.externalBooks = []
                 state.alert = AlertState {
-                    TextState("문제가 발생했어요")
+                    TextState("error_occurred")
                 } actions: {
                     ButtonState(role: .cancel) {
-                        TextState("확인")
+                        TextState("confirm")
                     }
                 } message: {
                     TextState(error.localizedDescription)
@@ -170,10 +170,10 @@ struct SearchResultFeature {
                 state.isLoadingMore = false
                 state.errorMessage = error.localizedDescription
                 state.alert = AlertState {
-                    TextState("추가 로딩에 실패했어요")
+                    TextState("load_more_failed")
                 } actions: {
                     ButtonState(role: .cancel) {
-                        TextState("확인")
+                        TextState("confirm")
                     }
                 } message: {
                     TextState(error.localizedDescription)

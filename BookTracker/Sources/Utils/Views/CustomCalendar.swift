@@ -129,8 +129,8 @@ public struct CustomCalendar<DayContent: View>: View {
 
     private func monthTitle(for date: Date) -> String {
         let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "ko_KR")
-        fmt.dateFormat = "yyyy년 M월"
+        fmt.locale = Locale.current
+        fmt.dateFormat = DateFormatter.dateFormat(fromTemplate: "yMMMM", options: 0, locale: Locale.current)
         return fmt.string(from: date)
     }
 }

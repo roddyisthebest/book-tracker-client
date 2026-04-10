@@ -20,7 +20,7 @@ struct SearchView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(Color.appSecondaryText)
                 TextField(
-                    "검색어를 입력하세요",
+                    "search_placeholder",
                     text: $store.query
                 )
                 .textInputAutocapitalization(.never)
@@ -66,13 +66,13 @@ struct SearchView: View {
                 ExternalBookDetailView(store: store)
             }
         }
-        .navigationTitle("검색")
+        .navigationTitle("search")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if isSheet {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
             }

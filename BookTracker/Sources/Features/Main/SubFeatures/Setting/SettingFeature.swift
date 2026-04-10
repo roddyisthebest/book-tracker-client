@@ -154,20 +154,20 @@ extension SettingFeature {
 extension AlertState where Action == SettingFeature.Action.Alert {
     static func confirmLogout() -> Self {
         Self {
-            TextState("로그아웃 하시겠습니까?")
+            TextState("confirm_logout")
         } actions: {
             ButtonState(role: .destructive, action: .confirmLogout) {
-                TextState("로그아웃")
+                TextState("logout")
             }
         }
     }
 
     static func confirmDeleteAccount() -> Self {
         Self {
-            TextState("정말 회원 탈퇴하시겠습니까?")
+            TextState("confirm_delete_account")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeleteAccount) {
-                TextState("회원 탈퇴")
+                TextState("delete_account")
             }
         }
     }

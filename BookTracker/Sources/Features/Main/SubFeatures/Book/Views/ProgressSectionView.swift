@@ -34,7 +34,7 @@ struct ProgressSectionView: View {
                                 .foregroundStyle(Color.appPrimaryText)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 60)
-                            Text("p")
+                            Text("page_unit")
                         }
                         Text("/").foregroundStyle(Color.appSecondaryText)
                         if store.pageCountEditable {

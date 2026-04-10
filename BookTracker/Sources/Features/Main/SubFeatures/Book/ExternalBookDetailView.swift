@@ -89,7 +89,7 @@ struct ExternalBookDetailView: View {
                                     }
 
                                     if let publishedDate = book.publishedDate {
-                                        Text("출판일: \(publishedDate)").foregroundStyle(Color.appSecondaryText).font(.system(size: 12, weight: .semibold))
+                                        Text("published_date \(publishedDate)").foregroundStyle(Color.appSecondaryText).font(.system(size: 12, weight: .semibold))
                                             .lineLimit(1)
                                             .truncationMode(.tail).padding(.vertical, 5)
                                     }
@@ -97,7 +97,7 @@ struct ExternalBookDetailView: View {
                                     if let micros = book.saleInfo?.offers?.first?.retailPrice?.amountInMicros {
                                         let amount = Double(micros) / 1_000_000
 
-                                        Text("\(Int(amount))원").foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
+                                        Text("price_won \(Int(amount))").foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                     }
@@ -115,7 +115,7 @@ struct ExternalBookDetailView: View {
                     VStack {
                         if let book = store.book, let desc = book.description {
                             HStack {
-                                Text("책 소개").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
+                                Text("book_intro").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                 Spacer()
                             }
                             .padding(.vertical, 5)
@@ -130,7 +130,7 @@ struct ExternalBookDetailView: View {
                                 Button(action: {
                                     store.send(.extendButtonTapped)
                                 }) {
-                                    Text(store.isExtended ? "접기" : "더보기")
+                                    Text(store.isExtended ? String(localized: "collapse") : String(localized: "show_more"))
                                 }
                                 Spacer()
                             }
@@ -144,7 +144,7 @@ struct ExternalBookDetailView: View {
                                         ProgressView()
                                             .controlSize(.small)
 
-                                        Text("대출/영수증 정보를 불러오는 중…")
+                                        Text("loading_receipt_info")
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundStyle(Color.appSecondaryText)
                                     }
@@ -158,11 +158,11 @@ struct ExternalBookDetailView: View {
                                             .font(.system(size: 18, weight: .semibold))
                                             .foregroundStyle(.orange)
 
-                                        Text("대출/영수증 정보를 불러오지 못했어요")
+                                        Text("receipt_info_load_failed")
                                             .font(.system(size: 14, weight: .bold))
                                             .foregroundStyle(Color.appPrimaryText)
 
-                                        Text("잠시 후 다시 시도해 주세요.")
+                                        Text("try_again_later")
                                             .font(.system(size: 13, weight: .medium))
                                             .foregroundStyle(Color.appSecondaryText)
                                     }
@@ -185,7 +185,7 @@ struct ExternalBookDetailView: View {
                                                     .foregroundStyle(
                                                         Color.appRentalAccent)
 
-                                                Text("대출증에 추가")
+                                                Text("add_to_rental")
                                                     .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
@@ -207,7 +207,7 @@ struct ExternalBookDetailView: View {
                                                 Image(systemName: "receipt.fill")
                                                     .font(.system(size: 16, weight: .semibold))
                                                     .foregroundStyle(Color.appPurchaseAccent)
-                                                Text("영수증에 추가")
+                                                Text("add_to_receipt")
                                                     .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
@@ -232,11 +232,11 @@ struct ExternalBookDetailView: View {
                                         )
                                     Text({
                                         if store.isAlreadyRegistered == nil {
-                                            return "등록 여부 확인 중…"
+                                            return String(localized: "checking_registration")
                                         } else if store.isAlreadyRegistered == true {
-                                            return "이미 등록된 책입니다"
+                                            return String(localized: "already_registered")
                                         } else {
-                                            return "책장에 추가하기"
+                                            return String(localized: "add_to_bookshelf")
                                         }
                                     }())
                                         .foregroundStyle(Color.appSecondaryText)
@@ -273,26 +273,14 @@ struct ExternalBookDetailView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appSurface)
-        .navigationTitle("도서 상세")
+        .navigationTitle("book_detail")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Label("뒤로가기", systemImage: "chevron.left")
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button("수정하기", systemImage: "pencil.circle") {
-//                        store.send(.updateButtonTapped)
-                    }
-                    Button("삭제하기", systemImage: "trash.circle") {
-//                        store.send(.deleteButtonTapped)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("back", systemImage: "chevron.left")
                 }
             }
         }

@@ -21,16 +21,16 @@ enum CurrencyCode: String, CaseIterable, Equatable, Hashable, Codable {
 
     var description: String {
         switch self {
-        case .krw: return "대한민국 원"
-        case .usd: return "미국 달러"
-        case .jpy: return "일본 엔"
-        case .eur: return "유로"
-        case .cny: return "중국 위안"
-        case .gbp: return "영국 파운드"
-        case .aud: return "호주 달러"
-        case .cad: return "캐나다 달러"
-        case .hkd: return "홍콩 달러"
-        case .sgd: return "싱가포르 달러"
+        case .krw: return String(localized: "currency_krw")
+        case .usd: return String(localized: "currency_usd")
+        case .jpy: return String(localized: "currency_jpy")
+        case .eur: return String(localized: "currency_eur")
+        case .cny: return String(localized: "currency_cny")
+        case .gbp: return String(localized: "currency_gbp")
+        case .aud: return String(localized: "currency_aud")
+        case .cad: return String(localized: "currency_cad")
+        case .hkd: return String(localized: "currency_hkd")
+        case .sgd: return String(localized: "currency_sgd")
         }
     }
 }

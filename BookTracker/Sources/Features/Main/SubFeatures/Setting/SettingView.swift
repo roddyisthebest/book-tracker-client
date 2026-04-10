@@ -39,14 +39,14 @@ struct SettingView: View {
 
                 } else if store.isError {
                     VStack(spacing: 10) {
-                        Text("프로필을 불러오지 못했어요")
+                        Text("profile_load_failed")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Color.appPrimaryText)
 
                         Button {
                             store.send(.onRefresh)
                         } label: {
-                            Text("다시 시도")
+                            Text("retry")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .padding(.horizontal, 14)
@@ -78,7 +78,7 @@ struct SettingView: View {
                                 .lineLimit(1)
                                 .foregroundStyle(Color.appPrimaryText)
 
-                            Text("내 정보 관리")
+                            Text("manage_my_info")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(Color.appSecondaryText)
                                 .lineLimit(1)
@@ -95,14 +95,14 @@ struct SettingView: View {
 
                 } else {
                     VStack(spacing: 10) {
-                        Text("프로필 정보가 없어요")
+                        Text("no_profile_info")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Color.appPrimaryText)
 
                         Button {
                             store.send(.onRefresh)
                         } label: {
-                            Text("새로고침")
+                            Text("refresh")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .padding(.horizontal, 14)
@@ -122,8 +122,8 @@ struct SettingView: View {
             VStack(spacing: 15) {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("앱 데이터").font(.title2).fontWeight(.bold).lineLimit(1)
-                        Text("내 데이터를 안전하게 보관하고 관리하세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                        Text("app_data").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("app_data_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {
@@ -136,7 +136,7 @@ struct SettingView: View {
                                         }
 
                                     HStack {
-                                        Text("데이터 관리").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("data_management").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -154,8 +154,8 @@ struct SettingView: View {
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("앱 사용").font(.title2).fontWeight(.bold).lineLimit(1)
-                        Text("자주 묻는 질문과 해결 방법을 빠르게 찾아보세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                        Text("app_usage").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("app_usage_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {}) {
@@ -166,7 +166,7 @@ struct SettingView: View {
                                         }
 
                                     HStack {
-                                        Text("사용 가이드").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("user_guide").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -181,7 +181,7 @@ struct SettingView: View {
                                         }
 
                                     HStack {
-                                        Text("자주 묻는 질문").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("faq").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -198,7 +198,7 @@ struct SettingView: View {
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("앱 정보").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("app_info").font(.title2).fontWeight(.bold).lineLimit(1)
 
                         VStack(spacing: 18) {
                             HStack(spacing: 10) {
@@ -208,7 +208,7 @@ struct SettingView: View {
                                     }
 
                                 HStack(spacing: 10) {
-                                    Text("앱 버전").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                    Text("app_version").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                     Text("v 1.05 (10)").font(.footnote).fontWeight(.semibold).foregroundStyle(.gray)
                                 }
                                 Spacer()
@@ -221,13 +221,13 @@ struct SettingView: View {
                                     }
                                 VStack(alignment: .leading, spacing: 3) {
                                     HStack(spacing: 10) {
-                                        Text("문의/피드백").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("contact_feedback").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Button(action: {}) {
                                             Text("jessebae0123@gmail.com").font(.footnote).fontWeight(.semibold)
                                         }
                                     }
 
-                                    Text("문의사항이나 피드백을 보내주세요").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                                    Text("contact_feedback_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
                                 }.padding(.top, 2.5)
 
                                 Spacer()
@@ -243,13 +243,13 @@ struct SettingView: View {
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("약관 및 정책").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("terms_and_policies").font(.title2).fontWeight(.bold).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {}) {
                                 HStack(spacing: 10) {
                                     HStack {
-                                        Text("서비스 이용 약관").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("terms_of_service").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -259,7 +259,7 @@ struct SettingView: View {
                             Button(action: {}) {
                                 HStack(spacing: 10) {
                                     HStack {
-                                        Text("개인정보 처리방침").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("privacy_policy").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -314,7 +314,7 @@ struct SettingView: View {
         } destination: { destinationStore in
             destinationView(for: destinationStore)
         }
-        .navigationTitle("설정")
+        .navigationTitle("settings")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -322,16 +322,16 @@ struct SettingView: View {
                     Button {
                         store.send(.logoutButtonTapped)
                     } label: {
-                        Label("로그아웃", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label("logout", systemImage: "rectangle.portrait.and.arrow.right")
                     }
 
                     Button(role: .destructive) {
                         store.send(.deleteAccountButtonTapped)
                     } label: {
-                        Label("회원 탈퇴", systemImage: "person.crop.circle.badge.xmark")
+                        Label("delete_account", systemImage: "person.crop.circle.badge.xmark")
                     }
                 } label: {
-                    Text("계정 관리")
+                    Text("account_management")
                 }
             }
         }

@@ -280,20 +280,20 @@ extension HomeFeature {
 extension AlertState where Action == HomeFeature.Action.Alert {
     static func showTodayReadingRecordUpdateError() -> Self {
         Self {
-            TextState("오늘 독서 기록 처리 중 오류가 발생했어요.")
+            TextState("today_reading_record_error")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showBookCountsFetchingError() -> Self {
         Self {
-            TextState("영수증, 대출증 등의 정보를 가져오는 중 오류가 발생했어요. ")
+            TextState("receipt_fetch_error")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

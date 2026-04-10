@@ -16,8 +16,8 @@ struct DataManageView: View {
             VStack(spacing: 15) {
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("파일 내보내기").font(.title2).fontWeight(.bold).lineLimit(1)
-                        Text("독서기록을 파일로 저장합니다").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                        Text("file_export").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("file_export_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {
@@ -30,7 +30,7 @@ struct DataManageView: View {
                                         }
 
                                     HStack {
-                                        Text("CSV 내보내기").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("csv_export").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -47,8 +47,8 @@ struct DataManageView: View {
 
                 VStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("초기화").font(.title2).fontWeight(.bold).lineLimit(1)
-                        Text("저장된 모든 데이터를 삭제합니다").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
+                        Text("reset").font(.title2).fontWeight(.bold).lineLimit(1)
+                        Text("reset_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
                             Button(action: {
@@ -61,7 +61,7 @@ struct DataManageView: View {
                                         }
 
                                     HStack {
-                                        Text("데이터 초기화").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                        Text("data_reset").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                                         Spacer()
                                         Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                                     }
@@ -80,7 +80,7 @@ struct DataManageView: View {
 
     var body: some View {
         mainContent
-            .navigationTitle("데이터 관리")
+            .navigationTitle("data_management")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: Binding(
                 get: { store.isSharePresented },
@@ -93,7 +93,7 @@ struct DataManageView: View {
                         store.send(.shareDismissed)
                     }
                 } else {
-                    VStack { Text("파일이 없습니다") }
+                    VStack { Text("no_file") }
                         .onDisappear { store.send(.shareDismissed) }
                 }
             }

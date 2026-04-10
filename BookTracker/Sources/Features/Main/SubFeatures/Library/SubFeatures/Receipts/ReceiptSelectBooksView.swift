@@ -31,7 +31,7 @@ private struct ReceiptBooksLoadingView: View {
             ProgressView()
                 .tint(.white)
 
-            Text("책 목록을 불러오는 중이에요.")
+            Text("loading_books")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
         }
@@ -48,16 +48,16 @@ private struct ReceiptBooksErrorView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
 
-            Text("책 목록을 불러오지 못했어요.")
+            Text("book_list_load_failed")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.appPrimaryText)
 
-            Text("잠시 후 다시 시도해주세요.")
+            Text("try_again_later")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
 
             Button(action: onRetry) {
-                Text("다시 시도")
+                Text("retry")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: 180)
                     .padding(.vertical, 12)
@@ -80,17 +80,17 @@ private struct ReceiptBooksEmptyView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(Color.appSecondaryText)
 
-            Text("추가된 책이 없어요.")
+            Text("no_books_added")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.appPrimaryText)
 
-            Text("책을 추가해서 영수증이나 대출증 발급을 시작해보세요.")
+            Text("add_books_to_start")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.appSecondaryText)
 
             Button(action: onAdd) {
-                Text("책 추가하기")
+                Text("add_books")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: 180)
                     .padding(.vertical, 12)
@@ -179,13 +179,13 @@ struct ReceiptSelectBooksView: View {
     var body: some View {
         contentView
             .background(Color.appSurface.ignoresSafeArea())
-            .navigationTitle(store.type == .purchase ? "영수증 발급" : "대출증 발급")
+            .navigationTitle(store.type == .purchase ? "issue_purchase_receipt" : "issue_rental_receipt")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
             .navigationSubtitle(
                 store.type == .purchase
-                    ? "책을 추가하여 영수증을 발급해보세요."
-                    : "책을 추가하여 대출증을 발급해보세요."
+                    ? String(localized: "receipt_subtitle_purchase")
+                    : String(localized: "receipt_subtitle_rental")
             )
             .toolbar { toolbarContent }
             .overlay(alignment: .bottom) {
@@ -195,7 +195,7 @@ struct ReceiptSelectBooksView: View {
             }
             .overlay {
                 if store.isDeleting {
-                    FullScreenLoadingOverlay(title: "삭제 중이에요...")
+                    FullScreenLoadingOverlay(title: String(localized: "deleting"))
                 }
             }
             .sheet(
@@ -224,12 +224,12 @@ struct ReceiptSelectBooksView: View {
             Button {
                 dismiss()
             } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
+                Label("back", systemImage: "chevron.left")
             }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("발급하기") {
+            Button(String(localized: "issue")) {
                 store.send(.issueButtonTapped)
             }
             .disabled(store.books.isEmpty || store.isFetching)
@@ -242,7 +242,7 @@ struct ReceiptSelectBooksView: View {
             DefaultButton(action: {
                 store.send(.addButtonTapped)
             }) {
-                Text("추가하기")
+                Text("add")
             }
         }
         .padding(.horizontal, 25)
