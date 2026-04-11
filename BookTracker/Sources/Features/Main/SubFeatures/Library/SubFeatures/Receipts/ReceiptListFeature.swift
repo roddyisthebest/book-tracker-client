@@ -45,7 +45,6 @@ struct ReceiptListFeature {
 
         case binding(BindingAction<State>)
         case recepitCardTapped(ReceiptType, UUID)
-        case shareTapped
         case allDeleteButtonTapped
         case deleteButtonTapped(UUID)
         case receiptDetail(PresentationAction<ReceiptDetailFeature.Action>)
@@ -125,8 +124,6 @@ struct ReceiptListFeature {
                 return .none
             case .recepitCardTapped(let type, let id):
                 state.receiptDetail = ReceiptDetailFeature.State(id: id)
-                return .none
-            case .shareTapped:
                 return .none
             case .allDeleteButtonTapped:
                 state.alert = AlertState {

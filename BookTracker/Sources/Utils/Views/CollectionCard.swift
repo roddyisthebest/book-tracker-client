@@ -11,18 +11,15 @@ struct CollectionCard: View {
     let summary: UserCollectionSummary
     let onTap: () -> Void
     let onDelete: () -> Void
-    let onShare: (() -> Void)?
 
     init(
         summary: UserCollectionSummary,
         onTap: @escaping () -> Void,
-        onDelete: @escaping () -> Void,
-        onShare: (() -> Void)? = nil
+        onDelete: @escaping () -> Void
     ) {
         self.summary = summary
         self.onTap = onTap
         self.onDelete = onDelete
-        self.onShare = onShare
     }
 
     private var titleText: String {
@@ -69,14 +66,6 @@ struct CollectionCard: View {
                 onDelete()
             } label: {
                 Label("delete", systemImage: "trash")
-            }
-
-            if let onShare {
-                Button {
-                    onShare()
-                } label: {
-                    Label("share", systemImage: "square.and.arrow.up")
-                }
             }
         }
     }
@@ -233,8 +222,7 @@ struct CollectionCard: View {
             bookCount: 0
         ),
         onTap: {},
-        onDelete: {},
-        onShare: {}
+        onDelete: {}
     )
     .frame(width: 180)
     .padding()
