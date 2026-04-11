@@ -31,7 +31,7 @@ private struct BookRowView: View {
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 7.5, leading: 20, bottom: 7.5, trailing: 20))
-        .background(Color(hex: "#17171C"))
+        .background(Color.appSurfaceDeep)
         .cornerRadius(10)
     }
 }
@@ -49,18 +49,18 @@ struct CollectionSelectBooksView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
 
-            Text("문제가 발생했어요")
+            Text("error_occurred")
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
-            Button("다시 시도") {
+            Button(String(localized: "retry")) {
                 store.send(.onRefresh)
             }
             .buttonStyle(.borderedProminent)
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
     }
 
     @ViewBuilder
@@ -80,7 +80,7 @@ struct CollectionSelectBooksView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .listRowBackground(Color.clear)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
     }
 
     var body: some View {
@@ -101,10 +101,10 @@ struct CollectionSelectBooksView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .navigationTitle("구매한책")
+            .navigationTitle("purchased_books")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle("책을 삭제하거나 추가해보세요.")
+            .navigationSubtitle(String(localized: "edit_books_subtitle"))
             .toolbar { toolbarContent }
             .task {
                 await store.send(.onAppear).finish()
@@ -125,16 +125,16 @@ struct CollectionSelectBooksView: View {
             Button {
                 dismiss()
             } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
+                Label("back", systemImage: "chevron.left")
             }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button("전체 선택", systemImage: "checkmark.circle") {
+                Button(String(localized: "select_all"), systemImage: "checkmark.circle") {
                     store.send(.bookAllSelected)
                 }
-                Button("전체 해제", systemImage: "xmark.circle") {
+                Button(String(localized: "deselect_all"), systemImage: "xmark.circle") {
                     store.send(.bookAllDisselected)
                 }
             } label: {
@@ -150,7 +150,7 @@ struct CollectionSelectBooksView: View {
                         ProgressView()
                             .controlSize(.small)
                     }
-                    Text("저장하기")
+                    Text("save")
                 }
             }
             .disabled(store.isSyncing)
@@ -162,12 +162,12 @@ struct CollectionSelectBooksView: View {
         HStack(spacing: 10) {
             DefaultButton(action: {
                 store.send(.addButtonTapped)
-            }) { Text("추가하기") }
+            }) { Text("add") }
 
             if store.isSubmitEnabled {
                 DefaultButton(action: {
                     store.send(.deleteButtonTapped)
-                }) { Text("삭제하기 \(store.selectedIds.count)") }
+                }) { Text("delete_count \(store.selectedIds.count)") }
             }
         }
         .padding(.horizontal, 25)

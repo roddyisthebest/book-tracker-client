@@ -18,6 +18,8 @@ struct BookFormFeature {
         var externalBook: ExternalBook?
         let bookId: UUID?
 
+        var changeMode: BookStatus? = nil
+
         var status: BookStatus = .done
         var type: BookType = .paper
 
@@ -35,6 +37,26 @@ struct BookFormFeature {
         var isLoading: Bool = false
 
         var pageCountEditable: Bool = false
+
+        // Change-mode helpers
+        var isChangeModeActive: Bool { changeMode != nil }
+        var title: String {
+            guard let mode = changeMode else {
+                if isEditing {
+                    return String(localized: "book_edit")
+                } else {
+                    return String(localized: "book_add")
+                }
+            }
+            let label: String
+            switch mode {
+            case .done: label = String(localized: "change_status_done")
+            case .reading: label = String(localized: "change_status_reading")
+            case .dropped: label = String(localized: "change_status_dropped")
+            case .want: label = String(localized: "change_status_want")
+            }
+            return String(format: String(localized: "change_status_title %@"), label)
+        }
 
         @Presents var destination: Destination.State?
     }
@@ -126,6 +148,12 @@ struct BookFormFeature {
                     send in
                     await send(.delegate(.confirmUpdate(book)))
                 }
+            case .binding(\.status):
+                if let forced = state.changeMode {
+                    // Prevent changing status when change mode is active
+                    state.status = forced
+                }
+                return .none
             case .binding(\.progress):
                 let pageValue = Double(max(Int(state.entirePage) ?? 100, 0)) * (max(state.progress, 0) * 0.01)
                 let pageInt = Int(pageValue)
@@ -216,11 +244,16 @@ extension BookFormFeature.State {
     }
 
     // update
-    init(externalId: String, bookId: UUID, book: Book) {
+    init(externalId: String, bookId: UUID, book: Book, changeMode: BookStatus?) {
         self.bookId = bookId
         self.externalId = externalId
 
-        self.status = book.status
+        if let changeMode = changeMode {
+            self.status = changeMode
+            self.changeMode = changeMode
+        } else {
+            self.status = book.status
+        }
         self.type = book.type
 
         let pageCount = book.pageCount ?? 100
@@ -245,30 +278,30 @@ extension BookFormFeature.State {
 extension AlertState where Action == BookFormFeature.Action.Alert {
     static func showErrorMessage(message: String?) -> Self {
         Self {
-            TextState(message ?? "에러발생")
+            TextState(message ?? String(localized: "error_title"))
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showCreationMessage(new: Book) -> Self {
         Self {
-            TextState("성공적으로 추가되었습니다.")
+            TextState("book_added_success")
         } actions: {
             ButtonState(role: .cancel, action: .confirmCreation(new)) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showUpdateMessage(updated: Book) -> Self {
         Self {
-            TextState("성공적으로 수정되었습니다.")
+            TextState("book_updated_success")
         } actions: {
             ButtonState(role: .cancel, action: .confirmUpdate(updated)) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

@@ -18,8 +18,8 @@ struct ReceiptListView: View {
             content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#101013", default: .black))
-        .navigationTitle("대출증/영수증")
+        .background(Color.appBackground)
+        .navigationTitle("rental_receipt_slash")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .sheet(item: $store.scope(state: \.receiptDetail, action: \.receiptDetail)) { receiptDetailStore in
@@ -28,6 +28,21 @@ struct ReceiptListView: View {
             }
         }
         .alert($store.scope(state: \.alert, action: \.alert))
+        .disabled(store.isDeleting)
+        .overlay {
+            if store.isDeleting {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.default, value: store.isDeleting)
         .task { await store.send(.onAppear).finish() }
     }
 
@@ -37,18 +52,18 @@ struct ReceiptListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Picker("정렬", selection: $store.sortOption) {
-                    Text("오래된순").tag(BookSortOption.oldest)
-                    Text("최신순").tag(BookSortOption.newest)
-                    Text("제목순(가나다)").tag(BookSortOption.titleAsc)
-                    Text("제목순(반대)").tag(BookSortOption.titleDesc)
+                Picker("sort", selection: $store.sortOption) {
+                    Text("sort_oldest").tag(BookSortOption.oldest)
+                    Text("sort_newest").tag(BookSortOption.newest)
+                    Text("sort_title_asc").tag(BookSortOption.titleAsc)
+                    Text("sort_title_desc").tag(BookSortOption.titleDesc)
                 }
                 .pickerStyle(.inline)
 
                 Divider()
 
                 Button(role: .destructive, action: { store.send(.allDeleteButtonTapped) }) {
-                    Label("전체 삭제", systemImage: "trash")
+                    Label("delete_all", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -76,9 +91,9 @@ struct ReceiptListView: View {
     private var loadingView: some View {
         VStack(spacing: 14) {
             ProgressView().tint(.white)
-            Text("불러오는 중이에요...")
+            Text("loading")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -88,21 +103,16 @@ struct ReceiptListView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
-            Text("목록을 불러오지 못했어요.")
+            Text("list_load_failed")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
-            Text("잠시 후 다시 시도해주세요.")
+                .foregroundStyle(Color.appPrimaryText)
+            Text("try_again_later")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
-            Button(action: { store.send(.onRefresh) }) {
-                Text("다시 시도")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+                .foregroundStyle(Color.appSecondaryText)
+            Button(String(localized: "retry")) {
+                store.send(.onRefresh)
             }
+            .buttonStyle(.borderedProminent)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -112,52 +122,32 @@ struct ReceiptListView: View {
         VStack(spacing: 14) {
             Image(systemName: "doc.text")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
-            Text("표시할 항목이 없어요.")
+                .foregroundStyle(Color.appSecondaryText)
+            Text("no_items_to_display")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
-            Text("다른 탭을 선택하거나 새로고침 해보세요.")
+                .foregroundStyle(Color.appPrimaryText)
+            Text("try_other_tab_or_refresh")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
-            Button(action: { store.send(.onRefresh) }) {
-                Text("새로고침")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+                .foregroundStyle(Color.appSecondaryText)
+            Button(String(localized: "refresh")) {
+                store.send(.onRefresh)
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var segmentedPicker: some View {
-        Picker("탭", selection: $store.receiptType) {
-            Label("대출증", systemImage: "book").tag(ReceiptType.rental)
-            Label("영수증", systemImage: "doc.text").tag(ReceiptType.purchase)
+        Picker("tab", selection: $store.receiptType) {
+            Label("rental_receipt", systemImage: "book").tag(ReceiptType.rental)
+            Label("purchase_receipt", systemImage: "doc.text").tag(ReceiptType.purchase)
         }
         .pickerStyle(.segmented)
         .controlSize(.large)
         .padding(.horizontal)
-        .onAppear {
-            UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.systemBlue
-
-            let selectedAttrs: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.white,
-                .font: UIFont.systemFont(ofSize: 16, weight: .bold)
-            ]
-            let normalAttrs: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.white.withAlphaComponent(0.8),
-                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
-            ]
-
-            UISegmentedControl.appearance().setTitleTextAttributes(normalAttrs, for: .normal)
-            UISegmentedControl.appearance().setTitleTextAttributes(selectedAttrs, for: .selected)
-        }
-
         .padding(.bottom, 10)
     }
 

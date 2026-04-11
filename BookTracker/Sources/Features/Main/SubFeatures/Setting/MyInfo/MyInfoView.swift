@@ -16,13 +16,13 @@ struct MyInfoView: View {
     private func skeletonStatusRow(width: CGFloat) -> some View {
         HStack {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "#2C2C35", default: .black))
+                .fill(Color.appSurface)
                 .frame(width: width, height: 18)
 
             Spacer()
 
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "#2C2C35", default: .black))
+                .fill(Color.appSurface)
                 .frame(width: width, height: 18)
         }
     }
@@ -35,7 +35,7 @@ struct MyInfoView: View {
                         Button(action: {
                             store.send(.profileImageViewTapped)
                         }) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 100, height: 100).cornerRadius(50).overlay {
                                     ZStack(alignment: .bottomTrailing) {
 //                                        if let urlString = store.profile, let url = URL(string: urlString) {
@@ -60,7 +60,7 @@ struct MyInfoView: View {
                                             .font(.system(size: 60))
                                         ZStack {
                                             Circle()
-                                                .fill(Color(hex: "#2C2C35", default: .black))
+                                                .fill(Color.appSurface)
                                                 .frame(width: 25, height: 25)
                                             Image(systemName: "plus.circle.fill")
                                                 .font(.system(size: 22))
@@ -75,7 +75,7 @@ struct MyInfoView: View {
                                 store.send(.nameEditButtonTapped)
                             }) {
                                 HStack(spacing: 10) {
-                                    StatusRow(key: "이름", value: store.profile?.name ?? "unknown")
+                                    StatusRow(key: String(localized: "name_label"), value: store.profile?.name ?? "unknown")
                                     Image(systemName: "chevron.right")
                                         .foregroundStyle(.gray)
                                 }
@@ -90,46 +90,46 @@ struct MyInfoView: View {
 
                             } else if store.isError {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Text("계정 정보를 불러오지 못했어요")
+                                    Text("account_info_load_failed")
                                         .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
-                                        Text("다시 시도")
+                                        Text("retry")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
                                             .padding(.vertical, 8)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color(hex: "#2C2C35", default: .black))
+                                                    .fill(Color.appSurface)
                                             )
                                     }
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             } else if let authInfo = store.myAuthInfo, let email = authInfo.email, let provider = authInfo.provider {
-                                StatusRow(key: "이메일", value: email)
-                                StatusRow(key: "로그인 수단", value: provider)
+                                StatusRow(key: String(localized: "email_label"), value: email)
+                                StatusRow(key: String(localized: "login_method"), value: provider)
                             } else {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Text("계정 정보가 없어요")
+                                    Text("no_account_info")
                                         .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     Button(action: {
                                         store.send(.onRefresh)
                                     }) {
-                                        Text("새로고침")
+                                        Text("refresh")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.appPrimaryText)
                                             .padding(.horizontal, 14)
                                             .padding(.vertical, 8)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color(hex: "#2C2C35", default: .black))
+                                                    .fill(Color.appSurface)
                                             )
                                     }
                                 }
@@ -144,12 +144,12 @@ struct MyInfoView: View {
                 .padding(.bottom)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     var body: some View {
         mainContent
-            .navigationTitle("내 정보")
+            .navigationTitle("my_info")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(store: store.scope(state: \.$destination.updateName, action: \.destination.updateName)) {
                 updateNameStore in

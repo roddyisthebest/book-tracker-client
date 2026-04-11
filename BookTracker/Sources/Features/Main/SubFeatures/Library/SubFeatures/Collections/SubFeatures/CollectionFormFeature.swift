@@ -159,29 +159,29 @@ extension CollectionFormFeature.State {
 extension AlertState where Action == CollectionFormFeature.Action.Alert {
     static func showCreateConfirmation() -> Self {
         Self {
-            TextState("컬렉션이 생성 되었습니다.")
+            TextState("collection_created")
         } actions: {
             ButtonState(action: .confirmCreation) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showCreationErrorAlert() -> Self {
         Self {
-            TextState("Failed to create the book.")
+            TextState("book_create_failed")
         }
     }
 
     static func showUpdateErrorAlert() -> Self {
         Self {
-            TextState("Failed to update the book.")
+            TextState("book_update_failed")
         }
     }
 
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

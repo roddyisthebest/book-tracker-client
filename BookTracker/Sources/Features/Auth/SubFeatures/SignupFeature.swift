@@ -118,25 +118,25 @@ extension SignupFeature.State {
 
     // 뷰 표시용 에러 메시지(필요 시)
     var emailError: String? {
-        if email.isEmpty { return "이메일을 입력해주세요" }
-        return isEmailValid ? nil : "올바른 이메일 형식이 아니에요."
+        if email.isEmpty { return String(localized: "enter_email_placeholder") }
+        return isEmailValid ? nil : String(localized: "invalid_email_format")
     }
 
     var passwordError: String? {
-        if password.isEmpty { return "비밀번호를 입력해주세요" }
-        if password.count < 8 { return "비밀번호는 8자 이상이어야 해요." }
+        if password.isEmpty { return String(localized: "enter_password_placeholder") }
+        if password.count < 8 { return String(localized: "password_min_length") }
         if password.range(of: "[A-Za-z]", options: .regularExpression) == nil {
-            return "영문자를 포함해야 해요."
+            return String(localized: "password_needs_letter")
         }
         if password.range(of: "[0-9]", options: .regularExpression) == nil {
-            return "숫자를 포함해야 해요."
+            return String(localized: "password_needs_number")
         }
         return nil
     }
 
     var passwordConfirmationError: String? {
-        if passwordConfirmation.isEmpty { return "비밀번호 확인을 입력해주세요" }
-        return doPasswordsMatch ? nil : "비밀번호가 일치하지 않아요."
+        if passwordConfirmation.isEmpty { return String(localized: "enter_password_confirm") }
+        return doPasswordsMatch ? nil : String(localized: "password_mismatch")
     }
 
     var emailErrorToShow: String? {
@@ -155,20 +155,20 @@ extension SignupFeature.State {
 extension AlertState where Action == SignupFeature.Action.Alert {
     static func showErrorMessage(message: String?) -> Self {
         Self {
-            TextState(message ?? "에러발생")
+            TextState(message ?? String(localized: "error_title"))
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showSuccession() -> Self {
         Self {
-            TextState("성공적으로 가입되었습니다.")
+            TextState("signup_success")
         } actions: {
             ButtonState(action: .confirmSuccession) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }

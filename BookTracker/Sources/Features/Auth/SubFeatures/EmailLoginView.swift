@@ -17,15 +17,15 @@ struct EmailLoginView: View {
         VStack(spacing: 30) {
             VStack {
                 HStack {
-                    FormLabel(text: "이메일")
+                    FormLabel(text: String(localized: "email"))
                     Spacer()
                 }
                 TextField("",
                           text: $store.email,
-                          prompt: Text("이메일을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
-                    .foregroundStyle(.white)
+                          prompt: Text("enter_email_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
+                    .foregroundStyle(Color.appPrimaryText)
                     .padding()
-                    .background(Color(hex: "#2C2C35", default: .accentColor))
+                    .background(Color.appSurface)
                     .cornerRadius(15)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
@@ -42,47 +42,47 @@ struct EmailLoginView: View {
 
             VStack {
                 HStack {
-                    FormLabel(text: "비밀번호")
+                    FormLabel(text: String(localized: "password"))
                     Spacer()
                 }
 
                 if isPasswordVisible {
                     TextField("",
                               text: $store.password,
-                              prompt: Text("비밀번호를 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                              prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
                 } else {
                     SecureField("",
                                 text: $store.password,
-                                prompt: Text("비밀번호를 입력해주세요").foregroundStyle(.white.opacity(0.4)))
+                                prompt: Text("enter_password_placeholder").foregroundStyle(Color.appSecondaryText.opacity(0.6)))
                         .textContentType(.password)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#2C2C35", default: .accentColor))
+                        .background(Color.appSurface)
                         .cornerRadius(15)
                         .overlay(alignment: .trailing) {
                             Button {
                                 isPasswordVisible.toggle()
                             } label: {
                                 Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.8))
                             }
                             .padding(.trailing, 12)
                         }
@@ -99,11 +99,11 @@ struct EmailLoginView: View {
             VStack(spacing: 20) {
                 DefaultButton(action: { store.send(.submitButtonTapped) }) {
                     ZStack {
-                        Text("로그인")
+                        Text("login")
                             .opacity(store.isLoading ? 0 : 1)
                         if store.isLoading {
                             ProgressView()
-                                .tint(.white)
+                                .tint(Color.appAccent)
                         }
                     }
                 }
@@ -111,15 +111,15 @@ struct EmailLoginView: View {
                 Button(action: {
                     store.send(.signupButtonTapped)
                 }) {
-                    Text("회원가입").foregroundStyle(.gray).fontWeight(.semibold)
+                    Text("signup").foregroundStyle(.gray).fontWeight(.semibold)
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
-        .background(Color(hex: "#101013", default: .black))
-        .navigationTitle("이메일 로그인")
+        .background(Color.appBackground)
+        .navigationTitle("email_login")
         .navigationBarTitleDisplayMode(.inline)
         .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     }

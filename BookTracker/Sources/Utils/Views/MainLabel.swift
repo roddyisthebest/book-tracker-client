@@ -8,8 +8,8 @@ struct MainLabel: View {
     }
 
     var body: some View {
-        Text(text)
-            .foregroundStyle(.white.opacity(0.65))
+        Text(LocalizedStringKey(text))
+            .foregroundStyle(Color.appSecondaryText)
             .font(.system(size: 18, weight: .medium))
     }
 }

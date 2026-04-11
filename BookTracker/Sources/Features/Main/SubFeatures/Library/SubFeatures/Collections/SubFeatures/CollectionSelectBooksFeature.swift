@@ -100,10 +100,10 @@ struct CollectionSelectBooksFeature {
                 return .none
             case .deleteButtonTapped:
                 state.alert = AlertState {
-                    TextState("Are you sure?")
+                    TextState("are_you_sure")
                 } actions: {
                     ButtonState(role: .destructive, action: .confirmDeletion) {
-                        TextState("Delete")
+                        TextState("delete")
                     }
                 }
                 return .none
@@ -167,7 +167,7 @@ extension CollectionSelectBooksFeature.State {
 extension AlertState where Action == CollectionSelectBooksFeature.Action.Alert {
     static func showSyncingFailedAlert() -> Self {
         Self {
-            TextState("Failed to sync books. Please try again.")
+            TextState("sync_failed")
         }
     }
 }

@@ -42,7 +42,16 @@ private struct VolumesSearchResponse: Decodable {
 }
 
 extension ExternalBookService {
-    static func live(langRestrict: String = "kr", session: URLSession = .shared) -> Self {
+    private static var currentLangRestrict: String? {
+        let lang = Locale.current.language.languageCode?.identifier ?? ""
+        switch lang {
+        case "ko": return "ko"
+        case "ja": return "ja"
+        default: return nil
+        }
+    }
+
+    static func live(langRestrict: String? = currentLangRestrict, session: URLSession = .shared) -> Self {
         func ensureAPIKey() throws -> String {
             if let key = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_BOOKS_API_KEY") as? String, !key.isEmpty {
                 return key
@@ -81,17 +90,17 @@ extension ExternalBookService {
         return Self(
             search: { query, startIndex, maxResults in
                 do {
-                    let url = try makeURL(
-                        path: "/books/v1/volumes",
-                        queryItems: [
-                            URLQueryItem(name: "q", value: query),
-                            URLQueryItem(name: "key", value: ensureAPIKey()),
-                            URLQueryItem(name: "langRestrict", value: langRestrict),
-                            URLQueryItem(name: "startIndex", value: String(startIndex)),
-                            URLQueryItem(name: "maxResults", value: String(maxResults)),
-                            URLQueryItem(name: "printType", value: "books")
-                        ]
-                    )
+                    var queryItems: [URLQueryItem] = try [
+                        URLQueryItem(name: "q", value: query),
+                        URLQueryItem(name: "key", value: ensureAPIKey()),
+                        URLQueryItem(name: "startIndex", value: String(startIndex)),
+                        URLQueryItem(name: "maxResults", value: String(maxResults)),
+                        URLQueryItem(name: "printType", value: "books")
+                    ]
+                    if let lang = langRestrict {
+                        queryItems.append(URLQueryItem(name: "langRestrict", value: lang))
+                    }
+                    let url = try makeURL(path: "/books/v1/volumes", queryItems: queryItems)
                     let data = try await get(url: url)
                     let decoded = try JSONDecoder().decode(VolumesSearchResponse.self, from: data)
                     return .success(decoded.items ?? [])
@@ -103,12 +112,15 @@ extension ExternalBookService {
             },
             detail: { id in
                 do {
+                    var detailQueryItems: [URLQueryItem] = try [
+                        URLQueryItem(name: "key", value: ensureAPIKey())
+                    ]
+                    if let lang = langRestrict {
+                        detailQueryItems.append(URLQueryItem(name: "langRestrict", value: lang))
+                    }
                     let url = try makeURL(
                         path: "/books/v1/volumes/\(id)",
-                        queryItems: [
-                            URLQueryItem(name: "key", value: ensureAPIKey()),
-                            URLQueryItem(name: "langRestrict", value: langRestrict)
-                        ]
+                        queryItems: detailQueryItems
                     )
                     let data = try await get(url: url)
                     let book = try JSONDecoder().decode(ExternalBook.self, from: data)

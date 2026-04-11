@@ -11,7 +11,7 @@ struct FormLabel: View {
     let text: String
 
     var body: some View {
-        Text(text).foregroundStyle(Color(hex: "#C3C3C6", default: .accentColor)).font(.callout)
+        Text(text).foregroundStyle(Color.appSecondaryText).font(.callout)
     }
 }
 

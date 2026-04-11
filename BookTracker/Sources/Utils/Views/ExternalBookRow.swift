@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ExternalBookRow: View {
     let book: ExternalBook
@@ -18,36 +19,25 @@ struct ExternalBookRow: View {
                     .font(.system(size: 18, weight: .bold))
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
 
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: "#2A2A33", default: .gray))
+                        .fill(Color.appSurface)
                         .frame(width: 100, height: 120)
                         .overlay {
                             if let url = book.thumbnail {
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 100, height: 120)
-                                    case .failure:
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
-                                    @unknown default:
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
+                                KFImage(url)
+                                    .placeholder {
+                                        ProgressView().tint(.secondary)
                                     }
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .onFailure { _ in }
+                                    .retry(maxCount: 2, interval: .seconds(1))
+                                    .fade(duration: 0.2)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 100, height: 120)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
                             } else {
                                 Image(systemName: "photo")
                                     .font(.system(size: 14, weight: .semibold))
@@ -57,20 +47,20 @@ struct ExternalBookRow: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         if let author = book.authors?.first {
-                            Text(author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 14, weight: .semibold))
+                            Text(author).foregroundStyle(Color.appSecondaryText).font(.system(size: 14, weight: .semibold))
                                 .lineLimit(2)
                                 .truncationMode(.tail)
                         }
 
                         if let publisher = book.publisher {
-                            Text(publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 11, weight: .semibold))
+                            Text(publisher).foregroundStyle(Color.appSecondaryText.opacity(0.8)).font(.system(size: 11, weight: .semibold))
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
 
                         if let micros = book.saleInfo?.offers?.first?.retailPrice?.amountInMicros {
                             let amount = Double(micros) / 1_000_000
-                            Text("\(Int(amount))원").fontWeight(.semibold)
+                            Text("price_won \(Int(amount))").fontWeight(.semibold)
                         }
                     }
                     Spacer()
@@ -78,7 +68,7 @@ struct ExternalBookRow: View {
             }
         }
         .padding()
-        .background(Color(hex: "#17171C"))
+        .background(Color.appSurfaceDeep)
         .cornerRadius(10)
     }
 }

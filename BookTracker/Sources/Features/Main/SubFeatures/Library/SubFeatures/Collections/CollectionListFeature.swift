@@ -24,6 +24,8 @@ struct CollectionListFeature {
         var pageSize: Int = 40
         var hasMore: Bool = true
 
+        var isDeleting: Bool = false
+
         @Presents var destination: Destination.State?
     }
 
@@ -40,12 +42,21 @@ struct CollectionListFeature {
 
         case deleteButtonTapped(id: UUID)
         case updateButtonTapped(id: UUID)
+
+        case deleteCollectionResponse(Result<UUID, AppError>)
+
         case addButtonTapped
         case collectionCardTapped(collection: UserCollectionSummary)
         case destination(PresentationAction<Destination.Action>)
-        case alert(PresentationAction<Alert>)
+//        case alert(PresentationAction<Alert>)
         enum Alert: Equatable {
             case confirmDeletion(id: UUID)
+        }
+
+        case delegate(Delegate)
+
+        enum Delegate: Equatable {
+            case updateCollection
         }
     }
 
@@ -135,12 +146,24 @@ struct CollectionListFeature {
                     summary.id == updated.id ? summary.updating(from: updated) : summary
                 }
                 return .none
+            case .destination(.presented(.alert(.confirmDeletion(let id)))):
+                state.isDeleting = true
+                return .run {
+                    send in
+                    let result = await collectionService.delete(id)
+                    await send(.deleteCollectionResponse(result))
+                }
             case .destination:
                 return .none
-            case .alert(.presented(.confirmDeletion(let id))):
-                state.collections = state.collections.filter { $0.id != id }
-                return .none
-            case .alert:
+            case .deleteCollectionResponse(.success):
+                state.isDeleting = false
+                return .merge(
+                    .send(.onRefresh),
+                    .send(.delegate(.updateCollection))
+                )
+            case .deleteCollectionResponse(.failure(let error)):
+                state.isDeleting = false
+                state.destination = .alert(.deleteFailed(message: error.localizedDescription))
                 return .none
             case .collectionCardTapped(let collection):
                 state.destination = .viewCollectionDetail(CollectionDetailFeature.State(collection: collection))
@@ -156,6 +179,8 @@ struct CollectionListFeature {
                 return .none
             case .addButtonTapped:
                 state.destination = .formCollection(CollectionFormFeature.State())
+                return .none
+            case .delegate:
                 return .none
             }
         }.ifLet(\.$destination, action: \.destination)
@@ -174,20 +199,32 @@ extension CollectionListFeature {
 extension AlertState where Action == CollectionListFeature.Action.Alert {
     static func deleteConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func loadMoreFailed(message: String) -> Self {
         Self {
-            TextState("더 불러오기에 실패했어요")
+            TextState("load_more_failed")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
+            }
+        } message: {
+            TextState(message)
+        }
+    }
+
+    static func deleteFailed(message: String) -> Self {
+        Self {
+            TextState("delete_failed")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("confirm")
             }
         } message: {
             TextState(message)

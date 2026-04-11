@@ -74,10 +74,10 @@ struct ReceiptDetailFeature {
                 
             case .deleteButtonTapped:
                 state.alert = AlertState {
-                    TextState("Are you sure?")
+                    TextState("are_you_sure")
                 } actions: {
                     ButtonState(role: .destructive, action: .confirmDeletion) {
-                        TextState("Delete")
+                        TextState("delete")
                     }
                 }
                 return .none
@@ -101,7 +101,7 @@ struct ReceiptDetailFeature {
             case .deleteResponse(.failure(let error)):
                 state.isDeleting = false
                 state.alert = AlertState {
-                    TextState("삭제에 실패했어요")
+                    TextState("delete_failed")
                 } message: {
                     TextState(error.localizedDescription)
                 }

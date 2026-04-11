@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct BookDetailView: View {
@@ -33,7 +34,7 @@ struct BookDetailView: View {
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "arrow.clockwise")
-                                Text("다시 가져오기")
+                                Text("retry")
                             }
                         }
                         .buttonStyle(.borderedProminent)
@@ -44,35 +45,20 @@ struct BookDetailView: View {
                         ScrollView {
                             HStack(alignment: .top, spacing: 15) {
                                 RoundedRectangle(cornerRadius: 15, style: .continuous)
-                                    .fill(Color(hex: "#19191E", default: .gray))
+                                    .fill(Color.appSurfaceDeep)
                                     .frame(width: 90, height: 130)
                                     .overlay {
                                         let url = URL(string: book.imageUrl ?? "")
                                         if let url {
-                                            AsyncImage(url: url) { phase in
-                                                switch phase {
-                                                case .empty:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
-
-                                                case .success(let image):
-                                                    image
-                                                        .resizable()
-                                                        .scaledToFill()
-                                                        .transition(.opacity)
-
-                                                case .failure:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
-
-                                                @unknown default:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
+                                            KFImage(url)
+                                                .placeholder {
+                                                    ProgressView().tint(.secondary)
                                                 }
-                                            }
+                                                .retry(maxCount: 2, interval: .seconds(1))
+                                                .fade(duration: 0.2)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .transition(.opacity)
                                         } else {
                                             Image(systemName: "photo")
                                                 .font(.system(size: 14, weight: .semibold))
@@ -86,36 +72,36 @@ struct BookDetailView: View {
                                         .font(.system(size: 18, weight: .bold))
                                         .lineLimit(2)
                                         .truncationMode(.tail)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.appPrimaryText)
 
                                     VStack(alignment: .leading, spacing: 5) {
-                                        Text(book.author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 15, weight: .semibold))
+                                        Text(book.author).foregroundStyle(Color.appSecondaryText).font(.system(size: 15, weight: .semibold))
                                             .lineLimit(2)
                                             .truncationMode(.tail)
-                                        Text(book.publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
+                                        Text(book.publisher).foregroundStyle(Color.appSecondaryText.opacity(0.8)).font(.system(size: 12, weight: .semibold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                         HStack {
                                             if book.type == .paper {
                                                 Image(systemName: "book.pages.fill")
                                                     .font(.system(size: 14, weight: .semibold))
-                                                Text("종이책").font(.caption).lineLimit(1)
+                                                Text("paper_book").font(.caption).lineLimit(1)
                                                     .truncationMode(.tail)
-                                                    .foregroundStyle(.white)
+                                                    .foregroundStyle(Color.appPrimaryText)
                                                     .fontWeight(.semibold)
 
                                             } else {
                                                 Image(systemName: "smartphone")
                                                     .font(.system(size: 14, weight: .semibold))
-                                                Text("전자책").font(.caption).lineLimit(1)
+                                                Text("ebook").font(.caption).lineLimit(1)
                                                     .truncationMode(.tail)
-                                                    .foregroundStyle(.white)
+                                                    .foregroundStyle(Color.appPrimaryText)
                                                     .fontWeight(.semibold)
                                             }
                                         }
                                         .padding(6)
                                         .padding(.horizontal, 5)
-                                        .background(Color(hex: "#19191E", default: .gray)).cornerRadius(4)
+                                        .background(Color.appSurfaceDeep).cornerRadius(4)
                                         .padding(.top, 5)
                                     }
                                     Spacer()
@@ -123,26 +109,26 @@ struct BookDetailView: View {
                                 Spacer()
 
                             }.padding(.horizontal, 15).padding(.vertical, 10)
-                            Divider().background(.white.opacity(0.7))
+                            Divider().background(Color.appSeparator)
                             HStack {
                                 Button(action: {}, label: {
-                                    Text("자세히 보기")
+                                    Text("view_detail")
                                     Image(systemName: "chevron.forward")
                                 })
 
-                            }.foregroundStyle(.white.opacity(0.6)).font(.headline)
+                            }.foregroundStyle(Color.appSecondaryText).font(.headline)
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 8)
-                            Divider().frame(height: 15).background(.black.opacity(0.6))
+                            Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
                                 HStack {
-                                    Text("독서기록").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Text("reading_record").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                     Spacer()
                                 }
                                 .padding(.top, 5)
                                 VStack(spacing: 17.5) {
-                                    StatusRow(key: "상태", value: book.status.title)
+                                    StatusRow(key: String(localized: "status_label"), value: book.status.title)
                                     switch book.status {
                                     case .done:
                                         VStack(spacing: 8) {
@@ -150,13 +136,13 @@ struct BookDetailView: View {
                                             let endedDate: Date? = book.endedAt as? Date
                                             let started = startedDate?.formatted(date: .abbreviated, time: .omitted) ?? "-"
                                             let ended = endedDate?.formatted(date: .abbreviated, time: .omitted) ?? "-"
-                                            StatusRow(key: "기간", value: "\(started) - \(ended)")
+                                            StatusRow(key: String(localized: "period_label"), value: "\(started) - \(ended)")
                                         }
 
                                     case .dropped:
                                         VStack(spacing: 8) {
-                                            let reason = (book.droppedReason?.isEmpty == false) ? (book.droppedReason ?? "") : "사유 없음"
-                                            StatusRow(key: "중단이유", value: reason)
+                                            let reason = (book.droppedReason?.isEmpty == false) ? (book.droppedReason ?? "") : String(localized: "no_reason")
+                                            StatusRow(key: String(localized: "drop_reason_label"), value: reason)
                                         }
 
                                     case .reading:
@@ -165,15 +151,15 @@ struct BookDetailView: View {
                                             let pageCountRaw = max(book.pageCount ?? 0, 1)
                                             let progress = Int((Double(readCountRaw) / Double(pageCountRaw)) * 100.0)
                                             let pagesText = "\(readCountRaw)p"
-                                            StatusRow(key: "진행률", value: "\(progress)% (\(pagesText))")
-                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : "메모 없음"
-                                            StatusRow(key: "메모", value: memoText)
+                                            StatusRow(key: String(localized: "progress_label"), value: "\(progress)% (\(pagesText))")
+                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : String(localized: "no_memo")
+                                            StatusRow(key: String(localized: "memo_label"), value: memoText)
                                         }
 
                                     case .want:
                                         VStack(spacing: 8) {
-                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : "메모 없음"
-                                            StatusRow(key: "메모", value: memoText)
+                                            let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : String(localized: "no_memo")
+                                            StatusRow(key: String(localized: "memo_label"), value: memoText)
                                         }
                                     }
                                 }
@@ -182,73 +168,66 @@ struct BookDetailView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical)
 
-                            Divider().frame(height: 15).background(.black.opacity(0.6))
+                            Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
                                 HStack {
-                                    Text("상태변경").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                    Text("change_status").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                     Spacer()
                                 }
                                 .padding(.top, 5)
                                 VStack(spacing: 12) {
                                     HStack(spacing: 12) {
-                                        Button(action: {}) {
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundStyle(.green)
-                                                Text("다 읽었어요")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                                    .fontWeight(.semibold)
+                                        if book.status != .done {
+                                            Button(action: { store.send(.changeStatusButtonTapped(.done)) }) {
+                                                HStack(spacing: 8) {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .foregroundStyle(.green)
+                                                    Text("finished_reading")
+                                                        .foregroundStyle(Color.appSecondaryText)
+                                                        .fontWeight(.semibold)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(Color.appButtonSurface)
+                                                .cornerRadius(10)
                                             }
-                                            .frame(maxWidth: .infinity)
-                                            .padding()
-                                            .background(Color(hex: "#19191E", default: .black))
-                                            .cornerRadius(10)
                                         }
 
-                                        Button(action: {}) {
+                                        if book.status != .dropped {
+                                            Button(action: { store.send(.changeStatusButtonTapped(.dropped)) }) {
+                                                HStack(spacing: 8) {
+                                                    Image(systemName: "multiply.circle.fill")
+                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .foregroundStyle(.red)
+                                                    Text("stop_reading")
+                                                        .foregroundStyle(Color.appSecondaryText)
+                                                        .fontWeight(.semibold)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding()
+                                                .background(Color.appButtonSurface)
+                                                .cornerRadius(10)
+                                            }
+                                        }
+                                    }
+
+                                    if book.status != .reading {
+                                        Button(action: { store.send(.changeStatusButtonTapped(.reading)) }) {
                                             HStack(spacing: 8) {
-                                                Image(systemName: "multiply.circle.fill")
+                                                Image(systemName: "apple.books.pages.fill")
                                                     .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundStyle(.red)
-                                                Text("그만 읽고싶어요")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .foregroundStyle(.blue)
+                                                Text("currently_reading")
+                                                    .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
                                             .frame(maxWidth: .infinity)
                                             .padding()
-                                            .background(Color(hex: "#19191E", default: .black))
+                                            .background(Color.appButtonSurface)
                                             .cornerRadius(10)
                                         }
-                                    }
-                                    Button(action: {}) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
-                                                .font(.system(size: 16, weight: .semibold))
-                                                .foregroundStyle(Color(hex: "#00FFB2", default: .blue))
-                                            Text("책을 반납했어요")
-                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                                .fontWeight(.semibold)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color(hex: "#19191E", default: .black))
-                                        .cornerRadius(10)
-                                    }
-                                    Button(action: {}) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "apple.books.pages.fill")
-                                                .font(.system(size: 16, weight: .semibold))
-                                                .foregroundStyle(.blue)
-                                            Text("읽고있어요")
-                                                .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
-                                                .fontWeight(.semibold)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color(hex: "#19191E", default: .black))
-                                        .cornerRadius(10)
                                     }
                                 }
                                 .padding(.vertical, 10)
@@ -262,15 +241,15 @@ struct BookDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#2C2C35", default: .black))
-            .navigationTitle("책 상세")
+            .background(Color.appSurface)
+            .navigationTitle("book_detail")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -280,10 +259,10 @@ struct BookDetailView: View {
 
                     } else {
                         Menu {
-                            Button("수정하기", systemImage: "pencil.circle") {
+                            Button(String(localized: "edit"), systemImage: "pencil.circle") {
                                 store.send(.updateButtonTapped)
                             }
-                            Button("삭제하기", systemImage: "trash.circle") {
+                            Button(String(localized: "delete"), systemImage: "trash.circle") {
                                 store.send(.deleteButtonTapped)
                             }
                         } label: {
@@ -309,3 +288,4 @@ struct BookDetailView: View {
         BookDetailFeature()
     }))
 }
+

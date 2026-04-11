@@ -23,7 +23,7 @@ struct MyBookListFeature {
 
         var isLoading: Bool = false
         var isLoadingMore: Bool = false
-        var errorMessage: String? = nil
+        var isError: Bool = false
 
         var nextIndex: Int = 0
         var pageSize: Int = 20
@@ -80,17 +80,18 @@ struct MyBookListFeature {
 
             case .loadBooks:
                 state.isLoading = true
-                state.errorMessage = nil
+                state.isError = false
                 state.nextIndex = 0
                 state.hasMore = true
 
                 let status = state.bookStatus
                 let pageSize = state.pageSize
+                let sort = state.sortOption
 
                 return .merge(
                     .cancel(id: CancelID.loadMore),
                     .run { send in
-                        let result = try await bookService.list(status, pageSize, 0)
+                        let result = try await bookService.list(status, sort, pageSize, 0)
                         await send(.loadBooksResponse(result))
                     }
                     .cancellable(id: CancelID.loadBooks, cancelInFlight: true)
@@ -106,7 +107,7 @@ struct MyBookListFeature {
             case .loadBooksResponse(.failure(let error)):
                 state.isLoading = false
                 state.books = []
-                state.errorMessage = error.localizedDescription
+                state.isError = true
                 state.nextIndex = 0
                 state.hasMore = false
                 return .none
@@ -124,9 +125,10 @@ struct MyBookListFeature {
                 let status = state.bookStatus
                 let pageSize = state.pageSize
                 let nextIndex = state.nextIndex
+                let sort = state.sortOption
 
                 return .run { send in
-                    let result = try await bookService.list(status, pageSize, nextIndex)
+                    let result = try await bookService.list(status, sort, pageSize, nextIndex)
                     await send(.loadMoreResponse(result))
                 }
                 .cancellable(id: CancelID.loadMore, cancelInFlight: true)
@@ -140,7 +142,7 @@ struct MyBookListFeature {
 
             case .loadMoreResponse(.failure(let error)):
                 state.isLoadingMore = false
-                state.errorMessage = error.localizedDescription
+                state.isError = true
                 return .none
 
             case .refresh:
@@ -181,21 +183,7 @@ struct MyBookListFeature {
 
             case .destination(.presented(.viewBookDetail(.delegate(.confirmDeletion(let deletedId))))):
                 state.destination = nil
-                guard let deleted = state.books.first(where: { book in
-                    book.id == deletedId
-                }) else {
-                    return .none
-                }
-
-                state.books = state.books.filter { $0.id != deleted.id }
-                // Ensure dictionary exists
-                if state.statusCounts == nil {
-                    state.statusCounts = [:]
-                }
-
-                state.statusCounts![deleted.status, default: 0] = max(0, state.statusCounts![deleted.status, default: 0] - 1)
-
-                return .none
+                return .send(.onAppear)
 
             case .destination(.presented(.viewBookDetail(.destination(.presented(.formBook(.delegate(.confirmUpdate))))))):
                 return .run { send in
@@ -237,7 +225,10 @@ struct MyBookListFeature {
                 return .send(.loadBooks)
 
             case .binding(\.sortOption):
-                return .none
+                state.books = []
+                state.nextIndex = 0
+                state.hasMore = true
+                return .send(.loadBooks)
 
             case .binding:
                 return .none
@@ -258,17 +249,17 @@ extension MyBookListFeature {
 extension AlertState where Action == MyBookListFeature.Action.Alert {
     static func deleteConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

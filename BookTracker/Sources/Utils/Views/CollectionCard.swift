@@ -11,29 +11,26 @@ struct CollectionCard: View {
     let summary: UserCollectionSummary
     let onTap: () -> Void
     let onDelete: () -> Void
-    let onShare: (() -> Void)?
 
     init(
         summary: UserCollectionSummary,
         onTap: @escaping () -> Void,
-        onDelete: @escaping () -> Void,
-        onShare: (() -> Void)? = nil
+        onDelete: @escaping () -> Void
     ) {
         self.summary = summary
         self.onTap = onTap
         self.onDelete = onDelete
-        self.onShare = onShare
     }
 
     private var titleText: String {
         if let name = summary.name, !name.isEmpty {
             return name
         }
-        return "이름 없는 컬렉션"
+        return String(localized: "unnamed_collection")
     }
 
     private var countText: String {
-        "\(summary.bookCount)권"
+        String(format: String(localized: "book_count %@"), "\(summary.bookCount)")
     }
 
     private var previewBooks: [CollectionPreviewBook] {
@@ -48,18 +45,18 @@ struct CollectionCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(titleText)
                         .font(.headline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.appPrimaryText)
                         .lineLimit(1)
 
                     Text(countText)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
                 }
                 .padding(.top, 8)
             }
             .padding(15)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
@@ -68,15 +65,7 @@ struct CollectionCard: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("삭제", systemImage: "trash")
-            }
-
-            if let onShare {
-                Button {
-                    onShare()
-                } label: {
-                    Label("공유", systemImage: "square.and.arrow.up")
-                }
+                Label("delete", systemImage: "trash")
             }
         }
     }
@@ -101,29 +90,29 @@ struct CollectionCard: View {
 
     private var emptyPreview: some View {
         RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .fill(Color.white.opacity(0.08))
+            .fill(Color.appPlaceholder)
             .frame(height: 80)
             .overlay {
                 VStack(spacing: 6) {
                     Image(systemName: "books.vertical")
                         .font(.system(size: 20))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
 
-                    Text("책이 아직 없어요")
+                    Text("no_books_yet")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.appSecondaryText)
                 }
             }
     }
 
     private var placeholderSlot: some View {
         RoundedRectangle(cornerRadius: 6, style: .continuous)
-            .fill(Color.white.opacity(0.08))
+            .fill(Color.appPlaceholder)
             .frame(maxWidth: .infinity)
             .frame(height: 80)
             .overlay {
                 Image(systemName: "book.closed")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.appSecondaryText)
             }
     }
 
@@ -153,11 +142,11 @@ struct CollectionCard: View {
     private func imagePlaceholder(systemName: String) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.appPlaceholder)
 
             Image(systemName: systemName)
                 .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.appSecondaryText)
                 .imageScale(.large)
         }
     }
@@ -233,8 +222,7 @@ struct CollectionCard: View {
             bookCount: 0
         ),
         onTap: {},
-        onDelete: {},
-        onShare: {}
+        onDelete: {}
     )
     .frame(width: 180)
     .padding()

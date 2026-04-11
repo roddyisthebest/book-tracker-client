@@ -47,6 +47,8 @@ struct SearchResultFeature {
     @Dependency(\.externalBookService) var bookService
     @Dependency(\.continuousClock) var clock
     @Dependency(\.searchHistory) var searchHistory
+    @Dependency(\.searchKeywordService) var searchKeywordService
+
     @Dependency(\.date) var date
     private enum CancelID { case search, loadMore }
 
@@ -120,17 +122,24 @@ struct SearchResultFeature {
                 state.externalBooks = books
                 state.nextIndex = books.count
                 state.hasMore = books.count == state.pageSize
-                return .none
+                let trimmed = state.keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                return .run {
+                    _ in
+                    if !trimmed.isEmpty {
+                        await searchKeywordService.record(trimmed)
+                    }
+                }
 
             case .searchResponse(.failure(let error)):
                 state.isLoading = false
                 state.errorMessage = error.localizedDescription
                 state.externalBooks = []
                 state.alert = AlertState {
-                    TextState("문제가 발생했어요")
+                    TextState("error_occurred")
                 } actions: {
                     ButtonState(role: .cancel) {
-                        TextState("확인")
+                        TextState("confirm")
                     }
                 } message: {
                     TextState(error.localizedDescription)
@@ -161,10 +170,10 @@ struct SearchResultFeature {
                 state.isLoadingMore = false
                 state.errorMessage = error.localizedDescription
                 state.alert = AlertState {
-                    TextState("추가 로딩에 실패했어요")
+                    TextState("load_more_failed")
                 } actions: {
                     ButtonState(role: .cancel) {
-                        TextState("확인")
+                        TextState("confirm")
                     }
                 } message: {
                     TextState(error.localizedDescription)

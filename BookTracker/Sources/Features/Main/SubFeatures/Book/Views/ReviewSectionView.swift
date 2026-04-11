@@ -6,7 +6,7 @@ struct ReviewSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            FormTextEditor(placeholder: "리뷰를 입력해주세요", text: $store.reviewComment)
+            FormTextEditor(placeholder: "enter_review_placeholder", text: $store.reviewComment)
         }
         .frame(maxWidth: .infinity)
         .listRowBackground(Color.clear)

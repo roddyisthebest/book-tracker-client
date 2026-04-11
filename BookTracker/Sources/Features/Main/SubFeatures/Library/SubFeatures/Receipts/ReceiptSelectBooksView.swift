@@ -31,9 +31,9 @@ private struct ReceiptBooksLoadingView: View {
             ProgressView()
                 .tint(.white)
 
-            Text("책 목록을 불러오는 중이에요.")
+            Text("loading_books")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -48,23 +48,17 @@ private struct ReceiptBooksErrorView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(.yellow)
 
-            Text("책 목록을 불러오지 못했어요.")
+            Text("book_list_load_failed")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
-            Text("잠시 후 다시 시도해주세요.")
+            Text("try_again_later")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
 
-            Button(action: onRetry) {
-                Text("다시 시도")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
-            }
+            Button(String(localized: "retry"), action: onRetry)
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -78,26 +72,20 @@ private struct ReceiptBooksEmptyView: View {
         VStack(spacing: 14) {
             Image(systemName: "books.vertical")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(Color.appSecondaryText)
 
-            Text("추가된 책이 없어요.")
+            Text("no_books_added")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appPrimaryText)
 
-            Text("책을 추가해서 영수증이나 대출증 발급을 시작해보세요.")
+            Text("add_books_to_start")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(Color.appSecondaryText)
 
-            Button(action: onAdd) {
-                Text("책 추가하기")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
-            }
+            Button(String(localized: "add_books"), action: onAdd)
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -119,11 +107,11 @@ private struct FullScreenLoadingOverlay: View {
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appPrimaryText)
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 20)
-            .background(Color(hex: "#17171C"))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(14)
         }
     }
@@ -163,7 +151,7 @@ struct ReceiptSelectBooksView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .refreshable {
             store.send(.onRefresh)
         }
@@ -178,14 +166,14 @@ struct ReceiptSelectBooksView: View {
 
     var body: some View {
         contentView
-            .background(Color(hex: "#2C2C35", default: .black).ignoresSafeArea())
-            .navigationTitle(store.type == .purchase ? "영수증 발급" : "대출증 발급")
+            .background(Color.appSurface.ignoresSafeArea())
+            .navigationTitle(store.type == .purchase ? "issue_purchase_receipt" : "issue_rental_receipt")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
             .navigationSubtitle(
                 store.type == .purchase
-                    ? "책을 추가하여 영수증을 발급해보세요."
-                    : "책을 추가하여 대출증을 발급해보세요."
+                    ? String(localized: "receipt_subtitle_purchase")
+                    : String(localized: "receipt_subtitle_rental")
             )
             .toolbar { toolbarContent }
             .overlay(alignment: .bottom) {
@@ -195,7 +183,7 @@ struct ReceiptSelectBooksView: View {
             }
             .overlay {
                 if store.isDeleting {
-                    FullScreenLoadingOverlay(title: "삭제 중이에요...")
+                    FullScreenLoadingOverlay(title: String(localized: "deleting"))
                 }
             }
             .sheet(
@@ -224,12 +212,12 @@ struct ReceiptSelectBooksView: View {
             Button {
                 dismiss()
             } label: {
-                Label("뒤로가기", systemImage: "chevron.left")
+                Label("back", systemImage: "chevron.left")
             }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("발급하기") {
+            Button(String(localized: "issue")) {
                 store.send(.issueButtonTapped)
             }
             .disabled(store.books.isEmpty || store.isFetching)
@@ -242,7 +230,7 @@ struct ReceiptSelectBooksView: View {
             DefaultButton(action: {
                 store.send(.addButtonTapped)
             }) {
-                Text("추가하기")
+                Text("add")
             }
         }
         .padding(.horizontal, 25)

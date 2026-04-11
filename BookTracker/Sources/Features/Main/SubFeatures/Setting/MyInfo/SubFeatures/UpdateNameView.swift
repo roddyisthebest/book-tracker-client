@@ -17,15 +17,15 @@ struct UpdateNameView: View {
         NavigationStack {
             List {
                 VStack(alignment: .leading) {
-                    Text("이름").foregroundStyle(.blue).font(.caption)
+                    Text("name").foregroundStyle(.blue).font(.caption)
                     VStack(spacing: 7) {
                         HStack {
                             TextField(
                                 "",
                                 text: $store.name,
-                                prompt: Text("이름").foregroundStyle(.white.opacity(0.4))
+                                prompt: Text("name").foregroundStyle(Color.appSecondaryText)
                             )
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 20, weight: .semibold))
                             .background(.clear)
                             .frame(height: 28)
@@ -56,14 +56,14 @@ struct UpdateNameView: View {
             .listStyle(.plain)
             .padding(0)
             .listStyle(.insetGrouped)
-            .navigationTitle("이름을 입력해주세요")
+            .navigationTitle("enter_name")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -71,7 +71,7 @@ struct UpdateNameView: View {
                         store.send(.updateButtonTapped)
                     } label: {
                         ZStack {
-                            Text("저장하기")
+                            Text("save")
                                 .opacity(store.isLoading ? 0 : 1)
 
                             if store.isLoading {
@@ -86,7 +86,7 @@ struct UpdateNameView: View {
                 }
             }
             .scrollContentBackground(.hidden) // 추가
-            .background(Color(hex: "#2C2C35", default: .black))
+            .background(Color.appSurface)
             .alert($store.scope(state: \.alert, action: \.alert))
         }
     }

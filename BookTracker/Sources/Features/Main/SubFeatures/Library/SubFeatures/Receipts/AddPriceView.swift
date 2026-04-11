@@ -17,7 +17,7 @@ struct AddPriceView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("가격")
+                    Text("price")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
@@ -26,17 +26,17 @@ struct AddPriceView: View {
                             TextField(
                                 "",
                                 text: priceBinding,
-                                prompt: Text("가격 입력").foregroundStyle(.white.opacity(0.4))
+                                prompt: Text("enter_price").foregroundStyle(Color.appSecondaryText)
                             )
                             .keyboardType(.numberPad)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 20, weight: .semibold))
                             .background(.clear)
                             .frame(height: 28)
                             .focused($isPriceFieldFocused)
 
                             Text(store.currencyCode.rawValue)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 16, weight: .semibold))
                         }
 
@@ -49,7 +49,7 @@ struct AddPriceView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("화폐 코드")
+                    Text("currency_code")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
@@ -62,17 +62,17 @@ struct AddPriceView: View {
                     } label: {
                         HStack {
                             Text(store.currencyCode.rawValue)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appPrimaryText)
                                 .font(.system(size: 18, weight: .semibold))
 
                             Spacer()
 
                             Text(store.currencyCode.description)
-                                .foregroundStyle(.white.opacity(0.45))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 13, weight: .medium))
 
                             Image(systemName: "chevron.up.chevron.down")
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color.appSecondaryText)
                         }
                         .padding(.vertical, 10)
                     }
@@ -85,13 +85,13 @@ struct AddPriceView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("미리보기")
+                    Text("preview")
                         .foregroundStyle(.blue)
                         .font(.caption)
 
                     HStack {
                         Text(formattedPreviewPrice)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .font(.system(size: 22, weight: .bold))
 
                         Spacer()
@@ -103,14 +103,14 @@ struct AddPriceView: View {
         }
         .listStyle(.plain)
         .padding(0)
-        .navigationTitle("영수증 가격 추가")
+        .navigationTitle("add_receipt_price")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Label("뒤로가기", systemImage: "chevron.left")
+                    Label("back", systemImage: "chevron.left")
                 }
             }
 
@@ -119,7 +119,7 @@ struct AddPriceView: View {
                     store.send(.addButtonTapped)
                 } label: {
                     ZStack {
-                        Text("추가하기")
+                        Text("add")
                             .opacity(store.isLoading ? 0 : 1)
 
                         if store.isLoading {
@@ -134,7 +134,7 @@ struct AddPriceView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Color(hex: "#2C2C35", default: .black))
+        .background(Color.appSurface)
         .alert($store.scope(state: \.alert, action: \.alert))
         .task {
             isPriceFieldFocused = true

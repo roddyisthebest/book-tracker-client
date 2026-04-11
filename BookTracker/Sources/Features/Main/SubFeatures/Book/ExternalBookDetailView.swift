@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct ExternalBookDetailView: View {
@@ -34,31 +35,23 @@ struct ExternalBookDetailView: View {
                 ScrollView {
                     HStack(alignment: .top, spacing: 15) {
                         RoundedRectangle(cornerRadius: 15)
-                            .fill(Color(hex: "#19191E", default: .gray))
+                            .fill(Color.appSurfaceDeep)
                             .frame(width: 100, height: 150)
                             .overlay(
                                 Group {
                                     if let url = store.book?.thumbnail {
-                                        AsyncImage(url: url) { phase in
-                                            switch phase {
-                                            case .empty:
+                                        KFImage(url)
+                                            .placeholder {
                                                 ProgressView()
                                                     .tint(.secondary)
-                                            case .success(let image):
-                                                image
-                                                    .resizable()
-                                                    .scaledToFill()
-                                            case .failure:
-                                                Image(systemName: "photo")
-                                                    .font(.system(size: 14, weight: .semibold))
-                                                    .foregroundStyle(.secondary)
-                                            @unknown default:
-                                                EmptyView()
                                             }
-                                        }
-                                        .frame(width: 100, height: 150)
-                                        .clipShape(RoundedRectangle(cornerRadius: 15))
-                                        .clipped()
+                                            .retry(maxCount: 2, interval: .seconds(1))
+                                            .fade(duration: 0.2)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 100, height: 150)
+                                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                                            .clipped()
                                     } else {
                                         Image(systemName: "photo")
                                             .font(.system(size: 14, weight: .semibold))
@@ -73,23 +66,23 @@ struct ExternalBookDetailView: View {
                                     .font(.system(size: 18, weight: .bold))
                                     .lineLimit(2)
                                     .truncationMode(.tail)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.appPrimaryText)
 
                                 VStack(alignment: .leading, spacing: 5) {
                                     if let author = book.authors?.first {
-                                        Text(author).foregroundStyle(.white.opacity(0.7)).font(.system(size: 15, weight: .semibold))
+                                        Text(author).foregroundStyle(Color.appSecondaryText).font(.system(size: 15, weight: .semibold))
                                             .lineLimit(2)
                                             .truncationMode(.tail)
                                     }
 
                                     if let publisher = book.publisher {
-                                        Text(publisher).foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
+                                        Text(publisher).foregroundStyle(Color.appSecondaryText).font(.system(size: 12, weight: .semibold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                     }
 
                                     if let publishedDate = book.publishedDate {
-                                        Text("출판일: \(publishedDate)").foregroundStyle(.white.opacity(0.6)).font(.system(size: 12, weight: .semibold))
+                                        Text("published_date \(publishedDate)").foregroundStyle(Color.appSecondaryText).font(.system(size: 12, weight: .semibold))
                                             .lineLimit(1)
                                             .truncationMode(.tail).padding(.vertical, 5)
                                     }
@@ -97,7 +90,7 @@ struct ExternalBookDetailView: View {
                                     if let micros = book.saleInfo?.offers?.first?.retailPrice?.amountInMicros {
                                         let amount = Double(micros) / 1_000_000
 
-                                        Text("\(Int(amount))원").foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
+                                        Text("price_won \(Int(amount))").foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                     }
@@ -110,12 +103,12 @@ struct ExternalBookDetailView: View {
 
                     }.padding(.horizontal, 15).padding(.vertical, 10)
 
-                    Divider().background(.white.opacity(0.7))
+                    Divider().background(Color.appSeparator)
 
                     VStack {
                         if let book = store.book, let desc = book.description {
                             HStack {
-                                Text("책 소개").foregroundStyle(.white).font(.system(size: 22)).fontWeight(.black)
+                                Text("book_intro").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
                                 Spacer()
                             }
                             .padding(.vertical, 5)
@@ -124,13 +117,13 @@ struct ExternalBookDetailView: View {
                                 .multilineTextAlignment(.leading)
                                 .lineLimit(store.isExtended ? 15 : 3)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(Color(hex: "#C3C3C6", default: .white))
+                                .foregroundStyle(Color.appSecondaryText)
 
                             HStack {
                                 Button(action: {
                                     store.send(.extendButtonTapped)
                                 }) {
-                                    Text(store.isExtended ? "접기" : "더보기")
+                                    Text(store.isExtended ? String(localized: "collapse") : String(localized: "show_more"))
                                 }
                                 Spacer()
                             }
@@ -144,13 +137,13 @@ struct ExternalBookDetailView: View {
                                         ProgressView()
                                             .controlSize(.small)
 
-                                        Text("대출/영수증 정보를 불러오는 중…")
+                                        Text("loading_receipt_info")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                            .foregroundStyle(Color.appSecondaryText)
                                     }
                                     .frame(maxWidth: .infinity, minHeight: 56)
                                     .padding(.horizontal, 16)
-                                    .background(Color(hex: "#19191E", default: .black))
+                                    .background(Color.appButtonSurface)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                                 } else if store.isRegisteredReceiptTypesLoadError {
                                     VStack(spacing: 8) {
@@ -158,18 +151,18 @@ struct ExternalBookDetailView: View {
                                             .font(.system(size: 18, weight: .semibold))
                                             .foregroundStyle(.orange)
 
-                                        Text("대출/영수증 정보를 불러오지 못했어요")
+                                        Text("receipt_info_load_failed")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(Color.appPrimaryText)
 
-                                        Text("잠시 후 다시 시도해 주세요.")
+                                        Text("try_again_later")
                                             .font(.system(size: 13, weight: .medium))
-                                            .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                            .foregroundStyle(Color.appSecondaryText)
                                     }
                                     .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity, minHeight: 88)
                                     .padding(.horizontal, 16)
-                                    .background(Color(hex: "#19191E", default: .black))
+                                    .background(Color.appButtonSurface)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                                 } else if store.isRegisteredReceiptTypesLoadSuccess {
                                     Button(action: {
@@ -183,16 +176,16 @@ struct ExternalBookDetailView: View {
                                                 Image(systemName: "person.text.rectangle.fill")
                                                     .font(.system(size: 16, weight: .semibold))
                                                     .foregroundStyle(
-                                                        Color(hex: "#7D7DFF", default: .accentColor))
+                                                        Color.appRentalAccent)
 
-                                                Text("대출증에 추가")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                Text("add_to_rental")
+                                                    .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding()
-                                        .background(Color(hex: "#19191E", default: .black))
+                                        .background(Color.appButtonSurface)
                                         .cornerRadius(10)
                                     }.disabled(store.isPurchasingSaving)
 
@@ -206,14 +199,14 @@ struct ExternalBookDetailView: View {
                                             HStack(spacing: 8) {
                                                 Image(systemName: "receipt.fill")
                                                     .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundStyle(Color(hex: "#67E9AF", default: .accentColor))
-                                                Text("영수증에 추가")
-                                                    .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                                    .foregroundStyle(Color.appPurchaseAccent)
+                                                Text("add_to_receipt")
+                                                    .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
                                             .frame(maxWidth: .infinity)
                                             .padding()
-                                            .background(Color(hex: "#19191E", default: .black))
+                                            .background(Color.appButtonSurface)
                                             .cornerRadius(10)
                                         }
 
@@ -232,19 +225,19 @@ struct ExternalBookDetailView: View {
                                         )
                                     Text({
                                         if store.isAlreadyRegistered == nil {
-                                            return "등록 여부 확인 중…"
+                                            return String(localized: "checking_registration")
                                         } else if store.isAlreadyRegistered == true {
-                                            return "이미 등록된 책입니다"
+                                            return String(localized: "already_registered")
                                         } else {
-                                            return "책장에 추가하기"
+                                            return String(localized: "add_to_bookshelf")
                                         }
                                     }())
-                                        .foregroundStyle(Color(hex: "#9B9BA1", default: .white))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .fontWeight(.semibold)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color(hex: "#19191E", default: .black))
+                                .background(Color.appButtonSurface)
                                 .cornerRadius(10)
                             }
                             .disabled(store.isAlreadyRegistered == nil || store.isAlreadyRegistered == true)
@@ -272,27 +265,15 @@ struct ExternalBookDetailView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(hex: "#2C2C35", default: .black))
-        .navigationTitle("도서 상세")
+        .background(Color.appSurface)
+        .navigationTitle("book_detail")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    Label("뒤로가기", systemImage: "chevron.left")
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button("수정하기", systemImage: "pencil.circle") {
-//                        store.send(.updateButtonTapped)
-                    }
-                    Button("삭제하기", systemImage: "trash.circle") {
-//                        store.send(.deleteButtonTapped)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("back", systemImage: "chevron.left")
                 }
             }
         }

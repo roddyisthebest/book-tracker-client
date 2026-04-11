@@ -7,16 +7,16 @@ struct DateRangeSectionView: View {
     var body: some View {
         VStack(alignment: .leading) {
             VStack {
-                DatePicker("시작일자", selection: $store.startedAt, displayedComponents: [.date])
+                DatePicker("start_date", selection: $store.startedAt, displayedComponents: [.date])
                     .padding(.horizontal)
                     .padding(.top, 10)
-                Divider().background(.white).padding(.leading)
-                DatePicker("완료일자", selection: $store.endedAt, displayedComponents: [.date])
+                Divider().background(Color.appSeparator).padding(.leading)
+                DatePicker("end_date", selection: $store.endedAt, displayedComponents: [.date])
                     .padding(.horizontal)
                     .padding(.bottom, 12.5)
                     .padding(.top, 2.5)
             }
-            .background(Color(hex: "#17171C", default: .accentColor))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(15)
             .frame(maxWidth: .infinity, alignment: .leading)
         }

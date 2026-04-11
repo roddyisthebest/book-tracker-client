@@ -67,7 +67,7 @@ struct ExternalBookDetailFeature {
 
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case addBookToReceipt(receiptBook: ReceiptBook)
+            case addBookToReceipt(receiptBook: ReceiptBook, type: ReceiptType)
         }
     }
 
@@ -191,7 +191,7 @@ struct ExternalBookDetailFeature {
                     }
 
                     let receiptBook = book.toReceiptBook(type: receiptType)
-                    return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+                    return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook, type: receiptType)))
 
                 case .failure:
                     state.destination = .alert(.saveFailed())
@@ -203,7 +203,7 @@ struct ExternalBookDetailFeature {
             case .destination(.presented(.addPrice(.delegate(.addBookToReceipt(let receiptBook))))):
                 state.destination = nil
                 state.registeredReceiptTypes.append(.purchase)
-                return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+                return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook, type: .purchase)))
             case .destination(.presented(.alert(.addPrice))):
                 guard let book = state.book else {
                     return .none
@@ -233,49 +233,49 @@ extension ExternalBookDetailFeature {
 extension AlertState where Action == ExternalBookDetailFeature.Action.Alert {
     static func receiptConfirmation() -> Self {
         Self {
-            TextState("영수증에 추가되었습니다.")
+            TextState("added_to_receipt")
         } actions: {}
     }
 
     static func rentalConfirmation() -> Self {
         Self {
-            TextState("대출증에 추가되었습니다.")
+            TextState("added_to_rental")
         } actions: {}
     }
 
     static func saveSuccessed(type: ReceiptType) -> Self {
         Self {
-            TextState(type == .rental ? "대출증 목록에 추가되었습니다." : "영수증 목록에 추가되었습니다.")
+            TextState(type == .rental ? String(localized: "added_to_rental") : String(localized: "added_to_purchase"))
         }
     }
 
     static func saveFailed() -> Self {
         Self {
-            TextState("추가에 실패하였습니다. 다시 시도해 주세요.")
+            TextState("add_failed_retry")
         }
     }
 
     static func alreadyRegistered() -> Self {
         Self {
-            TextState("이미 책장에 등록된 책입니다.")
+            TextState("book_already_registered")
         } actions: {}
     }
 
     static func alreadyRegisteredReceipt(type: ReceiptType) -> Self {
         Self {
-            TextState(type == .rental ? "대출증 대기 목록에 등록된 책입니다." : "영수증 대기 목록에 등록된 책입니다.")
+            TextState(type == .rental ? String(localized: "already_in_rental") : String(localized: "already_in_purchase"))
         }
     }
 
     static func notRegisteredPrice() -> Self {
         Self {
-            TextState("가격이 설정되지 않았습니다. 가격을 설정하시고 영수증에 추가하시겠습니까?")
+            TextState("price_not_set_confirm")
         } actions: {
             ButtonState(role: .cancel, action: .addPrice) {
-                TextState("확인")
+                TextState("confirm")
             }
             ButtonState(role: .destructive) {
-                TextState("취소")
+                TextState("cancel")
             }
         }
     }

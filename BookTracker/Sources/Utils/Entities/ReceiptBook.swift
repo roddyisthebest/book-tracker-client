@@ -13,8 +13,8 @@ enum ReceiptType: String, Equatable, Hashable, Codable {
 
     var title: String {
         switch self {
-        case .purchase: return "영수증"
-        case .rental: return "대출증"
+        case .purchase: return String(localized: "purchase_receipt")
+        case .rental: return String(localized: "rental_receipt")
         }
     }
 }
@@ -32,7 +32,7 @@ struct ReceiptSaleInfo: Codable, Equatable {
     var priceText: String? {
         guard let amountInMicros else { return nil }
         let amount = Double(amountInMicros) / 1_000_000
-        return "\(Int(amount))원"
+        return "\(Int(amount))" + String(localized: "won_unit")
     }
 }
 

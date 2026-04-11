@@ -18,6 +18,8 @@ struct LibraryFeature {
     struct State: Equatable {
         var collections: Result<[UserCollectionSummary], AppError> = .success([])
         var isLoadingCollections: Bool = false
+        var isDeletingCollection: Bool = false
+        var isDeletingReceipt: Bool = false
 
         var receipts: [Receipt] = [
             Receipt(id: UUID(1), type: .purchase, title: "alsdkkks"),
@@ -47,7 +49,7 @@ struct LibraryFeature {
         case sectionTapped(Section)
         case path(StackAction<Path.State, Path.Action>)
 
-        case collectionCardTapped(id: UUID)
+        case collectionCardTapped(collection: UserCollectionSummary)
         case receiptCardTapped(id: UUID)
 
         case loadStatusCounts
@@ -59,12 +61,23 @@ struct LibraryFeature {
         case loadRecentReceipts
         case recentReceiptsResponse(Result<[ReceiptSummary], AppError>)
 
+        case deleteCollectionButtonTapped(id: UUID)
+        case deleteCollectionResponse(Result<UUID, AppError>)
+
+        case deleteReceiptButtonTapped(id: UUID)
+        case deleteReceiptResponse(Result<UUID, AppError>)
+
         case destination(PresentationAction<Destination.Action>)
 
         enum Section: Equatable {
             case myBooks(status: BookStatus)
             case collections
             case receipts
+        }
+
+        enum Alert: Equatable {
+            case confirmCollectionDeletion(id: UUID)
+            case confirmReceiptDeletion(id: UUID)
         }
     }
 
@@ -84,8 +97,8 @@ struct LibraryFeature {
                     .send(.loadCollections),
                     .send(.loadRecentReceipts)
                 )
-            case .collectionCardTapped(let id):
-//                state.destination = .collectionDetail(CollectionDetailFeature.State())
+            case .collectionCardTapped(let collection):
+                state.destination = .collectionDetail(CollectionDetailFeature.State(collection: collection))
                 return .none
             case .receiptCardTapped(let id):
                 state.destination = .receiptDetail(ReceiptDetailFeature.State(id: id))
@@ -139,6 +152,48 @@ struct LibraryFeature {
             case .destination(.presented(.receiptDetail(.delegate(.deleteReceipt)))):
                 state.destination = nil
                 return .send(.loadRecentReceipts)
+            case .destination(.presented(.collectionDetail(.delegate(.deleteCollection)))):
+                state.destination = nil
+                return .send(.loadCollections)
+            case .destination(.presented(.collectionDetail(.destination(.presented(.formCollection(.delegate(.updateCollection))))))):
+                return .send(.loadCollections)
+            case .destination(.presented(.collectionDetail(.destination(.presented(.selectBooks(.delegate(.updateCollection))))))):
+                return .send(.loadCollections)
+            case .path(.element(_, .collections(.delegate(.updateCollection)))):
+                return .send(.loadCollections)
+            case .deleteCollectionButtonTapped(let id):
+                state.destination = .alert(.deleteCollectionConfirmation(id: id))
+                return .none
+            case .destination(.presented(.alert(.confirmCollectionDeletion(let id)))):
+                state.isDeletingCollection = true
+                return .run {
+                    send in
+                    let result = await collectionService.delete(id)
+                    await send(.deleteCollectionResponse(result))
+                }
+            case .deleteCollectionResponse(.success):
+                state.isDeletingCollection = false
+                return .send(.loadCollections)
+            case .deleteCollectionResponse(.failure):
+                state.isDeletingCollection = false
+                state.destination = .alert(.showCollectionDeletionErrorAlert())
+                return .none
+            case .deleteReceiptButtonTapped(let id):
+                state.destination = .alert(.deleteReceiptConfirmation(id: id))
+                return .none
+            case .destination(.presented(.alert(.confirmReceiptDeletion(let id)))):
+                state.isDeletingReceipt = true
+                return .run { send in
+                    let result = await receiptService.deleteReceipt(id)
+                    await send(.deleteReceiptResponse(result))
+                }
+            case .deleteReceiptResponse(.success):
+                state.isDeletingReceipt = false
+                return .send(.loadRecentReceipts)
+            case .deleteReceiptResponse(.failure):
+                state.isDeletingReceipt = false
+                state.destination = .alert(.showReceiptDeletionErrorAlert())
+                return .none
             case .destination:
                 return .none
             case .path:
@@ -187,5 +242,46 @@ extension LibraryFeature {
     enum Destination {
         case collectionDetail(CollectionDetailFeature)
         case receiptDetail(ReceiptDetailFeature)
+        case alert(AlertState<LibraryFeature.Action.Alert>)
+    }
+}
+
+extension AlertState where Action == LibraryFeature.Action.Alert {
+    static func deleteCollectionConfirmation(id: UUID) -> Self {
+        Self {
+            TextState("are_you_sure")
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmCollectionDeletion(id: id)) {
+                TextState("delete")
+            }
+        }
+    }
+
+    static func showCollectionDeletionErrorAlert() -> Self {
+        Self {
+            TextState("collection_delete_failed")
+        }
+    }
+
+    static func deleteReceiptConfirmation(id: UUID) -> Self {
+        Self {
+            TextState("are_you_sure")
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmReceiptDeletion(id: id)) {
+                TextState("delete")
+            }
+        }
+    }
+
+    static func showReceiptDeletionErrorAlert() -> Self {
+        Self {
+            TextState("delete_failed")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("confirm")
+            }
+        } message: {
+            TextState("try_again_later")
+        }
     }
 }

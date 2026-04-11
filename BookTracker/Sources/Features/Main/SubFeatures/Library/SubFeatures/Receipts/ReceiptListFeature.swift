@@ -26,6 +26,7 @@ struct ReceiptListFeature {
         var isLoadingMore: Bool = false
 
         var isError: Bool = false
+        var isDeleting: Bool = false
 
         var nextIndex: Int = 0
         var pageSize: Int = 40
@@ -45,10 +46,12 @@ struct ReceiptListFeature {
 
         case binding(BindingAction<State>)
         case recepitCardTapped(ReceiptType, UUID)
-        case shareTapped
         case allDeleteButtonTapped
         case deleteButtonTapped(UUID)
         case receiptDetail(PresentationAction<ReceiptDetailFeature.Action>)
+
+        case deleteReceiptResponse(Result<UUID, AppError>)
+
         case alert(PresentationAction<Alert>)
         enum Alert: Equatable {
             case confirmAllDeletion
@@ -126,23 +129,21 @@ struct ReceiptListFeature {
             case .recepitCardTapped(let type, let id):
                 state.receiptDetail = ReceiptDetailFeature.State(id: id)
                 return .none
-            case .shareTapped:
-                return .none
             case .allDeleteButtonTapped:
                 state.alert = AlertState {
-                    TextState("Are you sure?")
+                    TextState("are_you_sure")
                 } actions: {
                     ButtonState(role: .destructive, action: .confirmAllDeletion) {
-                        TextState("Delete All")
+                        TextState("delete_all")
                     }
                 }
                 return .none
             case .deleteButtonTapped(let id):
                 state.alert = AlertState {
-                    TextState("Are you sure?")
+                    TextState("are_you_sure")
                 } actions: {
                     ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                        TextState("Delete")
+                        TextState("delete")
                     }
                 }
                 return .none
@@ -151,11 +152,22 @@ struct ReceiptListFeature {
                 return .send(.onRefresh)
             case .receiptDetail:
                 return .none
+            case .deleteReceiptResponse(.success):
+                state.isDeleting = false
+                return .send(.loadReceipts)
+            case .deleteReceiptResponse(.failure):
+                state.isDeleting = false
+                state.alert = .deleteFailed()
+                return .none
             case .alert(.presented(.confirmAllDeletion)):
                 return .none
             case .alert(.presented(.confirmDeletion(let id))):
-                state.list = state.list.filter { $0.id != id }
-                return .none
+                state.isDeleting = true
+
+                return .run { send in
+                    let result = await receiptService.deleteReceipt(id)
+                    await send(.deleteReceiptResponse(result))
+                }
             case .alert:
                 return .none
             case .binding(\.receiptType):
@@ -173,23 +185,35 @@ struct ReceiptListFeature {
 extension AlertState where Action == ReceiptListFeature.Action.Alert {
     static func deleteConfirmation(id: UUID) -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func loadMoreFailed(message: String) -> Self {
         Self {
-            TextState("더 불러오기에 실패했어요")
+            TextState("load_more_failed")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         } message: {
             TextState(message)
+        }
+    }
+
+    static func deleteFailed() -> Self {
+        Self {
+            TextState("delete_failed")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("confirm")
+            }
+        } message: {
+            TextState("try_again_later")
         }
     }
 }

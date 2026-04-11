@@ -30,6 +30,7 @@ struct HomeFeature {
 
         var recentWeekRecords: [Date: ReadingRecord?] = [:]
         var isRecentWeekLoading: Bool = false
+        var didInitialLoad: Bool = false
 
         var purchaseBookCount: Int = 0
         var rentalBookCount: Int = 0
@@ -76,10 +77,12 @@ struct HomeFeature {
             state, action in
             switch action {
             case .onAppear:
-                return .merge(
-                    .send(.loadRecentWeek),
-                    .send(.loadBookCount)
-                )
+                var effects: [Effect<Action>] = []
+                if !state.didInitialLoad {
+                    effects.append(.send(.loadRecentWeek))
+                }
+                effects.append(.send(.loadBookCount))
+                return .merge(effects)
 
             case .doneButtonTapped:
                 // Toggle today's reading record: if exists, delete; otherwise create
@@ -193,6 +196,7 @@ struct HomeFeature {
 
                 state.didReadToday = todayRecord != nil
                 state.todayRecordId = todayRecord??.id
+                state.didInitialLoad = true
 
                 return .none
 
@@ -276,21 +280,22 @@ extension HomeFeature {
 extension AlertState where Action == HomeFeature.Action.Alert {
     static func showTodayReadingRecordUpdateError() -> Self {
         Self {
-            TextState("오늘 독서 기록 처리 중 오류가 발생했어요.")
+            TextState("today_reading_record_error")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 
     static func showBookCountsFetchingError() -> Self {
         Self {
-            TextState("영수증, 대출증 등의 정보를 가져오는 중 오류가 발생했어요. ")
+            TextState("receipt_fetch_error")
         } actions: {
             ButtonState(role: .cancel) {
-                TextState("확인")
+                TextState("confirm")
             }
         }
     }
 }
+

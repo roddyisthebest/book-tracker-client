@@ -12,30 +12,42 @@ struct SearchResultView: View {
     let store: StoreOf<SearchResultFeature>
     var body: some View {
         ZStack {
-            ScrollView {
-                LazyVStack {
-                    ForEach(store.externalBooks, id: \.id) { book in
-                        ExternalBookRow(
-                            book: book,
-                            onTap: {
-                                store.send(.externalBookTapped(id: book.id))
-                            }
-                        )
-                        .onAppear {
-                            if book.id == store.externalBooks.last?.id {
-                                store.send(.loadMore)
+            if !store.isLoading && store.externalBooks.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color.appSecondaryText.opacity(0.6))
+                    Text("no_search_results")
+                        .font(.footnote)
+                        .foregroundStyle(Color.appSecondaryText)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack {
+                        ForEach(store.externalBooks, id: \.id) { book in
+                            ExternalBookRow(
+                                book: book,
+                                onTap: {
+                                    store.send(.externalBookTapped(id: book.id))
+                                }
+                            )
+                            .onAppear {
+                                if book.id == store.externalBooks.last?.id {
+                                    store.send(.loadMore)
+                                }
                             }
                         }
+                        if store.isLoadingMore {
+                            ProgressView()
+                                .padding(.vertical, 12)
+                        }
                     }
-                    if store.isLoadingMore {
-                        ProgressView()
-                            .padding(.vertical, 12)
-                    }
+                    .padding(.horizontal, 15)
+                    .padding(.top, 10)
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 10)
+                .allowsHitTesting(!(store.isLoading && store.externalBooks.isEmpty))
             }
-            .allowsHitTesting(!(store.isLoading && store.externalBooks.isEmpty))
 
             if store.isLoading && store.externalBooks.isEmpty {
                 ProgressView()

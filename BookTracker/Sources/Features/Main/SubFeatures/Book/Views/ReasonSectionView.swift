@@ -13,7 +13,7 @@ struct ReasonSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            FormTextEditor(placeholder: "중단이유를 입력해주세요", text: $store.reason)
+            FormTextEditor(placeholder: "enter_drop_reason_placeholder", text: $store.reason)
         }
         .frame(maxWidth: .infinity)
         .listRowBackground(Color.clear)

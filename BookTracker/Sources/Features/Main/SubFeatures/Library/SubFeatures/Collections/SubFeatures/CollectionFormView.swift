@@ -16,34 +16,34 @@ struct CollectionFormView: View {
             VStack(spacing: 30) {
                 VStack {
                     HStack {
-                        FormLabel(text: "이름")
+                        FormLabel(text: String(localized: "collection_name_label"))
                         Spacer()
                     }
-                    TextField("이름",
+                    TextField(String(localized: "collection_name_label"),
                               text: $store.title,
-                              prompt: Text("컬렉션 이름을 입력해주세요").foregroundStyle(.white.opacity(0.4)))
-                        .foregroundStyle(.white)
+                              prompt: Text("enter_collection_name").foregroundStyle(Color.appSecondaryText))
+                        .foregroundStyle(Color.appPrimaryText)
                         .padding()
-                        .background(Color(hex: "#17171C", default: .accentColor))
+                        .background(Color.appSurfaceDeep)
                         .cornerRadius(15)
                 }
 
                 VStack {
                     HStack {
-                        FormLabel(text: "설명")
+                        FormLabel(text: String(localized: "collection_desc_label"))
                         Spacer()
                     }
 
                     ZStack(alignment: .topLeading) {
                         if store.description.isEmpty {
-                            Text("컬렉션 설명을 입력해주세요")
-                                .foregroundStyle(.white.opacity(0.4))
+                            Text("enter_collection_desc")
+                                .foregroundStyle(Color.appSecondaryText)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 20)
                         }
 
                         TextEditor(text: $store.description)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appPrimaryText)
                             .padding(12)
                             .frame(height: 150)
                             .scrollIndicators(.visible)
@@ -52,25 +52,25 @@ struct CollectionFormView: View {
                             .textInputAutocapitalization(.sentences)
                             .autocorrectionDisabled(false)
                     }
-                    .background(Color(hex: "#17171C", default: .accentColor))
+                    .background(Color.appSurfaceDeep)
                     .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
 
                 if !store.isEditing {
                     VStack(alignment: .leading) {
-                        FormLabel(text: "초기 책 선택 (선택 사항)")
+                        FormLabel(text: String(localized: "initial_book_select"))
 
                         Button(action: {
                             store.send(.presentBookPickerButtonTapped)
                         }) {
                             HStack {
-                                Text("책 선택")
+                                Text("select_books")
                                 Spacer()
 
                                 HStack(spacing: 10) {
                                     let selectedBookIds = store.selectedBookIds
                                     if !selectedBookIds.isEmpty {
-                                        Text("\(selectedBookIds.count)권 선택됨").foregroundStyle(.foreground)
+                                        Text(String(format: String(localized: "books_selected %@"), "\(selectedBookIds.count)")).foregroundStyle(.foreground)
                                     }
 
                                     Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(.foreground)
@@ -80,7 +80,7 @@ struct CollectionFormView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
-                        .background(Color(hex: "#17171C", default: .accentColor))
+                        .background(Color.appSurfaceDeep)
                         .clipShape(RoundedRectangle(cornerRadius: 15))
 
                     }.frame(maxWidth: .infinity, alignment: .leading)
@@ -91,28 +91,28 @@ struct CollectionFormView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(Color(hex: "#2C2C35", default: .black))
-            .navigationTitle(store.isEditing ? "컬렉션 수정" : "컬렉션 생성")
+            .background(Color.appSurface)
+            .navigationTitle(store.isEditing ? "collection_edit" : "collection_create")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("뒤로가기", systemImage: "chevron.left")
+                        Label("back", systemImage: "chevron.left")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if store.isLoading {
                         ProgressView()
                     } else if store.isEditing {
-                        Button("수정하기") {
+                        Button(String(localized: "update")) {
                             store.send(.updateButtonTapped)
                         }
                         .disabled(!store.isSubmitEnabled || store.isLoading)
 
                     } else {
-                        Button("생성하기") {
+                        Button(String(localized: "create")) {
                             store.send(.createButtonTapped)
                         }
                         .disabled(!store.isSubmitEnabled || store.isLoading)

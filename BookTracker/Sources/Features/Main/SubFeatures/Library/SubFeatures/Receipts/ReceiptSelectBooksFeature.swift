@@ -107,8 +107,10 @@ struct ReceiptSelectBooksFeature {
                     send in
                     await send(.delegate(.receiptFlowCompleted(type: type)))
                 }
-            case .destination(.presented(.search(.detailSheet(.presented(.delegate(.addBookToReceipt(let book))))))):
-                state.books.append(book)
+            case .destination(.presented(.search(.detailSheet(.presented(.delegate(.addBookToReceipt(let book, let type))))))):
+                if type == state.type {
+                    state.books.append(book)
+                }
                 return .none
             case .destination:
                 return .none
@@ -132,7 +134,7 @@ extension ReceiptSelectBooksFeature {
 extension AlertState where Action == ReceiptSelectBooksFeature.Action.Alert {
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

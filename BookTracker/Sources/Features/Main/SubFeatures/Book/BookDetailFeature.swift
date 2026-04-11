@@ -28,6 +28,8 @@ struct BookDetailFeature {
         case updateButtonTapped
         case moreButtonTapped
 
+        case changeStatusButtonTapped(BookStatus)
+
         case onAppear
         case fetch
         case fetchResponse(Result<Book, AppError>)
@@ -68,7 +70,19 @@ struct BookDetailFeature {
                     return .none
                 }
 
-                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book))
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: nil))
+                return .none
+
+            case let .changeStatusButtonTapped(bookStatus):
+                guard
+                    let book = state.book,
+                    let externalBookId = book.externalBookId
+                else {
+                    state.destination = .alert(.showUpdateAccessDeniedAlert())
+                    return .none
+                }
+
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: bookStatus))
                 return .none
 
             case .moreButtonTapped:
@@ -80,7 +94,7 @@ struct BookDetailFeature {
             case .fetch:
                 guard let id = state.id else {
                     state.isLoading = false
-                    state.errorMessage = "잘못된 요청입니다. 책 ID가 없습니다."
+                    state.errorMessage = String(localized: "invalid_book_request")
                     return .none
                 }
                 state.isLoading = true
@@ -144,7 +158,7 @@ struct BookDetailFeature {
                 state.isDeleting = true
                 return .run {
                     [id = id] send in
-                    let result = try await self.bookService.delete(id)
+                    let result = await self.bookService.delete(id)
                     await send(.deletionResponse(result))
                 }
 
@@ -178,23 +192,23 @@ extension BookDetailFeature {
 extension AlertState where Action == BookDetailFeature.Action.Alert {
     static func deleteConfirmation() -> Self {
         Self {
-            TextState("Are you sure?")
+            TextState("are_you_sure")
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion) {
-                TextState("Delete")
+                TextState("delete")
             }
         }
     }
 
     static func showUpdateAccessDeniedAlert() -> Self {
         Self {
-            TextState("You don't have permission to update this book.")
+            TextState("no_permission_update")
         }
     }
 
     static func showDeletionErrorAlert() -> Self {
         Self {
-            TextState("Failed to delete the book.")
+            TextState("book_delete_failed")
         }
     }
 }

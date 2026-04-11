@@ -11,23 +11,30 @@ import Foundation
 @Reducer
 struct SearchSuggestionsFeature {
     @Dependency(\.searchHistory) var searchHistory
+    @Dependency(\.searchKeywordService) var searchKeywordService
+
     @Dependency(\.date) var date
 
     @ObservableState
     struct State: Equatable {
-        var searches: [Search] = []
-        var books: [ExternalBook] = [
-            ExternalBook(id: "ad2231", title: "괜찮아 괜찮43괜찮아 괜찮asdddsasd asdasdfdfadasdfsadfdsafdsfdsf"),
-            ExternalBook(id: "ad2232", title: "마이노2"),
-            ExternalBook(id: "ad2233", title: "괜찮아 괜찮43괜찮아 괜찮43 괜찮아 괜찮43괜찮아 괜찮43괜찮아 괜찮43괜찮아 괜찮43"),
-        ]
+        var searchKeywordsResult: Result<[SearchKeyword], AppError> = .success([])
+        var searchesResult: Result<[Search], AppError> = .success([])
+
+        var isSearchKeywordsLoading: Bool = false
+
+        var isSearchesLoading: Bool = false
     }
 
     enum Action: Equatable {
         case searchTapped(text: String)
         case deleteButtonTapped(id: String)
         case onAppear
-        case recentLoaded([Search])
+
+        case loadSearchKeyword
+        case loadSearchKeywordResponse(Result<[SearchKeyword], AppError>)
+
+        case loadRecents
+        case loadRecentsResponse(Result<[Search], AppError>)
 
         case delegate(Delegate)
         enum Delegate: Equatable {
@@ -50,17 +57,44 @@ struct SearchSuggestionsFeature {
                         }
                     )
                 case .deleteButtonTapped(let id):
-                    state.searches.removeAll(where: { $0.id == id })
+                    if case .success(var items) = state.searchesResult {
+                        items.removeAll(where: { $0.id == id })
+                        state.searchesResult = .success(items)
+                    }
                     return .run { _ in
                         try await searchHistory.delete(id)
                     }
-                case .onAppear:
-                    return .run { send in
-                        let items = try await searchHistory.fetchRecent(50)
-                        await send(.recentLoaded(items))
+                case .loadSearchKeyword:
+                    state.isSearchKeywordsLoading = true
+                    return .run {
+                        send in
+                        let result = await searchKeywordService.list(5)
+                        await send(.loadSearchKeywordResponse(result))
                     }
-                case .recentLoaded(let items):
-                    state.searches = items
+                case .loadRecents:
+                    state.isSearchesLoading = true
+                    return .run {
+                        send in
+                        do {
+                            let items = try await searchHistory.fetchRecent(50)
+                            await send(.loadRecentsResponse(.success(items)))
+                        } catch {
+                            let appError: AppError = .client(code: "RECENTS_LOAD_FAILED", message: error.localizedDescription)
+                            await send(.loadRecentsResponse(.failure(appError)))
+                        }
+                    }
+                case .onAppear:
+                    return .merge(
+                        .send(.loadRecents),
+                        .send(.loadSearchKeyword)
+                    )
+                case .loadRecentsResponse(let result):
+                    state.isSearchesLoading = false
+                    state.searchesResult = result
+                    return .none
+                case .loadSearchKeywordResponse(let result):
+                    state.searchKeywordsResult = result
+                    state.isSearchKeywordsLoading = false
                     return .none
                 case .delegate:
                     return .none

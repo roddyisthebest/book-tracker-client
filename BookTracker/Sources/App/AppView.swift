@@ -37,19 +37,30 @@ struct AppView: View {
             }
 
         case .launching:
-            VStack {
-                Text("Loading...")
+            VStack(spacing: 16) {
+                Image(systemName: "books.vertical.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.accentColor)
+                ProgressView()
+                    .tint(.secondary)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.appBackground)
             .task {
                 store.send(.onAppear)
             }
 
         case .signingOut:
-            VStack {
+            VStack(spacing: 16) {
                 ProgressView()
-                    .progressViewStyle(.circular)
-                Text("Signing out...")
+                    .scaleEffect(1.1)
+                    .tint(.secondary)
+                Text("signing_out")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.appSecondaryText)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.appBackground)
         }
     }
 }

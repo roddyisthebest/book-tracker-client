@@ -80,7 +80,7 @@ struct RatingSectionView: View {
                     .foregroundStyle(.secondary)
             }
             .padding()
-            .background(Color(hex: "#17171C", default: .accentColor))
+            .background(Color.appSurfaceDeep)
             .cornerRadius(15)
             .frame(maxWidth: .infinity, alignment: .leading)
         }

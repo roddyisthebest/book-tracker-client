@@ -18,7 +18,7 @@ struct TypeSectionView: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(hex: "#17171C", default: .accentColor))
+                .background(Color.appSurfaceDeep)
                 .cornerRadius(15)
             }
             .contentShape(Rectangle())

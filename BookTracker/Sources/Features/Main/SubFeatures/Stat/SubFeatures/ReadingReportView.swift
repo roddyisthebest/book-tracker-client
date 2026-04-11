@@ -20,7 +20,7 @@ struct ReadingReportView: View {
     }()
 
     private func money(_ v: Int) -> String {
-        (Self.decimalFormatter.string(from: NSNumber(value: v)) ?? "\(v)") + "원"
+        (Self.decimalFormatter.string(from: NSNumber(value: v)) ?? "\(v)") + String(localized: "won_unit")
     }
 
     private func oneDecimal(_ d: Double) -> String {
@@ -72,23 +72,19 @@ struct ReadingReportView: View {
         VStack(spacing: 14) {
             Image(systemName: "doc.text.magnifyingglass")
                 .font(.system(size: 28))
-                .foregroundStyle(.white.opacity(0.8))
-            Text("이 달의 리포트가 없어요")
+                .foregroundStyle(Color.appSecondaryText)
+            Text("no_monthly_report")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
-            Text("연/월을 바꾸거나 다시 시도해 보세요.")
+                .foregroundStyle(Color.appPrimaryText)
+            Text("change_date_or_retry")
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.6))
-            Button(action: { store.send(.loadData) }) {
-                Text("다시 시도")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+                .foregroundStyle(Color.appSecondaryText)
+            Button(String(localized: "retry")) {
+                store.send(.loadData)
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, minHeight: 320)
@@ -100,9 +96,9 @@ struct ReadingReportView: View {
                 VStack(spacing: 12) {
                     ProgressView()
                         .tint(.white)
-                    Text("불러오는 중…")
+                    Text("loading")
                         .font(.footnote)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Color.appSecondaryText)
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
             } else if store.monthlyReadingReport == nil && !store.isError {
@@ -111,96 +107,96 @@ struct ReadingReportView: View {
                 VStack(spacing: 15) {
                     VStack(spacing: 20) {
                         HStack(spacing: 10) {
-                            Picker("년", selection: yearBinding) {
+                            Picker("year", selection: yearBinding) {
                                 ForEach(years, id: \.self) { year in
-                                    (Text(year, format: .number.grouping(.never)) + Text("년"))
+                                    (Text(year, format: .number.grouping(.never)) + Text("year_suffix"))
                                         .tag(year)
                                 }
                             }
                             .pickerStyle(.menu)
                             .padding(3)
-                            .tint(.white)
-                            .background(Color(hex: "#2C2C35", default: .white))
+                            .tint(Color.appPrimaryText)
+                            .background(Color.appSurface)
                             .cornerRadius(10)
 
-                            Picker("월", selection: monthBinding) {
+                            Picker("month", selection: monthBinding) {
                                 ForEach(1...12, id: \.self) { month in
-                                    Text("\(month)월").tag(month)
+                                    Text(String(format: String(localized: "month_format %@"), "\(month)")).tag(month)
                                 }
                             }
                             .pickerStyle(.menu)
                             .padding(3)
-                            .tint(.white)
-                            .background(Color(hex: "#2C2C35", default: .white))
+                            .tint(Color.appPrimaryText)
+                            .background(Color.appSurface)
                             .cornerRadius(10)
                         }
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
                                 }
-                            StatusRow(key: "완독한 책", value: "\((store.monthlyReadingReport?.month.completedCount ?? 0))권")
+                            StatusRow(key: String(localized: "completed_books"), value: "\((store.monthlyReadingReport?.month.completedCount ?? 0))\(String(localized: "book_unit"))")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "xmark.circle.fill").foregroundStyle(.red).font(.caption)
                                 }
-                            StatusRow(key: "읽다 만 책", value: "\((store.monthlyReadingReport?.month.unfinishedCount ?? 0))권")
+                            StatusRow(key: String(localized: "unfinished_books"), value: "\((store.monthlyReadingReport?.month.unfinishedCount ?? 0))\(String(localized: "book_unit"))")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "star.fill").foregroundStyle(.yellow).font(.caption)
                                 }
-                            StatusRow(key: "평균 별점", value: oneDecimal(store.monthlyReadingReport?.month.completedAverageScore ?? 0))
+                            StatusRow(key: String(localized: "average_score"), value: oneDecimal(store.monthlyReadingReport?.month.completedAverageScore ?? 0))
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
-                                    Image(systemName: "receipt.fill").foregroundStyle(Color(hex: "#67E9AF", default: .white)).font(.caption)
+                                    Image(systemName: "receipt.fill").foregroundStyle(Color.appPurchaseAccent).font(.caption)
                                 }
-                            StatusRow(key: "구매", value: "\((store.monthlyReadingReport?.month.purchaseCount ?? 0))권")
+                            StatusRow(key: String(localized: "purchase"), value: "\((store.monthlyReadingReport?.month.purchaseCount ?? 0))\(String(localized: "book_unit"))")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
-                                    Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color(hex: "#7D7DFF", default: .white)).font(.caption)
+                                    Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color.appRentalAccent).font(.caption)
                                 }
-                            StatusRow(key: "대여", value: "\((store.monthlyReadingReport?.month.rentalCount ?? 0))권")
+                            StatusRow(key: String(localized: "rental"), value: "\((store.monthlyReadingReport?.month.rentalCount ?? 0))\(String(localized: "book_unit"))")
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 20) {
                         HStack {
-                            Text("전월 비교").font(.title2).fontWeight(.bold)
+                            Text("monthly_comparison").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
                         KeyValueRow {
-                            MainLabel("완독한 책")
+                            MainLabel("completed_books")
                         } value: {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
-                                    Text("\(store.monthlyReadingReport?.comparison.previousCompletedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousCompletedCount ?? 0)"))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
-                                    Text("\(store.monthlyReadingReport?.comparison.currentCompletedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentCompletedCount ?? 0)"))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -215,17 +211,17 @@ struct ReadingReportView: View {
                         }
 
                         KeyValueRow {
-                            MainLabel("읽다 만 책")
+                            MainLabel("unfinished_books")
                         } value: {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
-                                    Text("\(store.monthlyReadingReport?.comparison.previousUnfinishedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousUnfinishedCount ?? 0)"))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
-                                    Text("\(store.monthlyReadingReport?.comparison.currentUnfinishedCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentUnfinishedCount ?? 0)"))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -240,17 +236,17 @@ struct ReadingReportView: View {
                         }
 
                         KeyValueRow {
-                            MainLabel("구매 금액")
+                            MainLabel("purchase_amount")
                         } value: {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
                                     Text(money(store.monthlyReadingReport?.comparison.previousPurchaseAmount ?? 0))
-                                        .foregroundStyle(.white.opacity(0.35))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
                                     Text(money(store.monthlyReadingReport?.comparison.currentPurchaseAmount ?? 0))
-                                        .foregroundStyle(.white.opacity(0.85))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -265,17 +261,17 @@ struct ReadingReportView: View {
                         }
 
                         KeyValueRow {
-                            MainLabel("대여권 수")
+                            MainLabel("rental_count")
                         } value: {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
-                                    Text("\(store.monthlyReadingReport?.comparison.previousRentalCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.35))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousRentalCount ?? 0)"))
+                                        .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
-                                    Text("\(store.monthlyReadingReport?.comparison.currentRentalCount ?? 0)권")
-                                        .foregroundStyle(.white.opacity(0.85))
+                                    Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentRentalCount ?? 0)"))
+                                        .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -291,60 +287,76 @@ struct ReadingReportView: View {
                     }
                     .padding()
 
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 20) {
                         HStack {
-                            Text("독서기간").font(.title2).fontWeight(.bold)
+                            Text("reading_period").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color(hex: "#2C2C35", default: .black))
+                            Rectangle().fill(Color.appSurface)
                                 .frame(width: 30, height: 30).cornerRadius(10).overlay {
                                     Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
                                 }
-                            StatusRow(key: "한권당 평균 독서 기간", value: oneDecimal(store.monthlyReadingReport?.month.averageReadingDays ?? 0) + "일")
+                            StatusRow(key: String(localized: "avg_reading_days"), value: oneDecimal(store.monthlyReadingReport?.month.averageReadingDays ?? 0) + String(localized: "day_unit"))
 
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
 
-                    Divider().frame(height: 15).background(.black)
+                    Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                     VStack(spacing: 45) {
                         HStack {
-                            Text("종이책/전자책 비율").font(.title2).fontWeight(.bold)
+                            Text("paper_ebook_ratio").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
                             Spacer()
                         }.padding(.bottom, 5)
 
-                        DonutChart(
-                            segments: [
-                                (Color.indigo, store.monthlyReadingReport?.month.ebookPercentage ?? 0.0),
-                                (Color.cyan, store.monthlyReadingReport?.month.paperPercentage ?? 0.0)
-                            ],
-                            lineWidth: 18
-                        )
-                        .frame(width: 120, height: 120)
-                        VStack(spacing: 10) {
-                            HStack {
-                                Rectangle().fill(.cyan)
-                                    .frame(width: 15, height: 15).cornerRadius(5)
-                                Text("종이책").font(.caption)
-                                Text("\(String(format: "%.0f%%", store.monthlyReadingReport?.month.paperPercentage ?? 0.0))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }.frame(maxWidth: .infinity, alignment: .leading)
-                            HStack {
-                                Rectangle().fill(.indigo)
-                                    .frame(width: 15, height: 15).cornerRadius(5)
-                                Text("전자책").font(.caption)
-                                Text("\(String(format: "%.0f%%", store.monthlyReadingReport?.month.ebookPercentage ?? 0.0))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }.frame(maxWidth: .infinity, alignment: .leading)
+                        let paper = store.monthlyReadingReport?.month.paperPercentage ?? 0.0
+                        let ebook = store.monthlyReadingReport?.month.ebookPercentage ?? 0.0
+
+                        if paper == 0 && ebook == 0 {
+                            VStack(spacing: 10) {
+                                Image(systemName: "chart.pie")
+                                    .font(.system(size: 24))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.6))
+                                Text("no_book_type_data")
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.appSecondaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 30)
+                        } else {
+                            DonutChart(
+                                segments: [
+                                    (Color.indigo, ebook),
+                                    (Color.cyan, paper)
+                                ],
+                                lineWidth: 18
+                            )
+                            .frame(width: 120, height: 120)
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Rectangle().fill(.cyan)
+                                        .frame(width: 15, height: 15).cornerRadius(5)
+                                    Text("paper_book").font(.caption)
+                                    Text("\(String(format: "%.0f%%", paper))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }.frame(maxWidth: .infinity, alignment: .leading)
+                                HStack {
+                                    Rectangle().fill(.indigo)
+                                        .frame(width: 15, height: 15).cornerRadius(5)
+                                    Text("ebook").font(.caption)
+                                    Text("\(String(format: "%.0f%%", ebook))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }.frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
                 }
@@ -356,29 +368,29 @@ struct ReadingReportView: View {
         .overlay(alignment: .top) {
             if store.isError {
                 VStack(spacing: 8) {
-                    Text("리포트를 불러오지 못했어요")
+                    Text("report_load_failed")
                         .font(.footnote)
                         .foregroundStyle(.red.opacity(0.85))
                     Button(action: { store.send(.loadData) }) {
-                        Text("다시 가져오기")
+                        Text("retry")
                             .font(.caption)
                     }
                 }
                 .padding(.top, 8)
             }
         }
-        .background(Color(hex: "#101013", default: .black))
+        .background(Color.appBackground)
     }
 
     var body: some View {
         mainContent
-            .navigationTitle("독서 리포트")
+            .navigationTitle("reading_report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button(role: .destructive, action: {}) {
-                            Label("전체 삭제", systemImage: "trash")
+                            Label("delete_all", systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
