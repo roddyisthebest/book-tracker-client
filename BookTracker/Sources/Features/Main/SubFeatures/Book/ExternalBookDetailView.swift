@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct ExternalBookDetailView: View {
@@ -39,26 +40,18 @@ struct ExternalBookDetailView: View {
                             .overlay(
                                 Group {
                                     if let url = store.book?.thumbnail {
-                                        AsyncImage(url: url) { phase in
-                                            switch phase {
-                                            case .empty:
+                                        KFImage(url)
+                                            .placeholder {
                                                 ProgressView()
                                                     .tint(.secondary)
-                                            case .success(let image):
-                                                image
-                                                    .resizable()
-                                                    .scaledToFill()
-                                            case .failure:
-                                                Image(systemName: "photo")
-                                                    .font(.system(size: 14, weight: .semibold))
-                                                    .foregroundStyle(.secondary)
-                                            @unknown default:
-                                                EmptyView()
                                             }
-                                        }
-                                        .frame(width: 100, height: 150)
-                                        .clipShape(RoundedRectangle(cornerRadius: 15))
-                                        .clipped()
+                                            .retry(maxCount: 2, interval: .seconds(1))
+                                            .fade(duration: 0.2)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 100, height: 150)
+                                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                                            .clipped()
                                     } else {
                                         Image(systemName: "photo")
                                             .font(.system(size: 14, weight: .semibold))

@@ -1,59 +1,5 @@
 import SwiftUI
-
-private struct ThumbnailAsyncImage: View {
-    let thumbnailURL: URL?
-    let fullURL: URL?
-
-    @State private var showFull = false
-
-    var body: some View {
-        ZStack {
-            if let thumbURL = thumbnailURL {
-                AsyncImage(url: thumbURL) { phase in
-                    switch phase {
-                    case .empty:
-                        Color.clear
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(showFull ? 0 : 1)
-                            .transition(.opacity)
-                    case .failure:
-                        Image(systemName: "photo")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-            }
-
-            if let fullURL {
-                AsyncImage(url: fullURL) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView().tint(.secondary)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .onAppear { withAnimation(.easeInOut(duration: 0.2)) { showFull = true } }
-                            .transition(.opacity)
-                    case .failure:
-                        if thumbnailURL == nil {
-                            Image(systemName: "photo")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                        }
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-            }
-        }
-    }
-}
+import Kingfisher
 
 struct BookRow: View {
     let book: Book
@@ -117,19 +63,22 @@ struct BookRow: View {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(Color.appSurface)
                         .frame(width: 80, height: 100)
-                        .overlay(
-                            Group {
-                                if let urlString = book.imageUrl, let full = URL(string: urlString) {
-                                    // If you later add a `thumbnailUrl` property to `Book`, pass it here; for now we reuse full as fallback
-                                    let thumb: URL? = nil
-                                    ThumbnailAsyncImage(thumbnailURL: thumb, fullURL: full)
-                                } else {
-                                    Image(systemName: "photo")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(.secondary)
-                                }
+                        .overlay {
+                            if let urlString = book.imageUrl, let url = URL(string: urlString) {
+                                KFImage(url)
+                                    .placeholder {
+                                        ProgressView().tint(.secondary)
+                                    }
+                                    .retry(maxCount: 2, interval: .seconds(1))
+                                    .fade(duration: 0.2)
+                                    .resizable()
+                                    .scaledToFill()
+                            } else {
+                                Image(systemName: "photo")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.secondary)
                             }
-                        )
+                        }
                         .clipShape(RoundedRectangle(cornerRadius: 6))
 
                     VStack(alignment: .leading, spacing: 4) {

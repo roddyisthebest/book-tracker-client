@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ExternalBookRow: View {
     let book: ExternalBook
@@ -26,28 +27,17 @@ struct ExternalBookRow: View {
                         .frame(width: 100, height: 120)
                         .overlay {
                             if let url = book.thumbnail {
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 100, height: 120)
-                                    case .failure:
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
-                                    @unknown default:
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
+                                KFImage(url)
+                                    .placeholder {
+                                        ProgressView().tint(.secondary)
                                     }
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .onFailure { _ in }
+                                    .retry(maxCount: 2, interval: .seconds(1))
+                                    .fade(duration: 0.2)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 100, height: 120)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
                             } else {
                                 Image(systemName: "photo")
                                     .font(.system(size: 14, weight: .semibold))

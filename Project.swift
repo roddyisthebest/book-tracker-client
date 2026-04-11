@@ -39,6 +39,7 @@ let project = Project(
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .external(name: "Supabase"),
+                .external(name: "Kingfisher"),
             ],
             settings: .settings(
                 configurations: [

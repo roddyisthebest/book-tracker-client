@@ -22,6 +22,10 @@ let package = Package(
         .package(
             url: "https://github.com/supabase/supabase-swift",
             from: "2.0.0" // 일단 이렇게 두고, 필요하면 올리면 됨
+        ),
+        .package(
+            url: "https://github.com/onevcat/Kingfisher",
+            from: "8.0.0"
         )
     ]
 )

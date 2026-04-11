@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct BookDetailView: View {
@@ -49,30 +50,15 @@ struct BookDetailView: View {
                                     .overlay {
                                         let url = URL(string: book.imageUrl ?? "")
                                         if let url {
-                                            AsyncImage(url: url) { phase in
-                                                switch phase {
-                                                case .empty:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
-
-                                                case .success(let image):
-                                                    image
-                                                        .resizable()
-                                                        .scaledToFill()
-                                                        .transition(.opacity)
-
-                                                case .failure:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
-
-                                                @unknown default:
-                                                    Image(systemName: "photo")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(.secondary)
+                                            KFImage(url)
+                                                .placeholder {
+                                                    ProgressView().tint(.secondary)
                                                 }
-                                            }
+                                                .retry(maxCount: 2, interval: .seconds(1))
+                                                .fade(duration: 0.2)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .transition(.opacity)
                                         } else {
                                             Image(systemName: "photo")
                                                 .font(.system(size: 14, weight: .semibold))
