@@ -243,7 +243,7 @@ struct LibraryView: View {
                                     ReceiptCard(
                                         receipt: receipt,
                                         onTapped: { store.send(.receiptCardTapped(id: receipt.id)) },
-                                        onDelete: {}
+                                        onDelete: { store.send(.deleteReceiptButtonTapped(id: receipt.id)) }
                                     )
                                     .frame(width: 170)
                                 }
@@ -308,9 +308,9 @@ struct LibraryView: View {
         )
         .navigationTitle("library")
         .navigationBarTitleDisplayMode(.inline)
-        .disabled(store.isDeletingCollection)
+        .disabled(store.isDeletingCollection || store.isDeletingReceipt)
         .overlay {
-            if store.isDeletingCollection {
+            if store.isDeletingCollection || store.isDeletingReceipt {
                 ZStack {
                     Color.black.opacity(0.25)
                         .ignoresSafeArea()
@@ -323,6 +323,7 @@ struct LibraryView: View {
             }
         }
         .animation(.default, value: store.isDeletingCollection)
+        .animation(.default, value: store.isDeletingReceipt)
     }
 }
 

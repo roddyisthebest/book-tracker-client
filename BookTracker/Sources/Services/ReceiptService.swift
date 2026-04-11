@@ -294,7 +294,7 @@ struct ReceiptService {
 
     var deleteReceipt: (
         _ receiptId: UUID
-    ) async -> Result<Void, AppError>
+    ) async -> Result<UUID, AppError>
 }
 
 extension ReceiptService {
@@ -405,7 +405,7 @@ extension ReceiptService {
                         .eq("id", value: receiptId.uuidString)
                         .execute()
 
-                    return .success(())
+                    return .success(receiptId)
                 } catch {
                     return .failure(
                         .storage(

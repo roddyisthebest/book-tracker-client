@@ -28,6 +28,21 @@ struct ReceiptListView: View {
             }
         }
         .alert($store.scope(state: \.alert, action: \.alert))
+        .disabled(store.isDeleting)
+        .overlay {
+            if store.isDeleting {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+                    ProgressView()
+                        .scaleEffect(1.1)
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.default, value: store.isDeleting)
         .task { await store.send(.onAppear).finish() }
     }
 

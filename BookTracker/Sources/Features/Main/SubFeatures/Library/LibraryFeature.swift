@@ -19,6 +19,7 @@ struct LibraryFeature {
         var collections: Result<[UserCollectionSummary], AppError> = .success([])
         var isLoadingCollections: Bool = false
         var isDeletingCollection: Bool = false
+        var isDeletingReceipt: Bool = false
 
         var receipts: [Receipt] = [
             Receipt(id: UUID(1), type: .purchase, title: "alsdkkks"),
@@ -63,6 +64,9 @@ struct LibraryFeature {
         case deleteCollectionButtonTapped(id: UUID)
         case deleteCollectionResponse(Result<UUID, AppError>)
 
+        case deleteReceiptButtonTapped(id: UUID)
+        case deleteReceiptResponse(Result<UUID, AppError>)
+
         case destination(PresentationAction<Destination.Action>)
 
         enum Section: Equatable {
@@ -73,6 +77,7 @@ struct LibraryFeature {
 
         enum Alert: Equatable {
             case confirmCollectionDeletion(id: UUID)
+            case confirmReceiptDeletion(id: UUID)
         }
     }
 
@@ -173,6 +178,22 @@ struct LibraryFeature {
                 state.isDeletingCollection = false
                 state.destination = .alert(.showCollectionDeletionErrorAlert())
                 return .none
+            case .deleteReceiptButtonTapped(let id):
+                state.destination = .alert(.deleteReceiptConfirmation(id: id))
+                return .none
+            case .destination(.presented(.alert(.confirmReceiptDeletion(let id)))):
+                state.isDeletingReceipt = true
+                return .run { send in
+                    let result = await receiptService.deleteReceipt(id)
+                    await send(.deleteReceiptResponse(result))
+                }
+            case .deleteReceiptResponse(.success):
+                state.isDeletingReceipt = false
+                return .send(.loadRecentReceipts)
+            case .deleteReceiptResponse(.failure):
+                state.isDeletingReceipt = false
+                state.destination = .alert(.showReceiptDeletionErrorAlert())
+                return .none
             case .destination:
                 return .none
             case .path:
@@ -239,6 +260,28 @@ extension AlertState where Action == LibraryFeature.Action.Alert {
     static func showCollectionDeletionErrorAlert() -> Self {
         Self {
             TextState("collection_delete_failed")
+        }
+    }
+
+    static func deleteReceiptConfirmation(id: UUID) -> Self {
+        Self {
+            TextState("are_you_sure")
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmReceiptDeletion(id: id)) {
+                TextState("delete")
+            }
+        }
+    }
+
+    static func showReceiptDeletionErrorAlert() -> Self {
+        Self {
+            TextState("delete_failed")
+        } actions: {
+            ButtonState(role: .cancel) {
+                TextState("confirm")
+            }
+        } message: {
+            TextState("try_again_later")
         }
     }
 }
