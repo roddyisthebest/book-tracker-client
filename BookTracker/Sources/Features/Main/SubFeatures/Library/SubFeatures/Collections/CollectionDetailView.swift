@@ -52,31 +52,57 @@ struct CollectionDetailView: View {
     @ViewBuilder
     private var booksList: some View {
         ZStack {
-            List {
-                ForEach(store.books, id: \.id) { book in
-                    BookRowView(
-                        book: book,
-                        onTap: {
-                            store.send(.bookCardTapped(book.id))
-                        },
-                        onDelete: {
-                            store.send(.deleteButtonTapped)
-                        }
-                    )
-                }
+            if !store.isLoading && store.books.isEmpty && !store.isError {
+                VStack(spacing: 14) {
+                    Image(systemName: "books.vertical")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.appSecondaryText)
 
-                if store.isLoadingMore {
-                    ProgressView()
-                        .padding(.vertical, 12)
+                    Text("no_books_in_collection")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.appPrimaryText)
+
+                    Text("add_books_to_collection_hint")
+                        .font(.system(size: 13, weight: .medium))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(Color.appSecondaryText)
+
+                    Button(String(localized: "add_books")) {
+                        store.send(.editButtonTapped(.books))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 4)
                 }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .listRowBackground(Color.clear)
-            .background(Color.appSurface)
-            .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
-            .refreshable {
-                await store.send(.onRefresh).finish()
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appSurface)
+            } else {
+                List {
+                    ForEach(store.books, id: \.id) { book in
+                        BookRowView(
+                            book: book,
+                            onTap: {
+                                store.send(.bookCardTapped(book.id))
+                            },
+                            onDelete: {
+                                store.send(.deleteButtonTapped)
+                            }
+                        )
+                    }
+
+                    if store.isLoadingMore {
+                        ProgressView()
+                            .padding(.vertical, 12)
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.clear)
+                .background(Color.appSurface)
+                .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
+                .refreshable {
+                    await store.send(.onRefresh).finish()
+                }
             }
 
             if store.isDeleting {
@@ -90,7 +116,7 @@ struct CollectionDetailView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if store.errorMessage != nil {
+                if store.isError {
                     errorView
                 } else {
                     booksList

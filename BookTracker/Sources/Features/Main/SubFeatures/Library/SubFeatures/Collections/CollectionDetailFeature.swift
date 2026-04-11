@@ -21,7 +21,7 @@ struct CollectionDetailFeature {
 
         var isLoading: Bool = false
         var isLoadingMore: Bool = false
-        var errorMessage: String? = nil
+        var isError: Bool = false
 
         var nextIndex: Int = 0
         var pageSize: Int = 20
@@ -86,7 +86,7 @@ struct CollectionDetailFeature {
                 return .send(.onAppear)
             case .loadBooks:
                 state.isLoading = true
-                state.errorMessage = nil
+                state.isError = false
                 state.nextIndex = 0
                 state.hasMore = true
 
@@ -110,7 +110,7 @@ struct CollectionDetailFeature {
             case .loadBooksResponse(.failure(let error)):
                 state.isLoading = false
                 state.books = []
-                state.errorMessage = error.localizedDescription
+                state.isError = true
                 state.nextIndex = 0
                 state.hasMore = false
                 return .none

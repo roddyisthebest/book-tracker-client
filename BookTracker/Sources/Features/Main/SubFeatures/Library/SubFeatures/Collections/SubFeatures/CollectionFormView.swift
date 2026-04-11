@@ -70,7 +70,7 @@ struct CollectionFormView: View {
                                 HStack(spacing: 10) {
                                     let selectedBookIds = store.selectedBookIds
                                     if !selectedBookIds.isEmpty {
-                                        Text("books_selected \(selectedBookIds.count)").foregroundStyle(.foreground)
+                                        Text(String(format: String(localized: "books_selected %@"), "\(selectedBookIds.count)")).foregroundStyle(.foreground)
                                     }
 
                                     Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(.foreground)
