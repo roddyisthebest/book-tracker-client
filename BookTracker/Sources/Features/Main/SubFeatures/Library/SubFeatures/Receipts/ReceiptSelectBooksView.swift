@@ -56,15 +56,9 @@ private struct ReceiptBooksErrorView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
 
-            Button(action: onRetry) {
-                Text("retry")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
-            }
+            Button(String(localized: "retry"), action: onRetry)
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -89,15 +83,9 @@ private struct ReceiptBooksEmptyView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.appSecondaryText)
 
-            Button(action: onAdd) {
-                Text("add_books")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
-            }
+            Button(String(localized: "add_books"), action: onAdd)
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

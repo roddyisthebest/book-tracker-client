@@ -36,7 +36,7 @@ struct LibraryView: View {
             .frame(height: 82.5)
             .padding(.horizontal)
 
-        } else if let collections = try? store.collections.get() {
+        } else if let collections = try? store.collections.get(), !collections.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 12) {
                     ForEach(collections, id: \.id) { collection in
@@ -56,7 +56,16 @@ struct LibraryView: View {
             }
             .frame(maxWidth: .infinity)
         } else {
-            EmptyView()
+            VStack(spacing: 10) {
+                Image(systemName: "square.stack")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.appSecondaryText.opacity(0.6))
+                Text("no_collections_yet")
+                    .font(.footnote)
+                    .foregroundStyle(Color.appSecondaryText)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 82.5)
         }
     }
 
@@ -243,11 +252,16 @@ struct LibraryView: View {
                         }
                         .frame(maxWidth: .infinity)
                     } else {
-                        Text("no_items_to_display")
-                            .font(.footnote)
-                            .foregroundStyle(Color.appSecondaryText)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
+                        VStack(spacing: 10) {
+                            Image(systemName: "doc.text")
+                                .font(.system(size: 24))
+                                .foregroundStyle(Color.appSecondaryText.opacity(0.6))
+                            Text("no_items_to_display")
+                                .font(.footnote)
+                                .foregroundStyle(Color.appSecondaryText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 120)
                     }
                 }.padding(.bottom, 24)
             }

@@ -97,48 +97,104 @@ struct MyBookListView: View {
         }
     }
 
+    @ViewBuilder
     private var list: some View {
-        ZStack {
-            ScrollView {
-                LazyVStack {
-                    ForEach(store.books, id: \.id) { book in
-                        BookRow(
-                            book: book,
-                            onTap: {
-                                store.send(.bookCardTapped(id: book.id))
-                            },
-                            onDelete: {
-                                store.send(.deleteButtonTapped(id: book.id))
-                            }
-                        )
-                        .onAppear {
-                            if book.id == store.books.last?.id {
-                                store.send(.loadMore)
-                            }
+        if store.isLoading && store.books.isEmpty && !store.isError {
+            ProgressView()
+                .scaleEffect(1.1)
+                .padding(16)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if store.isError && store.books.isEmpty {
+            MyBooksErrorView {
+                store.send(.refresh)
+            }
+        } else if store.books.isEmpty {
+            MyBooksEmptyView()
+        } else {
+            booksList
+        }
+    }
+
+    private var booksList: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(store.books, id: \.id) { book in
+                    BookRow(
+                        book: book,
+                        onTap: {
+                            store.send(.bookCardTapped(id: book.id))
+                        },
+                        onDelete: {
+                            store.send(.deleteButtonTapped(id: book.id))
+                        }
+                    )
+                    .onAppear {
+                        if book.id == store.books.last?.id {
+                            store.send(.loadMore)
                         }
                     }
-
-                    if store.isLoadingMore {
-                        ProgressView()
-                            .padding(.vertical, 12)
-                    }
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 10)
-            }
-            .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
 
-            if store.isLoading && store.books.isEmpty {
-                ProgressView()
-                    .scaleEffect(1.1)
-                    .padding(16)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                if store.isLoadingMore {
+                    ProgressView()
+                        .padding(.vertical, 12)
+                }
             }
+            .padding(.horizontal, 15)
+            .padding(.top, 10)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .refreshable {
             await store.send(.refresh).finish()
         }
+    }
+}
+
+private struct MyBooksEmptyView: View {
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "books.vertical")
+                .font(.system(size: 28))
+                .foregroundStyle(Color.appSecondaryText)
+
+            Text("mybooks_empty_title")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.appPrimaryText)
+
+            Text("mybooks_empty_description")
+                .font(.system(size: 13, weight: .medium))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.appSecondaryText)
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct MyBooksErrorView: View {
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 28))
+                .foregroundStyle(.yellow)
+
+            Text("book_list_load_failed")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.appPrimaryText)
+
+            Text("try_again_later")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color.appSecondaryText)
+
+            Button(String(localized: "retry"), action: onRetry)
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

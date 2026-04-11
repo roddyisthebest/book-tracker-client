@@ -52,15 +52,10 @@ struct ReceiptDetailView: View {
                                 Text("detail_load_failed")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundStyle(Color.appPrimaryText)
-                                Button(action: { store.send(.onRefresh) }) {
-                                    Text("retry")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .frame(maxWidth: 180)
-                                        .padding(.vertical, 12)
-                                        .background(Color.white)
-                                        .foregroundStyle(.black)
-                                        .cornerRadius(10)
+                                Button(String(localized: "retry")) {
+                                    store.send(.onRefresh)
                                 }
+                                .buttonStyle(.borderedProminent)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .padding(.vertical, 40)

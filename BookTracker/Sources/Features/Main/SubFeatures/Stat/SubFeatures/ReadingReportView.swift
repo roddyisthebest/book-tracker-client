@@ -80,15 +80,11 @@ struct ReadingReportView: View {
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.appSecondaryText)
-            Button(action: { store.send(.loadData) }) {
-                Text("retry")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+            Button(String(localized: "retry")) {
+                store.send(.loadData)
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, minHeight: 320)
@@ -318,33 +314,49 @@ struct ReadingReportView: View {
                             Spacer()
                         }.padding(.bottom, 5)
 
-                        DonutChart(
-                            segments: [
-                                (Color.indigo, store.monthlyReadingReport?.month.ebookPercentage ?? 0.0),
-                                (Color.cyan, store.monthlyReadingReport?.month.paperPercentage ?? 0.0)
-                            ],
-                            lineWidth: 18
-                        )
-                        .frame(width: 120, height: 120)
-                        VStack(spacing: 10) {
-                            HStack {
-                                Rectangle().fill(.cyan)
-                                    .frame(width: 15, height: 15).cornerRadius(5)
-                                Text("paper_book").font(.caption)
-                                Text("\(String(format: "%.0f%%", store.monthlyReadingReport?.month.paperPercentage ?? 0.0))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }.frame(maxWidth: .infinity, alignment: .leading)
-                            HStack {
-                                Rectangle().fill(.indigo)
-                                    .frame(width: 15, height: 15).cornerRadius(5)
-                                Text("ebook").font(.caption)
-                                Text("\(String(format: "%.0f%%", store.monthlyReadingReport?.month.ebookPercentage ?? 0.0))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }.frame(maxWidth: .infinity, alignment: .leading)
+                        let paper = store.monthlyReadingReport?.month.paperPercentage ?? 0.0
+                        let ebook = store.monthlyReadingReport?.month.ebookPercentage ?? 0.0
+
+                        if paper == 0 && ebook == 0 {
+                            VStack(spacing: 10) {
+                                Image(systemName: "chart.pie")
+                                    .font(.system(size: 24))
+                                    .foregroundStyle(Color.appSecondaryText.opacity(0.6))
+                                Text("no_book_type_data")
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.appSecondaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 30)
+                        } else {
+                            DonutChart(
+                                segments: [
+                                    (Color.indigo, ebook),
+                                    (Color.cyan, paper)
+                                ],
+                                lineWidth: 18
+                            )
+                            .frame(width: 120, height: 120)
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Rectangle().fill(.cyan)
+                                        .frame(width: 15, height: 15).cornerRadius(5)
+                                    Text("paper_book").font(.caption)
+                                    Text("\(String(format: "%.0f%%", paper))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }.frame(maxWidth: .infinity, alignment: .leading)
+                                HStack {
+                                    Rectangle().fill(.indigo)
+                                        .frame(width: 15, height: 15).cornerRadius(5)
+                                    Text("ebook").font(.caption)
+                                    Text("\(String(format: "%.0f%%", ebook))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }.frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
                 }

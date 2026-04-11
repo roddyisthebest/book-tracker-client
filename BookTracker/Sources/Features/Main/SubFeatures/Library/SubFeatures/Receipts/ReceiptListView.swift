@@ -94,15 +94,10 @@ struct ReceiptListView: View {
             Text("try_again_later")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.appSecondaryText)
-            Button(action: { store.send(.onRefresh) }) {
-                Text("retry")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+            Button(String(localized: "retry")) {
+                store.send(.onRefresh)
             }
+            .buttonStyle(.borderedProminent)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -120,15 +115,11 @@ struct ReceiptListView: View {
                 .font(.system(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.appSecondaryText)
-            Button(action: { store.send(.onRefresh) }) {
-                Text("refresh")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: 180)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .foregroundStyle(.black)
-                    .cornerRadius(10)
+            Button(String(localized: "refresh")) {
+                store.send(.onRefresh)
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 4)
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
