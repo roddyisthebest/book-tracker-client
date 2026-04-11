@@ -67,7 +67,7 @@ struct ExternalBookDetailFeature {
 
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case addBookToReceipt(receiptBook: ReceiptBook)
+            case addBookToReceipt(receiptBook: ReceiptBook, type: ReceiptType)
         }
     }
 
@@ -191,7 +191,7 @@ struct ExternalBookDetailFeature {
                     }
 
                     let receiptBook = book.toReceiptBook(type: receiptType)
-                    return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+                    return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook, type: receiptType)))
 
                 case .failure:
                     state.destination = .alert(.saveFailed())
@@ -203,7 +203,7 @@ struct ExternalBookDetailFeature {
             case .destination(.presented(.addPrice(.delegate(.addBookToReceipt(let receiptBook))))):
                 state.destination = nil
                 state.registeredReceiptTypes.append(.purchase)
-                return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook)))
+                return .send(.delegate(.addBookToReceipt(receiptBook: receiptBook, type: .purchase)))
             case .destination(.presented(.alert(.addPrice))):
                 guard let book = state.book else {
                     return .none
