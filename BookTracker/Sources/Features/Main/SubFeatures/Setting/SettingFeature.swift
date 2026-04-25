@@ -10,6 +10,7 @@ import ComposableArchitecture
 @Reducer
 struct SettingFeature {
     @Dependency(\.myInfoService) var myInfoService
+    @Dependency(\.authService) var authService
 
     @ObservableState
     struct State: Equatable {
@@ -21,6 +22,7 @@ struct SettingFeature {
         var isError: Bool = false
 
         var profile: MyProfile?
+        var isDeletingAccount: Bool = false
 
         @Presents var alert: AlertState<Action.Alert>?
     }
@@ -36,6 +38,8 @@ struct SettingFeature {
         case navigateButtonTapped(PathCase)
         case logoutButtonTapped
         case deleteAccountButtonTapped
+        case deleteAccountSucceeded
+        case deleteAccountFailed
 
         case alert(PresentationAction<Alert>)
         case delegate(Delegate)
@@ -52,11 +56,14 @@ struct SettingFeature {
         enum Alert: Equatable {
             case confirmLogout
             case confirmDeleteAccount
+            case confirmDeleteAccountFailed
         }
 
         enum Delegate: Equatable {
             case logout
             case deleteAccount
+            case appDataDeleted
+            case serverDataDeleted
         }
     }
 
@@ -106,13 +113,38 @@ struct SettingFeature {
             case .alert(.presented(.confirmLogout)):
                 return .send(.delegate(.logout))
             case .alert(.presented(.confirmDeleteAccount)):
+                state.isDeletingAccount = true
+                return .run { [authService] send in
+                    let result = await authService.deleteAccountOnServer()
+                    switch result {
+                    case .success:
+                        await send(.deleteAccountSucceeded)
+                    case .failure:
+                        await send(.deleteAccountFailed)
+                    }
+                }
+            case .deleteAccountSucceeded:
+                state.isDeletingAccount = false
                 return .send(.delegate(.deleteAccount))
+            case .deleteAccountFailed:
+                state.isDeletingAccount = false
+                state.alert = .deleteAccountFailed()
+                return .none
+            case .alert(.presented(.confirmDeleteAccountFailed)):
+                return .none
             case .path(.element(_, .myInfo(.destination(.presented(.updateName(.delegate(.updateProfile(let profile)))))))):
                 state.profile = profile
                 return .none
             case .path(.element(_, .myInfo(.delegate(.updateProfile(let profile))))):
                 state.profile = profile
                 return .none
+            case .path(.element(_, .dataManage(.dataResetButtonTapped))):
+                state.path.append(.resetData(ResetDataFeature.State()))
+                return .none
+            case .path(.element(_, .resetData(.delegate(.appDataDeleted)))):
+                return .send(.delegate(.appDataDeleted))
+            case .path(.element(_, .resetData(.delegate(.serverDataDeleted)))):
+                return .send(.delegate(.serverDataDeleted))
             case .path:
                 return .none
             case .alert:
@@ -135,11 +167,13 @@ extension SettingFeature {
         enum State: Equatable {
             case dataManage(DataManageFeature.State = .init())
             case myInfo(MyInfoFeature.State = .init())
+            case resetData(ResetDataFeature.State = .init())
         }
 
         enum Action: Equatable {
             case dataManage(DataManageFeature.Action)
             case myInfo(MyInfoFeature.Action)
+            case resetData(ResetDataFeature.Action)
         }
 
         var body: some ReducerOf<Self> {
@@ -149,6 +183,10 @@ extension SettingFeature {
 
             Scope(state: \.myInfo, action: \.myInfo) {
                 MyInfoFeature()
+            }
+
+            Scope(state: \.resetData, action: \.resetData) {
+                ResetDataFeature()
             }
         }
     }
@@ -171,6 +209,16 @@ extension AlertState where Action == SettingFeature.Action.Alert {
         } actions: {
             ButtonState(role: .destructive, action: .confirmDeleteAccount) {
                 TextState("delete_account")
+            }
+        }
+    }
+
+    static func deleteAccountFailed() -> Self {
+        Self {
+            TextState("delete_account_failed")
+        } actions: {
+            ButtonState(action: .confirmDeleteAccountFailed) {
+                TextState("confirm")
             }
         }
     }

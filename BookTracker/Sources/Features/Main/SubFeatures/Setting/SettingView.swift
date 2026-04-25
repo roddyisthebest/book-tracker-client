@@ -318,6 +318,10 @@ struct SettingView: View {
             if let store = destinationStore.scope(state: \.myInfo, action: \.myInfo) {
                 MyInfoView(store: store)
             }
+        case .resetData:
+            if let store = destinationStore.scope(state: \.resetData, action: \.resetData) {
+                ResetDataView(store: store)
+            }
         }
     }
 
@@ -351,6 +355,15 @@ struct SettingView: View {
         }
         .onAppear { store.send(.onAppear) }
         .alert($store.scope(state: \.alert, action: \.alert))
+        .disabled(store.isDeletingAccount)
+        .overlay {
+            if store.isDeletingAccount {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    ProgressView().tint(.white)
+                }
+            }
+        }
     }
 }
 

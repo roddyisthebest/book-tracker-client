@@ -31,6 +31,8 @@ struct AppFeature {
     }
 
     @Dependency(\.authService) var authService
+    @Dependency(\.searchHistory) var searchHistory
+    @Dependency(\.localReceiptService) var localReceiptService
     private enum CancelID { case authChanges }
 
     var body: some ReducerOf<Self> {
@@ -70,6 +72,15 @@ struct AppFeature {
 
                 case .passwordRecovery, .userDeleted, .mfaChallengeVerified:
                     return .none
+                }
+
+            case .main(.delegate(.deleteAccount)):
+                state = .signingOut
+                return .run { [authService, searchHistory, localReceiptService] send in
+                    try? await searchHistory.clearAll()
+                    _ = await localReceiptService.clearAll()
+                    try? await authService.signOut()
+                    await send(.logout)
                 }
 
             case .main(.delegate(.logout)):

@@ -72,8 +72,15 @@ struct MainFeature {
             case .setting(.delegate(.logout)):
                 return .send(.delegate(.logout))
             case .setting(.delegate(.deleteAccount)):
-                // Handle global delete account flow here (e.g., revoke credentials)
+                return .send(.delegate(.deleteAccount))
+            case .setting(.delegate(.appDataDeleted)):
+                state.search.destination = .suggestions(SearchSuggestionsFeature.State())
+                state.home.didInitialLoad = false
                 return .none
+            case .setting(.delegate(.serverDataDeleted)):
+                state.home.didInitialLoad = false
+                return .send(.library(.onAppear))
+
             case .setting:
                 return .none
             case .delegate:
