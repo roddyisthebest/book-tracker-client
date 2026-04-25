@@ -19,43 +19,41 @@ struct ReceiptRpcItem: Equatable, Codable, Hashable {
     let imageUrl: String?
     let isbn: String?
     let quantity: Int?
-    let price: Int?
-    let currencyCode: String?
+    let micros: Int64?
+    let currencyCode: CurrencyCode?
+    let usdMicros: Int64?
+    let exchangeRateToUsd: Double?
+    let exchangeRateDate: String?
 
     enum CodingKeys: String, CodingKey {
-        case externalBookId
+        case externalBookId = "external_book_id"
         case title
         case author
         case publisher
-        case pageCount
-        case imageUrl
+        case pageCount = "page_count"
+        case imageUrl = "image_url"
         case isbn
         case quantity
-        case price
-        case currencyCode
-    }
-}
-
-struct CreateReceiptWithBooksResult: Equatable, Codable, Hashable {
-    let receiptId: UUID
-    let bookIds: [UUID]
-
-    enum CodingKeys: String, CodingKey {
-        case receiptId = "receipt_id"
-        case bookIds = "book_ids"
+        case micros
+        case currencyCode = "currency_code"
+        case usdMicros = "usd_micros"
+        case exchangeRateToUsd = "exchange_rate_to_usd"
+        case exchangeRateDate = "exchange_rate_date"
     }
 }
 
 private struct CreateReceiptWithBooksPayload: Encodable {
     let pSource: String
-    let pTotalPrice: Int?
+    let pTotalMicros: Int64?
+    let pTotalUsdMicros: Int64?
     let pType: String
     let pReceiptAt: Date?
     let pItems: [ReceiptRpcItem]
 
     enum CodingKeys: String, CodingKey {
         case pSource = "p_source"
-        case pTotalPrice = "p_total_price"
+        case pTotalMicros = "p_total_micros"
+        case pTotalUsdMicros = "p_total_usd_micros"
         case pType = "p_type"
         case pReceiptAt = "p_receipt_at"
         case pItems = "p_items"
@@ -69,20 +67,24 @@ struct ReceiptSummary: Equatable, Codable, Hashable {
     let createdAt: Date?
     let receiptAt: Date?
     let source: String
-    let totalPrice: Int?
+    let totalMicros: Int64?
+    let totalUsdMicros: Int64?
     let type: ReceiptType
     let firstBookTitle: String?
     let totalQuantity: Int
+    let sourceCurrencyCode: CurrencyCode
 
     enum CodingKeys: String, CodingKey {
         case id
         case createdAt = "created_at"
         case receiptAt = "receipt_at"
         case source
-        case totalPrice = "total_price"
+        case totalMicros = "total_micros"
+        case totalUsdMicros = "total_usd_micros"
         case type
         case firstBookTitle = "first_book_title"
         case totalQuantity = "total_quantity"
+        case sourceCurrencyCode = "source_currency_code"
     }
 }
 
@@ -91,20 +93,24 @@ private struct ReceiptSummaryDTO: Decodable {
     let createdAt: String?
     let receiptAt: String?
     let source: String
-    let totalPrice: Int?
+    let totalMicros: Int64?
+    let totalUsdMicros: Int64?
     let type: String
     let firstBookTitle: String?
     let totalQuantity: Int
+    let currencyCode: String?
 
     enum CodingKeys: String, CodingKey {
         case id
         case createdAt = "created_at"
         case receiptAt = "receipt_at"
         case source
-        case totalPrice = "total_price"
+        case totalMicros = "total_micros"
+        case totalUsdMicros = "total_usd_micros"
         case type
         case firstBookTitle = "first_book_title"
         case totalQuantity = "total_quantity"
+        case currencyCode = "currency_code"
     }
 }
 
@@ -115,10 +121,12 @@ private extension ReceiptSummaryDTO {
             createdAt: ReceiptDateParser.parse(createdAt),
             receiptAt: ReceiptDateParser.parse(receiptAt),
             source: source,
-            totalPrice: totalPrice,
+            totalMicros: totalMicros,
+            totalUsdMicros: totalUsdMicros,
             type: ReceiptType(rawValue: type) ?? .purchase,
             firstBookTitle: firstBookTitle,
-            totalQuantity: totalQuantity
+            totalQuantity: totalQuantity,
+            sourceCurrencyCode: currencyCode.flatMap { CurrencyCode(rawValue: $0.uppercased()) } ?? .krw
         )
     }
 }
@@ -150,9 +158,32 @@ struct ReceiptDetail: Equatable, Hashable {
     let createdAt: Date?
     let receiptAt: Date?
     let source: String
-    let totalPrice: Int?
+    let totalMicros: Int64?
+    let totalUsdMicros: Int64?
     let type: ReceiptType
     let items: [ReceiptDetailItem]
+
+    var sourceCurrencyCode: CurrencyCode {
+        for item in items {
+            if let code = item.currencyCode,
+               let currency = CurrencyCode(rawValue: code.uppercased())
+            {
+                return currency
+            }
+        }
+        return .krw
+    }
+
+    func convertedTotalMicros(to target: CurrencyCode) -> Int64 {
+        if let totalUsdMicros {
+            return CurrencyCode.convertMicros(totalUsdMicros, from: .usd, to: target)
+        }
+        return items.reduce(Int64(0)) { sum, item in
+            guard let micros = item.micros else { return sum }
+            let source = item.currencyCode.flatMap { CurrencyCode(rawValue: $0.uppercased()) } ?? .krw
+            return sum + CurrencyCode.convertMicros(micros, from: source, to: target)
+        }
+    }
 }
 
 struct ReceiptDetailItem: Equatable, Hashable {
@@ -165,8 +196,11 @@ struct ReceiptDetailItem: Equatable, Hashable {
     let imageUrl: String?
     let isbn: String?
     let quantity: Int
-    let price: Int?
+    let micros: Int64?
     let currencyCode: String?
+    let usdMicros: Int64?
+    let exchangeRateToUsd: Double?
+    let exchangeRateDate: String?
 }
 
 private struct ReceiptDetailDTO: Decodable {
@@ -174,7 +208,8 @@ private struct ReceiptDetailDTO: Decodable {
     let createdAt: Date?
     let receiptAt: Date?
     let source: String
-    let totalPrice: Int?
+    let totalMicros: Int64?
+    let totalUsdMicros: Int64?
     let type: String
     let items: [ReceiptDetailItemDTO]
 
@@ -183,7 +218,8 @@ private struct ReceiptDetailDTO: Decodable {
         case createdAt = "created_at"
         case receiptAt = "receipt_at"
         case source
-        case totalPrice = "total_price"
+        case totalMicros = "total_micros"
+        case totalUsdMicros = "total_usd_micros"
         case type
         case items
     }
@@ -199,8 +235,11 @@ private struct ReceiptDetailItemDTO: Decodable {
     let imageUrl: String?
     let isbn: String?
     let quantity: Int?
-    let price: Int?
+    let micros: Int64?
     let currencyCode: String?
+    let usdMicros: Int64?
+    let exchangeRateToUsd: Double?
+    let exchangeRateDate: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -212,8 +251,11 @@ private struct ReceiptDetailItemDTO: Decodable {
         case imageUrl = "image_url"
         case isbn
         case quantity
-        case price
+        case micros
         case currencyCode = "currency_code"
+        case usdMicros = "usd_micros"
+        case exchangeRateToUsd = "exchange_rate_to_usd"
+        case exchangeRateDate = "exchange_rate_date"
     }
 }
 
@@ -224,7 +266,8 @@ private extension ReceiptDetailDTO {
             createdAt: createdAt,
             receiptAt: receiptAt,
             source: source,
-            totalPrice: totalPrice,
+            totalMicros: totalMicros,
+            totalUsdMicros: totalUsdMicros,
             type: ReceiptType(rawValue: type) ?? .purchase,
             items: items.map { $0.toDomain() }
         )
@@ -243,8 +286,11 @@ private extension ReceiptDetailItemDTO {
             imageUrl: imageUrl,
             isbn: isbn,
             quantity: max(quantity ?? 1, 1),
-            price: price,
-            currencyCode: currencyCode
+            micros: micros,
+            currencyCode: currencyCode,
+            usdMicros: usdMicros,
+            exchangeRateToUsd: exchangeRateToUsd,
+            exchangeRateDate: exchangeRateDate
         )
     }
 }
@@ -276,11 +322,12 @@ private struct GetReceiptDetailPayload: Encodable {
 struct ReceiptService {
     var createReceiptWithBooks: (
         _ source: String,
-        _ totalPrice: Int?,
+        _ totalMicros: Int64?,
+        _ totalUsdMicros: Int64?,
         _ type: ReceiptType,
         _ receiptAt: Date?,
         _ items: [ReceiptRpcItem]
-    ) async -> Result<CreateReceiptWithBooksResult, AppError>
+    ) async -> Result<UUID, AppError>
 
     var loadReceipts: (
         _ type: ReceiptType?,
@@ -305,32 +352,27 @@ extension ReceiptService {
         let detailRpcName = "get_receipt_detail"
 
         return Self(
-            createReceiptWithBooks: { source, totalPrice, type, receiptAt, items in
+            createReceiptWithBooks: { source, totalMicros, totalUsdMicros, type, receiptAt, items in
                 do {
                     let payload = CreateReceiptWithBooksPayload(
                         pSource: source,
-                        pTotalPrice: totalPrice,
+                        pTotalMicros: totalMicros,
+                        pTotalUsdMicros: totalUsdMicros,
                         pType: type.rawValue,
                         pReceiptAt: receiptAt,
                         pItems: items
                     )
 
-                    let response: PostgrestResponse<[CreateReceiptWithBooksResult]> = try await client
+                    let response: PostgrestResponse<UUID> = try await client
                         .rpc(createRpcName, params: payload)
+                        .single()
                         .execute()
 
-                    guard let result = response.value.first else {
-                        return .failure(
-                            .storage(
-                                code: "RECEIPT_NOT_CREATED",
-                                status: 404,
-                                message: "Receipt was not created"
-                            )
-                        )
-                    }
-
-                    return .success(result)
+                    return .success(response.value)
                 } catch {
+                    #if DEBUG
+                    print("[DEBUG] createReceiptWithBooks error: \(error)")
+                    #endif
                     return .failure(
                         .storage(
                             code: "CREATE_RECEIPT_WITH_BOOKS_FAILED",

@@ -19,14 +19,6 @@ struct ReceiptDetailView: View {
         return formatter
     }()
     
-    private static let numberFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = ","
-        formatter.maximumFractionDigits = 0
-        return formatter
-    }()
-    
     @Bindable var store: StoreOf<ReceiptDetailFeature>
     @Environment(\.dismiss) private var dismiss
 
@@ -72,10 +64,10 @@ struct ReceiptDetailView: View {
                             Divider().background(Color.appSeparator)
                             HStack {
                                 Spacer()
-                                Text("total_books \(detail.items.count)").foregroundStyle(Color.appPrimaryText).font(.headline)
+                                Text("total_books \(String(detail.items.count))").foregroundStyle(Color.appPrimaryText).font(.headline)
                             }
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 16)
                             Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
@@ -87,8 +79,41 @@ struct ReceiptDetailView: View {
                                 VStack(spacing: 17.5) {
                                     StatusRow(key: (detail.type == .rental ? String(localized: "rental_date_key") : String(localized: "purchase_date_key")), value: detail.receiptAt.map { Self.dateFormatter.string(from: $0) } ?? "-")
                                     StatusRow(key: detail.type == .rental ? String(localized: "library_label") : String(localized: "purchase_place_label"), value: detail.source)
-                                    if let price = detail.totalPrice, detail.type == .purchase {
-                                        StatusRow(key: String(localized: "amount_label"), value: (Self.numberFormatter.string(from: NSNumber(value: price)) ?? "\(price)") + String(localized: "won_unit"))
+                                    if (detail.totalUsdMicros ?? detail.totalMicros) != nil, detail.type == .purchase {
+                                        let target = store.targetCurrency ?? .krw
+                                        let totalMicros = detail.convertedTotalMicros(to: target)
+                                        HStack(alignment: .top) {
+                                            MainLabel(String(localized: "amount_label"))
+                                            Spacer(minLength: 20)
+                                            HStack(spacing: 8) {
+                                                Picker(selection: Binding(
+                                                    get: { store.targetCurrency ?? .krw },
+                                                    set: { store.send(.currencyChanged($0)) }
+                                                )) {
+                                                    ForEach(CurrencyCode.allCases, id: \.self) { code in
+                                                        Text(code.description).tag(code)
+                                                    }
+                                                } label: {
+                                                    HStack(spacing: 4) {
+                                                        Text(target.rawValue)
+                                                            .font(.system(size: 13, weight: .semibold))
+                                                        Image(systemName: "chevron.down")
+                                                            .font(.system(size: 10, weight: .bold))
+                                                    }
+                                                    .foregroundStyle(.white)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 6)
+                                                    .background(Color.accentColor)
+                                                    .clipShape(Capsule())
+                                                }
+                                                .pickerStyle(.menu)
+                                                Text(CurrencyCode.formattedPriceMicros(amountInMicros: totalMicros, currencyCode: target.rawValue))
+                                                    .foregroundStyle(Color.appPrimaryText)
+                                                    .font(.system(size: 18, weight: .bold))
+                                                    .lineLimit(1)
+                                                    .minimumScaleFactor(0.7)
+                                            }
+                                        }
                                     }
                                 }
                                 .padding(.vertical, 10)

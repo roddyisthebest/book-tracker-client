@@ -39,9 +39,10 @@ struct IssueReceiptView: View {
                 Image(systemName: "info.circle")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.appSecondaryText)
+                let displayTotal = CurrencyCode.baseUnits(fromMicros: store.totalMicros)
                 Text(store.price.isEmpty
-                    ? String(format: String(localized: "price_auto_calc %@"), "\(store.totalPrice)")
-                    : String(format: String(localized: "price_with_sum %@ %@"), "\(store.price)", "\(store.totalPrice)"))
+                    ? String(format: String(localized: "price_auto_calc %@"), "\(displayTotal)")
+                    : String(format: String(localized: "price_with_sum %@ %@"), "\(store.price)", "\(displayTotal)"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.appSecondaryText)
             }

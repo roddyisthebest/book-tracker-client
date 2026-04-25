@@ -13,43 +13,29 @@ struct ReceiptRow: View {
     let type: ReceiptType
     let item: ReceiptDetailItem
     
-    private func formattedPrice(price: Int, currencyCode: String?) -> String {
-        let code = (currencyCode?.uppercased()) ?? "KRW"
-        if code == "KRW" || code == "WON" {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.groupingSeparator = ","
-            formatter.maximumFractionDigits = 0
-            let value = formatter.string(from: NSNumber(value: price)) ?? "\(price)"
-            return "\(value)" + String(localized: "won_unit")
-        } else {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.currencyCode = code
-            let value = formatter.string(from: NSNumber(value: price)) ?? "\(price) \(code)"
-            return value
-        }
+    private func formattedPrice(micros: Int64, currencyCode: String?) -> String {
+        CurrencyCode.formattedPriceMicros(amountInMicros: micros, currencyCode: currencyCode)
     }
-    
+
     var body: some View {
         HStack {
             VStack {
                 Text("\(idx + 1).")
-                    .foregroundStyle(.white.opacity(0.5)).font(.caption)
+                    .foregroundStyle(Color.appSecondaryText).font(.caption)
                 Spacer()
             }.padding(.top, 2)
             VStack(alignment: .leading, spacing: 7.5) {
-                Text(item.title ?? "-").foregroundStyle(.white).fontWeight(.bold).font(.subheadline).lineLimit(2).truncationMode(.tail)
+                Text(item.title ?? "-").foregroundStyle(Color.appPrimaryText).fontWeight(.bold).font(.subheadline).lineLimit(2).truncationMode(.tail)
                 HStack(spacing: 7) {
-                    Text(item.author ?? "-").foregroundStyle(.white.opacity(0.75)).font(.caption)
-                    Circle().frame(width: 3).foregroundStyle(.white.opacity(0.75))
-                    Text(item.publisher ?? "-").foregroundStyle(.white.opacity(0.75)).font(.caption2)
+                    Text(item.author ?? "-").foregroundStyle(Color.appSecondaryText).font(.caption)
+                    Circle().frame(width: 3).foregroundStyle(Color.appSecondaryText)
+                    Text(item.publisher ?? "-").foregroundStyle(Color.appSecondaryText).font(.caption2)
                 }
             }
             Spacer()
-            if type == .purchase, let price = item.price, price > 0 {
-                Text(formattedPrice(price: price, currencyCode: item.currencyCode))
-                    .foregroundStyle(.white)
+            if type == .purchase, let micros = item.micros, micros > 0 {
+                Text(formattedPrice(micros: micros, currencyCode: item.currencyCode))
+                    .foregroundStyle(Color.appPrimaryText)
                     .font(.subheadline)
                     .lineLimit(1)
                     .truncationMode(.tail)

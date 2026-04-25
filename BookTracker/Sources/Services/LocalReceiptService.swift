@@ -58,7 +58,7 @@ extension LocalReceiptService {
             let pageCountNumber = obj.value(forKey: "pageCount") as? NSNumber
             let thumbnailURL = obj.value(forKey: "thumbnailURL") as? String
             let isbn13 = obj.value(forKey: "isbn13") as? String
-            let amountInMicrosNumber = obj.value(forKey: "amountInMicros") as? NSNumber
+            let priceNumber = obj.value(forKey: "price") as? NSNumber
             let currencyCode = obj.value(forKey: "currencyCode") as? String
 
             let authors: [String]
@@ -82,8 +82,8 @@ extension LocalReceiptService {
                 thumbnailURL: thumbnailURL,
                 isbn13: isbn13,
                 saleInfo: ReceiptSaleInfo(
-                    amountInMicros: amountInMicrosNumber?.intValue,
-                    currencyCode: currencyCode
+                    amountInMicros: priceNumber?.int64Value,
+                    currencyCode: currencyCode.flatMap { CurrencyCode(rawValue: $0) }
                 )
             )
         }
@@ -174,8 +174,8 @@ extension LocalReceiptService {
                         obj.setValue(receiptBook.pageCount, forKey: "pageCount")
                         obj.setValue(receiptBook.thumbnailURL, forKey: "thumbnailURL")
                         obj.setValue(receiptBook.isbn13, forKey: "isbn13")
-                        obj.setValue(receiptBook.saleInfo?.amountInMicros, forKey: "amountInMicros")
-                        obj.setValue(receiptBook.saleInfo?.currencyCode, forKey: "currencyCode")
+                        obj.setValue(receiptBook.saleInfo?.amountInMicros, forKey: "price")
+                        obj.setValue(receiptBook.saleInfo?.currencyCode?.rawValue, forKey: "currencyCode")
 
                         try context.save()
                         try context.obtainPermanentIDs(for: [obj])
@@ -223,8 +223,8 @@ extension LocalReceiptService {
                         obj.setValue(receiptBook.pageCount, forKey: "pageCount")
                         obj.setValue(receiptBook.thumbnailURL, forKey: "thumbnailURL")
                         obj.setValue(receiptBook.isbn13, forKey: "isbn13")
-                        obj.setValue(receiptBook.saleInfo?.amountInMicros, forKey: "amountInMicros")
-                        obj.setValue(receiptBook.saleInfo?.currencyCode, forKey: "currencyCode")
+                        obj.setValue(receiptBook.saleInfo?.amountInMicros, forKey: "price")
+                        obj.setValue(receiptBook.saleInfo?.currencyCode?.rawValue, forKey: "currencyCode")
 
                         try context.save()
                         try context.obtainPermanentIDs(for: [obj])

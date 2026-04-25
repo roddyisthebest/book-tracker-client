@@ -29,8 +29,16 @@ struct IssueReceiptFeature {
         // .purchase
         var price: String = ""
 
-        var totalPrice: Int {
-            receiptBooks.reduce(0) { $0 + ($1.saleInfo?.amountInMicros ?? 0) } / 1_000_000
+        var totalMicros: Int64 {
+            receiptBooks.reduce(Int64(0)) { $0 + ($1.saleInfo?.amountInMicros ?? 0) }
+        }
+
+        var totalUsdMicros: Int64 {
+            receiptBooks.reduce(Int64(0)) { sum, book in
+                let micros = book.saleInfo?.amountInMicros ?? 0
+                let currency = book.saleInfo?.currencyCode ?? .krw
+                return sum + CurrencyCode.convertMicros(micros, from: currency, to: .usd)
+            }
         }
     }
 
@@ -48,7 +56,7 @@ struct IssueReceiptFeature {
             case confirmCreation
         }
 
-        case createResponse(Result<CreateReceiptWithBooksResult, AppError>)
+        case createResponse(Result<UUID, AppError>)
     }
 
     var body: some Reducer<State, Action> {
@@ -58,21 +66,25 @@ struct IssueReceiptFeature {
             switch action {
             case .issueButtonTapped:
                 let source = state.source
-                let totalPrice = state.type == .purchase ? Int(state.price) ?? state.totalPrice : 0
+                let totalMicros: Int64 = state.type == .purchase
+                    ? (Int64(state.price).map { $0 * CurrencyCode.microsPerUnit } ?? state.totalMicros)
+                    : 0
+                let totalUsdMicros: Int64? = state.type == .purchase ? state.totalUsdMicros : nil
                 let type = state.type
                 let items = state.receiptBooks.map { $0.toReceiptRpcItem() }
                 let receiptAt = state.receiptAt
                 state.isLoading = true
                 return .run {
                     send in
-                    let result = await receiptService.createReceiptWithBooks(source, totalPrice, type, receiptAt, items)
+                    let result = await receiptService.createReceiptWithBooks(source, totalMicros, totalUsdMicros, type, receiptAt, items)
                     await send(.createResponse(result))
                 }
             case .createResponse(.success):
                 state.isLoading = false
                 state.alert = .showCreationSuccessAlert()
                 return .none
-            case .createResponse(.failure):
+            case .createResponse(.failure(let error)):
+                print(error)
                 state.isLoading = false
                 state.alert = .showCreationErrorAlert()
                 return .none

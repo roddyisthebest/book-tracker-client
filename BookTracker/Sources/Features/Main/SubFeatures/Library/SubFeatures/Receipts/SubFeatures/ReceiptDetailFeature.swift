@@ -11,12 +11,14 @@ import Foundation
 @Reducer
 struct ReceiptDetailFeature {
     @Dependency(\.receiptService) var receiptService
-    
+    @Dependency(\.localeService) var localeService
+
     @ObservableState
     struct State: Equatable {
         let id: UUID
-        
+
         var detail: ReceiptDetail? = nil
+        var targetCurrency: CurrencyCode?
 
         var isLoading: Bool = false
         var isError: Bool = false
@@ -31,7 +33,8 @@ struct ReceiptDetailFeature {
 
         case loadReceipt
         case loadReceiptResponse(Result<ReceiptDetail, AppError>)
-        
+
+        case currencyChanged(CurrencyCode)
         case deleteButtonTapped
         case deleteResponse(Result<Bool, AppError>)
         case alert(PresentationAction<Alert>)
@@ -44,13 +47,14 @@ struct ReceiptDetailFeature {
             case deleteReceipt(UUID)
         }
     }
-    
+
     private enum CancelID { case loadReceipt }
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.targetCurrency = localeService.currencyForLocale()
                 return .send(.loadReceipt)
             case .onRefresh:
                 return .send(.loadReceipt)
@@ -66,12 +70,15 @@ struct ReceiptDetailFeature {
                 state.isLoading = false
                 state.isError = false
                 state.detail = detail
+                print(detail, "detail")
                 return .none
-            case .loadReceiptResponse(.failure):
+            case .loadReceiptResponse(.failure(let error)):
                 state.isLoading = false
                 state.isError = true
                 return .none
-                
+            case .currencyChanged(let currency):
+                state.targetCurrency = currency
+                return .none
             case .deleteButtonTapped:
                 state.alert = AlertState {
                     TextState("are_you_sure")
@@ -114,4 +121,3 @@ struct ReceiptDetailFeature {
         }.ifLet(\.$alert, action: \.alert)
     }
 }
-
