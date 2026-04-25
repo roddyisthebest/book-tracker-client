@@ -19,7 +19,8 @@ struct MonthlyReadingReportMonth: Equatable, Decodable {
     let completedCount: Int
     let completedAverageScore: Double
     let purchaseCount: Int
-    let purchaseAmount: Int
+    let purchaseAmount: Int64
+    let purchaseAmountCurrencyCode: String
     let rentalCount: Int
     let unfinishedCount: Int
     let averageReadingDays: Double
@@ -35,6 +36,7 @@ struct MonthlyReadingReportMonth: Equatable, Decodable {
         case completedAverageScore = "completed_average_score"
         case purchaseCount = "purchase_count"
         case purchaseAmount = "purchase_amount"
+        case purchaseAmountCurrencyCode = "purchase_amount_currency_code"
         case rentalCount = "rental_count"
         case unfinishedCount = "unfinished_count"
         case averageReadingDays = "average_reading_days"
@@ -54,9 +56,12 @@ struct MonthlyReadingReportComparison: Equatable, Decodable {
     let currentUnfinishedCount: Int
     let unfinishedChangePercentage: Double
 
-    let previousPurchaseAmount: Int
-    let currentPurchaseAmount: Int
+    let previousPurchaseAmount: Int64
+    let currentPurchaseAmount: Int64
+    let purchaseAmountDifference: Int64
     let purchaseAmountChangePercentage: Double
+    let purchaseAmountCurrencyCode: String
+    let isPurchaseAmountIncreased: Bool
 
     let previousRentalCount: Int
     let currentRentalCount: Int
@@ -73,7 +78,10 @@ struct MonthlyReadingReportComparison: Equatable, Decodable {
 
         case previousPurchaseAmount = "previous_purchase_amount"
         case currentPurchaseAmount = "current_purchase_amount"
+        case purchaseAmountDifference = "purchase_amount_difference"
         case purchaseAmountChangePercentage = "purchase_amount_change_percentage"
+        case purchaseAmountCurrencyCode = "purchase_amount_currency_code"
+        case isPurchaseAmountIncreased = "is_purchase_amount_increased"
 
         case previousRentalCount = "previous_rental_count"
         case currentRentalCount = "current_rental_count"

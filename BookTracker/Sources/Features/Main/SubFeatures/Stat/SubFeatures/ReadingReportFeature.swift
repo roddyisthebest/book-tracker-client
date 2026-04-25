@@ -43,6 +43,9 @@ struct ReadingReportFeature {
                 let components = Calendar.current.dateComponents([.year, .month], from: state.date)
                 let year = components.year ?? Calendar.current.component(.year, from: Date())
                 let month = components.month ?? Calendar.current.component(.month, from: Date())
+                print("year", year)
+                print("month", month)
+
                 return .run {
                     send in
                     let result = await readingRecordService.monthlyReport(year, month)
@@ -53,7 +56,7 @@ struct ReadingReportFeature {
                 switch result {
                 case .success(let data):
                     state.monthlyReadingReport = data
-                case .failure:
+                case .failure(let error):
                     state.isError = true
                 }
                 return .none
