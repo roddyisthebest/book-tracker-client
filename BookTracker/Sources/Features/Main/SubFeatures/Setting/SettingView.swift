@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct SettingView: View {
@@ -66,9 +67,22 @@ struct SettingView: View {
                             .fill(Color.appSurface)
                             .frame(width: 60, height: 60)
                             .overlay {
-                                Image(systemName: "person.fill")
-                                    .foregroundStyle(.gray)
-                                    .font(.system(size: 30))
+                                if let url = profile.profileImageURL {
+                                    KFImage(url)
+                                        .placeholder {
+                                            ProgressView().tint(.gray)
+                                        }
+                                        .retry(maxCount: 2, interval: .seconds(1))
+                                        .fade(duration: 0.2)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Circle())
+                                } else {
+                                    Image(systemName: "person.fill")
+                                        .foregroundStyle(.gray)
+                                        .font(.system(size: 30))
+                                }
                             }
 
                         VStack(alignment: .leading, spacing: 3) {

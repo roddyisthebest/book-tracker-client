@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import Kingfisher
 import SwiftUI
 
 struct MyInfoView: View {
@@ -37,38 +38,39 @@ struct MyInfoView: View {
                         }) {
                             Rectangle().fill(Color.appSurface)
                                 .frame(width: 100, height: 100).cornerRadius(50).overlay {
-                                    ZStack(alignment: .bottomTrailing) {
-//                                        if let urlString = store.profile, let url = URL(string: urlString) {
-//                                            AsyncImage(url: url) { image in
-//                                                image
-//                                                    .resizable()
-//                                                    .scaledToFill()
-//                                                    .frame(width: 100, height: 100)
-//                                                    .clipShape(Circle())
-//                                            } placeholder: {
-//                                                Image(systemName: "person.fill")
-//                                                    .foregroundStyle(.gray)
-//                                                    .font(.system(size: 60))
-//                                            }
-//                                        } else {
-//                                            Image(systemName: "person.fill")
-//                                                .foregroundStyle(.gray)
-//                                                .font(.system(size: 60))
-//                                        }
-                                        Image(systemName: "person.fill")
-                                            .foregroundStyle(.gray)
-                                            .font(.system(size: 60))
+                                    ZStack {
+                                        if store.isUpdatingImage {
+                                            ProgressView()
+                                                .tint(.gray)
+                                        } else if let url = store.profile?.profileImageURL {
+                                            KFImage(url)
+                                                .placeholder {
+                                                    ProgressView().tint(.gray)
+                                                }
+                                                .retry(maxCount: 2, interval: .seconds(1))
+                                                .fade(duration: 0.2)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 100, height: 100)
+                                                .clipShape(Circle())
+                                        } else {
+                                            Image(systemName: "person.fill")
+                                                .foregroundStyle(.gray)
+                                                .font(.system(size: 60))
+                                        }
                                         ZStack {
                                             Circle()
                                                 .fill(Color.appSurface)
                                                 .frame(width: 25, height: 25)
-                                            Image(systemName: "plus.circle.fill")
-                                                .font(.system(size: 22))
+                                            Image(systemName: "dice.fill")
+                                                .font(.system(size: 15))
+                                                .foregroundStyle(Color.accentColor)
                                         }
-                                        .offset(x: 15, y: 15)
+                                        .opacity(0.4)
                                     }
                                 }
                         }
+                        .disabled(store.isUpdatingImage)
 
                         VStack(spacing: 25) {
                             Button(action: {
@@ -161,7 +163,7 @@ struct MyInfoView: View {
 
 #Preview {
     NavigationStack {
-        MyInfoView(store: Store(initialState: MyInfoFeature.State(profile: MyProfile(id: UUID(), name: "asdd", role: "as", phoneToken: "21312323", createdAt: Date(), deletedAt: Date())), reducer: {
+        MyInfoView(store: Store(initialState: MyInfoFeature.State(profile: MyProfile(id: UUID(), name: "asdd", role: "as", phoneToken: "21312323", imageUuid: UUID(), createdAt: Date(), deletedAt: Date())), reducer: {
             MyInfoFeature()
         }))
     }

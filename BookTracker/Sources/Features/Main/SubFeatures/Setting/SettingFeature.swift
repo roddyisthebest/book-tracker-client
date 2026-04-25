@@ -110,6 +110,9 @@ struct SettingFeature {
             case .path(.element(_, .myInfo(.destination(.presented(.updateName(.delegate(.updateProfile(let profile)))))))):
                 state.profile = profile
                 return .none
+            case .path(.element(_, .myInfo(.delegate(.updateProfile(let profile))))):
+                state.profile = profile
+                return .none
             case .path:
                 return .none
             case .alert:

@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 
 enum LoginMethod: Equatable {
     case apple
@@ -28,6 +29,7 @@ struct MyInfoFeature {
 
         var isFetching: Bool = false
         var isError: Bool = false
+        var isUpdatingImage: Bool = false
 
         @Presents var destination: Destination.State?
     }
@@ -35,6 +37,7 @@ struct MyInfoFeature {
     enum Action: Equatable {
         case nameEditButtonTapped
         case profileImageViewTapped
+        case updateImageUuidResponse(Result<MyProfile, AppError>)
 
         case onAppear
         case onRefresh
@@ -42,6 +45,11 @@ struct MyInfoFeature {
         case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
 
         case destination(PresentationAction<Destination.Action>)
+        case delegate(Delegate)
+
+        enum Delegate: Equatable {
+            case updateProfile(MyProfile)
+        }
     }
 
     var body: some Reducer<State, Action> {
@@ -72,12 +80,27 @@ struct MyInfoFeature {
                 state.destination = .updateName(UpdateNameFeature.State(name: state.profile?.name ?? ""))
                 return .none
             case .profileImageViewTapped:
+                guard !state.isUpdatingImage else { return .none }
+                state.isUpdatingImage = true
+                let newUuid = UUID()
+                return .run { send in
+                    let result = await myInfoService.updateImageUuid(newUuid)
+                    await send(.updateImageUuidResponse(result))
+                }
+            case .updateImageUuidResponse(.success(let profile)):
+                state.isUpdatingImage = false
+                state.profile = profile
+                return .send(.delegate(.updateProfile(profile)))
+            case .updateImageUuidResponse(.failure):
+                state.isUpdatingImage = false
                 return .none
             case .destination(.presented(.updateName(.delegate(.updateProfile(let profile))))):
                 state.destination = nil
                 state.profile = profile
                 return .none
             case .destination:
+                return .none
+            case .delegate:
                 return .none
             }
         }
