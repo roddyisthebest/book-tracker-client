@@ -88,9 +88,10 @@ struct ExternalBookDetailView: View {
                                     }
 
                                     if let micros = book.saleInfo?.offers?.first?.retailPrice?.amountInMicros {
-                                        let amount = Double(micros) / 1_000_000
+                                        let code = book.saleInfo?.offers?.first?.retailPrice?.currencyCode
 
-                                        Text("price_won \(Int(amount))").foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
+                                        Text(CurrencyCode.formattedPriceMicros(amountInMicros: micros, currencyCode: code))
+                                            .foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                     }

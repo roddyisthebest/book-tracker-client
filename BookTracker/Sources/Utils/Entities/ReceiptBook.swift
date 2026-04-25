@@ -26,13 +26,12 @@ struct Receipt: Equatable, Identifiable {
 }
 
 struct ReceiptSaleInfo: Codable, Equatable {
-    let amountInMicros: Int?
-    let currencyCode: String?
+    let amountInMicros: Int64?
+    let currencyCode: CurrencyCode?
 
     var priceText: String? {
         guard let amountInMicros else { return nil }
-        let amount = Double(amountInMicros) / 1_000_000
-        return "\(Int(amount))" + String(localized: "won_unit")
+        return CurrencyCode.formattedPriceMicros(amountInMicros: amountInMicros, currencyCode: currencyCode?.rawValue)
     }
 }
 
@@ -60,14 +59,14 @@ extension ReceiptBook {
         self.thumbnailURL = externalBook.thumbnail?.absoluteString
         self.isbn13 = externalBook.isbn13
         self.saleInfo = ReceiptSaleInfo(
-            amountInMicros: externalBook.saleInfo?.offers?.first?.retailPrice?.amountInMicros.map(Int.init),
-            currencyCode: externalBook.saleInfo?.offers?.first?.retailPrice?.currencyCode
+            amountInMicros: externalBook.saleInfo?.offers?.first?.retailPrice?.amountInMicros,
+            currencyCode: externalBook.saleInfo?.offers?.first?.retailPrice?.currencyCode.flatMap { CurrencyCode(rawValue: $0) }
         )
     }
 }
 
 extension ReceiptBook {
-    init(externalBook: ExternalBook, type: ReceiptType, price: Int, currencyCode: String) {
+    init(externalBook: ExternalBook, type: ReceiptType, amountInMicros: Int64, currencyCode: CurrencyCode) {
         self.id = externalBook.id
         self.type = type
         self.title = externalBook.title
@@ -77,7 +76,7 @@ extension ReceiptBook {
         self.thumbnailURL = externalBook.thumbnail?.absoluteString
         self.isbn13 = externalBook.isbn13
         self.saleInfo = ReceiptSaleInfo(
-            amountInMicros: price * 1_000_000,
+            amountInMicros: amountInMicros,
             currencyCode: currencyCode
         )
     }
@@ -124,12 +123,34 @@ extension ReceiptBook {
 
 extension ReceiptBook {
     func toReceiptRpcItem() -> ReceiptRpcItem {
-        ReceiptRpcItem(externalBookId: id, title: title, author: authorText, publisher: publisher, pageCount: pageCount, imageUrl: thumbnailURL, isbn: isbn13, quantity: 1, price: (saleInfo?.amountInMicros ?? 0) / 1_000_000, currencyCode: saleInfo?.currencyCode ?? "KRW")
+        let sourceCurrency = saleInfo?.currencyCode ?? .krw
+        let micros = saleInfo?.amountInMicros ?? 0
+        let usdMicros = CurrencyCode.convertMicros(micros, from: sourceCurrency, to: .usd)
+
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime]
+        let exchangeRateDate = dateFormatter.string(from: Date())
+
+        return ReceiptRpcItem(
+            externalBookId: id,
+            title: title,
+            author: authorText,
+            publisher: publisher,
+            pageCount: pageCount,
+            imageUrl: thumbnailURL,
+            isbn: isbn13,
+            quantity: 1,
+            micros: micros,
+            currencyCode: sourceCurrency,
+            usdMicros: usdMicros,
+            exchangeRateToUsd: sourceCurrency.ratePerUSD,
+            exchangeRateDate: exchangeRateDate
+        )
     }
 }
 
 extension ReceiptBook {
     static func sample() -> ReceiptBook {
-        ReceiptBook(id: "test", type: .purchase, title: "", authors: ["안녕"], publisher: "ㅁㄴㅇㄴ", pageCount: 123, thumbnailURL: "https://imgnews.pstatic.net/image/311/2026/03/28/0001991458_001_20260328191013567.jpg?type=w647", isbn13: "fdgasfasdfasdfadf", saleInfo: ReceiptSaleInfo(amountInMicros: 120_303_424_234, currencyCode: "WON"))
+        ReceiptBook(id: "test", type: .purchase, title: "", authors: ["안녕"], publisher: "ㅁㄴㅇㄴ", pageCount: 123, thumbnailURL: "https://imgnews.pstatic.net/image/311/2026/03/28/0001991458_001_20260328191013567.jpg?type=w647", isbn13: "fdgasfasdfasdfadf", saleInfo: ReceiptSaleInfo(amountInMicros: 120_303_000_000, currencyCode: .krw))
     }
 }

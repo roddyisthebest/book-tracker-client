@@ -12,6 +12,15 @@ struct ReceiptCard: View {
     let onTapped: (() -> Void)?
     let onDelete: (() -> Void)?
 
+    private var localeCurrency: CurrencyCode {
+        let lang = Locale.current.language.languageCode?.identifier ?? ""
+        switch lang {
+        case "ko": return .krw
+        case "ja": return .jpy
+        default:   return .usd
+        }
+    }
+
     private static let receiptDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -76,11 +85,16 @@ struct ReceiptCard: View {
                         Text(receipt.source).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
                     }
                     else {
-                        Image(systemName: "wonsign")
+                        let localeCurrency = localeCurrency
+                        Image(systemName: localeCurrency.symbolName)
                             .font(.system(size: 14)).foregroundStyle(Color.appPurchaseAccent)
 
-                        if let totalPrice = receipt.totalPrice, totalPrice > 0 {
-                            Text("price_won \(totalPrice)").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
+                        if let totalUsdMicros = receipt.totalUsdMicros, totalUsdMicros > 0 {
+                            let converted = CurrencyCode.convertMicros(totalUsdMicros, from: .usd, to: localeCurrency)
+                            Text(CurrencyCode.formattedPriceMicros(amountInMicros: converted, currencyCode: localeCurrency.rawValue)).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
+                        } else if let totalMicros = receipt.totalMicros, totalMicros > 0 {
+                            let source = receipt.sourceCurrencyCode
+                            Text(CurrencyCode.formattedPriceMicros(amountInMicros: totalMicros, currencyCode: source.rawValue)).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.appPrimaryText).lineLimit(1).truncationMode(.tail)
                         }
                     }
 
@@ -115,10 +129,12 @@ struct ReceiptCard: View {
         createdAt: Date(),
         receiptAt: Date(),
         source: "서울시립도서관",
-        totalPrice: nil,
+        totalMicros: nil,
+        totalUsdMicros: nil,
         type: .rental,
         firstBookTitle: "모비딕",
-        totalQuantity: 3
+        totalQuantity: 3,
+        sourceCurrencyCode: .krw
     )
     return ReceiptCard(
         receipt: sample,
@@ -137,10 +153,12 @@ struct ReceiptCard: View {
         createdAt: Date(),
         receiptAt: Date(),
         source: "교보문고",
-        totalPrice: 245000000000000,
+        totalMicros: 24_500_000_000,
+        totalUsdMicros: 18_148_000,
         type: .purchase,
         firstBookTitle: "스위프트 TCA",
-        totalQuantity: 1
+        totalQuantity: 1,
+        sourceCurrencyCode: .krw
     )
     return ReceiptCard(
         receipt: sample,

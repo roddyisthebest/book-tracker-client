@@ -90,10 +90,10 @@ struct ReceiptCoreDataStack {
         isbn13Attribute.attributeType = .stringAttributeType
         isbn13Attribute.isOptional = true
 
-        let amountInMicrosAttribute = NSAttributeDescription()
-        amountInMicrosAttribute.name = "amountInMicros"
-        amountInMicrosAttribute.attributeType = .integer64AttributeType
-        amountInMicrosAttribute.isOptional = true
+        let priceAttribute = NSAttributeDescription()
+        priceAttribute.name = "price"
+        priceAttribute.attributeType = .integer64AttributeType
+        priceAttribute.isOptional = true
 
         let currencyCodeAttribute = NSAttributeDescription()
         currencyCodeAttribute.name = "currencyCode"
@@ -109,7 +109,7 @@ struct ReceiptCoreDataStack {
             pageCountAttribute,
             thumbnailURLAttribute,
             isbn13Attribute,
-            amountInMicrosAttribute,
+            priceAttribute,
             currencyCodeAttribute,
         ]
 

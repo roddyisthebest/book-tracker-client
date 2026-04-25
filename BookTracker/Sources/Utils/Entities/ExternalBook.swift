@@ -257,11 +257,11 @@ extension ExternalBook {
         )
     }
 
-    func toReceiptBook(type: ReceiptType, price: Int, currencyCode: String) -> ReceiptBook {
+    func toReceiptBook(type: ReceiptType, amountInMicros: Int64, currencyCode: CurrencyCode) -> ReceiptBook {
         ReceiptBook(
             externalBook: self,
             type: type,
-            price: price,
+            amountInMicros: amountInMicros,
             currencyCode: currencyCode
         )
     }

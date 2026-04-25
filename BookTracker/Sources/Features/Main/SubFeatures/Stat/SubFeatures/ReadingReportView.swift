@@ -19,8 +19,19 @@ struct ReadingReportView: View {
         return f
     }()
 
-    private func money(_ v: Int) -> String {
-        (Self.decimalFormatter.string(from: NSNumber(value: v)) ?? "\(v)") + String(localized: "won_unit")
+    private var localeCurrency: CurrencyCode {
+        let lang = Locale.current.language.languageCode?.identifier ?? ""
+        switch lang {
+        case "ko": return .krw
+        case "ja": return .jpy
+        default: return .usd
+        }
+    }
+
+    private func convertedAmount(_ usdMicros: Int64) -> String {
+        let target = localeCurrency
+        let converted = CurrencyCode.convertMicros(usdMicros, from: .usd, to: target)
+        return CurrencyCode.formattedPriceMicros(amountInMicros: converted, currencyCode: target.rawValue)
     }
 
     private func oneDecimal(_ d: Double) -> String {
@@ -101,7 +112,22 @@ struct ReadingReportView: View {
                         .foregroundStyle(Color.appSecondaryText)
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
-            } else if store.monthlyReadingReport == nil && !store.isError {
+            } else if store.isError {
+                VStack(spacing: 14) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.yellow)
+                    Text("report_load_failed")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.appPrimaryText)
+                    Button(String(localized: "retry")) {
+                        store.send(.loadData)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity, minHeight: 320)
+            } else if store.monthlyReadingReport == nil {
                 emptyReportView
             } else {
                 VStack(spacing: 15) {
@@ -240,22 +266,32 @@ struct ReadingReportView: View {
                         } value: {
                             VStack(alignment: .trailing, spacing: 5) {
                                 HStack {
-                                    Text(money(store.monthlyReadingReport?.comparison.previousPurchaseAmount ?? 0))
+                                    Text(convertedAmount(store.monthlyReadingReport?.comparison.previousPurchaseAmount ?? 0))
                                         .foregroundStyle(Color.appSecondaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                     Image(systemName: "arrow.right").fontWeight(.semibold)
-                                    Text(money(store.monthlyReadingReport?.comparison.currentPurchaseAmount ?? 0))
+                                    Text(convertedAmount(store.monthlyReadingReport?.comparison.currentPurchaseAmount ?? 0))
                                         .foregroundStyle(Color.appPrimaryText)
                                         .font(.system(size: 18, weight: .bold))
                                         .multilineTextAlignment(.trailing)
                                 }
+                                let diff = store.monthlyReadingReport?.comparison.purchaseAmountDifference ?? 0
                                 let delta = store.monthlyReadingReport?.comparison.purchaseAmountChangePercentage ?? 0
-                                if delta != 0 {
-                                    Text(signedPercent(delta))
-                                        .foregroundStyle(changeColor(delta))
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .multilineTextAlignment(.trailing)
+                                let increased = store.monthlyReadingReport?.comparison.isPurchaseAmountIncreased ?? false
+                                if diff != 0 {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: increased ? "arrow.up.right" : "arrow.down.right")
+                                            .font(.system(size: 10, weight: .bold))
+                                        Text(convertedAmount(abs(diff)))
+                                            .font(.system(size: 12, weight: .semibold))
+                                        if delta != 0 {
+                                            Text(signedPercent(delta))
+                                                .font(.system(size: 12, weight: .semibold))
+                                        }
+                                    }
+                                    .foregroundStyle(increased ? .red : .blue)
+                                    .multilineTextAlignment(.trailing)
                                 }
                             }
                         }
@@ -364,20 +400,6 @@ struct ReadingReportView: View {
         }
         .refreshable {
             store.send(.loadData)
-        }
-        .overlay(alignment: .top) {
-            if store.isError {
-                VStack(spacing: 8) {
-                    Text("report_load_failed")
-                        .font(.footnote)
-                        .foregroundStyle(.red.opacity(0.85))
-                    Button(action: { store.send(.loadData) }) {
-                        Text("retry")
-                            .font(.caption)
-                    }
-                }
-                .padding(.top, 8)
-            }
         }
         .background(Color.appBackground)
     }

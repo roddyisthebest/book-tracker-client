@@ -13,8 +13,14 @@ struct MyProfile: Equatable, Codable, Hashable {
     var name: String?
     let role: String
     let phoneToken: String?
+    var imageUuid: UUID?
     let createdAt: Date?
     let deletedAt: Date?
+
+    var profileImageURL: URL? {
+        guard let imageUuid else { return nil }
+        return URL(string: "https://api.dicebear.com/9.x/adventurer/png?seed=\(imageUuid.uuidString)&size=200")
+    }
 }
 
 struct MyAuthInfo: Equatable, Codable, Hashable {
@@ -27,6 +33,7 @@ private struct ProfilesTableRow: Decodable {
     let name: String?
     let role: String?
     let phoneToken: String?
+    let imageUuid: UUID?
     let createdAt: Date?
     let deletedAt: Date?
 
@@ -35,6 +42,7 @@ private struct ProfilesTableRow: Decodable {
         case name
         case role
         case phoneToken = "phone_token"
+        case imageUuid = "image_uuid"
         case createdAt = "created_at"
         case deletedAt = "deleted_at"
     }
@@ -47,6 +55,7 @@ private extension ProfilesTableRow {
             name: name,
             role: role ?? "user",
             phoneToken: phoneToken,
+            imageUuid: imageUuid,
             createdAt: createdAt,
             deletedAt: deletedAt
         )
@@ -66,6 +75,7 @@ struct MyInfoService {
     var loadProfile: () async -> Result<MyProfile, AppError>
     var loadAuthInfo: () async -> Result<MyAuthInfo, AppError>
     var updateName: (_ name: String) async -> Result<MyProfile, AppError>
+    var updateImageUuid: (_ imageUuid: UUID) async -> Result<MyProfile, AppError>
     var deleteAllMyBookRelatedData: () async -> Result<DeleteAllMyBookRelatedDataResult, AppError>
 }
 
@@ -156,6 +166,40 @@ extension MyInfoService {
                     return .failure(
                         .storage(
                             code: "UPDATE_MY_PROFILE_NAME_FAILED",
+                            status: nil,
+                            message: error.localizedDescription
+                        )
+                    )
+                }
+            },
+
+            updateImageUuid: { imageUuid in
+                do {
+                    let userId = try await client.auth.user().id
+                    let payload = ["image_uuid": imageUuid.uuidString]
+
+                    let response: PostgrestResponse<[ProfilesTableRow]> = try await client
+                        .from(profilesTable)
+                        .update(payload, returning: .representation)
+                        .eq("id", value: userId.uuidString)
+                        .select()
+                        .execute()
+
+                    guard let row = response.value.first else {
+                        return .failure(
+                            .storage(
+                                code: "PROFILE_NOT_UPDATED",
+                                status: 404,
+                                message: "Profile image was not updated"
+                            )
+                        )
+                    }
+
+                    return .success(row.toDomain())
+                } catch {
+                    return .failure(
+                        .storage(
+                            code: "UPDATE_MY_PROFILE_IMAGE_FAILED",
                             status: nil,
                             message: error.localizedDescription
                         )

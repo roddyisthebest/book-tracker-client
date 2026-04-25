@@ -50,20 +50,19 @@ struct AddPriceFeature {
         Reduce<State, Action> { state, action in
             switch action {
             case .addButtonTapped:
-                guard let price = Int(state.price), price > 0 else {
+                guard let price = Int64(state.price), price > 0 else {
                     state.alert = .showAddErrorAlert(message: String(localized: "invalid_price_message"))
                     return .none
                 }
 
                 state.isLoading = true
+                let amountInMicros = price * CurrencyCode.microsPerUnit
 
                 let receiptBook = state.externalBook.toReceiptBook(
                     type: .purchase,
-                    price: price,
-                    currencyCode: state.currencyCode.rawValue
+                    amountInMicros: amountInMicros,
+                    currencyCode: state.currencyCode
                 )
-
-                print(receiptBook, "receiptBook")
 
                 return .run { [book = receiptBook] send in
                     let result = await localReceiptService.saveReceiptBook(book)

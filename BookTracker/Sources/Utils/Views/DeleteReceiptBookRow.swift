@@ -87,8 +87,7 @@ struct DeleteReceiptBookRow: View {
                         }
 
                         if let micros = book.saleInfo?.amountInMicros {
-                            let amount = Double(micros) / 1_000_000
-                            Text("price_won \(Int(amount))")
+                            Text(CurrencyCode.formattedPriceMicros(amountInMicros: micros, currencyCode: book.saleInfo?.currencyCode?.rawValue))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .padding(.top, 2)

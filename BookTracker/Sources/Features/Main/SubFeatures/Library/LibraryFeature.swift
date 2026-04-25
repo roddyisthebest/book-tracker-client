@@ -138,6 +138,7 @@ struct LibraryFeature {
                 .cancellable(id: CancelID.loadRecentReceipts, cancelInFlight: true)
             case .recentReceiptsResponse(let result):
                 state.isLoadingRecentReceipts = false
+                print(result, "result")
                 state.recentReceipts = result
                 return .none
             case .sectionTapped(.collections):
