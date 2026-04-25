@@ -18,6 +18,10 @@ struct ReadingReportFeature {
 
         var isLoading: Bool = false
         var isError: Bool = false
+
+        @Presents var alert: AlertState<Action.Alert>?
+        var isSharePresented: Bool = false
+        var shareImagePath: String? = nil
     }
 
     enum Action: Equatable, BindableAction {
@@ -25,6 +29,12 @@ struct ReadingReportFeature {
         case onAppear
         case loadData
         case loadDataResponse(Result<MonthlyReadingReport, AppError>)
+        case shareButtonTapped
+        case shareReady(String)
+        case shareFailed
+        case shareDismissed
+        case alert(PresentationAction<Alert>)
+        enum Alert: Equatable {}
     }
 
     var body: some Reducer<State, Action> {
@@ -56,11 +66,38 @@ struct ReadingReportFeature {
                 switch result {
                 case .success(let data):
                     state.monthlyReadingReport = data
-                case .failure(let error):
+                case .failure:
                     state.isError = true
                 }
                 return .none
+            case .shareButtonTapped:
+                return .none
+            case .shareReady(let path):
+                state.shareImagePath = path
+                state.isSharePresented = true
+                return .none
+            case .shareFailed:
+                state.alert = .shareFailed()
+                return .none
+            case .shareDismissed:
+                state.isSharePresented = false
+                return .none
+            case .alert:
+                return .none
             }
+        }
+        .ifLet(\.$alert, action: \.alert)
+    }
+}
+
+extension AlertState where Action == ReadingReportFeature.Action.Alert {
+    static func shareFailed() -> Self {
+        Self {
+            TextState("share_failed")
+        } actions: {
+            ButtonState(role: .cancel) { TextState("confirm") }
+        } message: {
+            TextState("share_failed_message")
         }
     }
 }

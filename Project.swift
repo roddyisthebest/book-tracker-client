@@ -30,6 +30,7 @@ let project = Project(
                     "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
                     "ENV": "$(ENV)",
                     "GOOGLE_BOOKS_API_KEY": "$(GOOGLE_BOOKS_API_KEY)",
+                    "NSPhotoLibraryAddUsageDescription": "Save calendar images to your photo library.",
                     "CFBundleLocalizations": ["ko", "en", "ja"],
                     "CFBundleDevelopmentRegion": "ko",
                 ]

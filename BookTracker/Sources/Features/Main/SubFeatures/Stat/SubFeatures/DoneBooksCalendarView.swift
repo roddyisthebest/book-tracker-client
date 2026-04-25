@@ -1,9 +1,11 @@
 import ComposableArchitecture
+import Kingfisher
 import SwiftUI
 
 struct DoneBooksCalendarView: View {
     @Bindable var store: StoreOf<DoneBooksCalendarFeature>
-    
+    @State private var imageSaver = ImageSaver()
+
     private var calendar: Calendar { Calendar.current }
     private var years: [Int] { Array(2000...2026) }
     
@@ -35,6 +37,82 @@ struct DoneBooksCalendarView: View {
         )
     }
     
+    @ViewBuilder
+    private func dayContentView(for date: Date) -> some View {
+        let cal = Calendar.current
+        let key = cal.startOfDay(for: date)
+        let items = store.thumbnailsByDate?[key] ?? []
+        if items.isEmpty {
+            Text("\(cal.component(.day, from: date))")
+                .foregroundStyle(Color.appPrimaryText)
+        } else {
+            DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
+        }
+    }
+
+    @ViewBuilder
+    private func captureDayContentView(for date: Date) -> some View {
+        let cal = Calendar.current
+        let key = cal.startOfDay(for: date)
+        let items = store.thumbnailsByDate?[key] ?? []
+        if items.isEmpty {
+            Text("\(cal.component(.day, from: date))")
+                .foregroundStyle(Color.appPrimaryText)
+        } else {
+            CaptureThumbnailsGrid(items: Array(items.prefix(4)))
+        }
+    }
+
+    private var captureView: some View {
+        let year = calendar.component(.year, from: store.date)
+        let month = calendar.component(.month, from: store.date)
+        return VStack(spacing: 15) {
+            HStack {
+                Text("done_reading_calendar")
+                    .font(.title3).fontWeight(.bold)
+                    .foregroundStyle(Color.appPrimaryText)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 20)
+
+            HStack {
+                Text(String(format: String(localized: "month_format %@"), "\(month)"))
+                    .font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                Text("\(year)" + String(localized: "year_suffix"))
+                    .font(.title3).fontWeight(.semibold).foregroundStyle(Color.appSecondaryText)
+                Spacer()
+            }
+            .padding(.horizontal)
+
+            CustomCalendar(monthDate: .constant(store.date), selection: .constant(nil), showsHeader: false) { date in
+                captureDayContentView(for: date)
+            }
+            .padding()
+            .padding(.bottom, 20)
+        }
+        .frame(width: UIScreen.main.bounds.width)
+        .background(Color.appBackground)
+    }
+
+    private func captureAndSave() {
+        let renderer = ImageRenderer(content: captureView)
+        renderer.scale = UIScreen.main.scale
+        guard let image = renderer.uiImage else {
+            store.send(.saveFailed)
+            return
+        }
+        imageSaver.save(image) { success in
+            DispatchQueue.main.async {
+                if success {
+                    store.send(.saveSuccess)
+                } else {
+                    store.send(.saveFailed)
+                }
+            }
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 15) {
@@ -86,16 +164,8 @@ struct DoneBooksCalendarView: View {
                         .frame(maxWidth: .infinity, minHeight: 200)
                         .padding()
                     } else {
-                        let cal = Calendar.current
                         CustomCalendar(monthDate: $store.date, selection: .constant(nil), showsHeader: false) { date in
-                            let key = cal.startOfDay(for: date)
-                            let items = store.thumbnailsByDate?[key] ?? []
-                            if items.isEmpty {
-                                Text("\(cal.component(.day, from: date))")
-                                    .foregroundStyle(Color.appPrimaryText)
-                            } else {
-                                DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
-                            }
+                            dayContentView(for: date)
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -108,7 +178,55 @@ struct DoneBooksCalendarView: View {
         .background(Color.appBackground)
         .navigationTitle("done_reading_calendar")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    captureAndSave()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .disabled(store.isLoading || store.isError || store.thumbnailsByDate == nil)
+            }
+        }
+        .alert(store: store.scope(state: \.$alert, action: \.alert))
         .task { await store.send(.onAppear).finish() }
+    }
+}
+
+private struct CaptureThumbnailsGrid: View {
+    let items: [BookCalendarSummary]
+
+    private var columns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 1), count: 2)
+    }
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 1) {
+            ForEach(Array(items.prefix(4)).indices, id: \.self) { idx in
+                CaptureThumbnailCell(item: items[idx])
+            }
+        }
+    }
+}
+
+private struct CaptureThumbnailCell: View {
+    let item: BookCalendarSummary
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color(hex: "#2C2C35", default: .secondary))
+            if let urlString = item.imageUrl,
+               let cached = ImageCache.default.retrieveImageInMemoryCache(forKey: urlString) {
+                Image(uiImage: cached)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Image(systemName: "book.fill")
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 2))
     }
 }
 
