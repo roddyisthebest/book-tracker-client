@@ -101,10 +101,10 @@ struct CollectionSelectBooksView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .navigationTitle("purchased_books")
+            .navigationTitle(store.collection.displayName)
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle(String(localized: "edit_books_subtitle"))
+            .navigationSubtitle(store.collection.type == .custom ? (store.collection.description ?? "") : "")
             .toolbar { toolbarContent }
             .task {
                 await store.send(.onAppear).finish()

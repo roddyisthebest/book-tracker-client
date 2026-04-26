@@ -130,7 +130,7 @@ struct CollectionDetailView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .navigationTitle(store.collection.name ?? String(localized: "collection"))
+            .navigationTitle(store.collection.displayName)
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
             .navigationSubtitle(store.collection.description ?? "")
@@ -163,24 +163,20 @@ struct CollectionDetailView: View {
 
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Menu {
+                Button(String(localized: "edit_books"), systemImage: "apple.books.pages") {
+                    store.send(.editButtonTapped(.books))
+                }
+                if store.collection.isEditable {
                     Button(String(localized: "edit_collection"), systemImage: "books.vertical.circle") {
                         store.send(.editButtonTapped(.collection))
                     }
-                    Button(String(localized: "edit_books"), systemImage: "apple.books.pages") {
-                        store.send(.editButtonTapped(.books))
+                    Button(role: .destructive) {
+                        store.send(.deleteButtonTapped)
+                    } label: {
+                        Label("delete", systemImage: "trash")
                     }
-
-                } label: {
-                    Image(systemName: "pencil.circle")
-                    Text("edit")
+                    .tint(.red)
                 }
-                Button(role: .destructive) {
-                    store.send(.deleteButtonTapped)
-                } label: {
-                    Label("delete", systemImage: "trash")
-                }
-                .tint(.red)
 
                 Picker("sort", selection: $store.sortOption) {
                     Text("sort_oldest").tag(BookSortOption.oldest)
@@ -189,7 +185,6 @@ struct CollectionDetailView: View {
                     Text("sort_title_desc").tag(BookSortOption.titleDesc)
                 }
                 .pickerStyle(.inline)
-                // 여기 정렬 양뱡향 바인딩 추가해바
             } label: {
                 Image(systemName: "ellipsis.circle")
             }
@@ -206,11 +201,10 @@ struct CollectionDetailView: View {
                         id: UUID(),
                         userId: UUID(),
                         name: "읽고 싶은 책",
-                        isDefault: false,
+                        type: .custom,
                         createdAt: Date(),
                         description: "나중에 읽을 책들을 모아둔 컬렉션",
-                        previewBooks: [],
-                        bookCount: 0
+                        previewBooks: []
                     )
                 ),
                 reducer: {
