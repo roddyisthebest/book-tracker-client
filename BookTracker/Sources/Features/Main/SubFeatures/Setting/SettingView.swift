@@ -172,7 +172,9 @@ struct SettingView: View {
                         Text("app_usage_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.openPageButtonTapped(.userGuide))
+                            }) {
                                 HStack(spacing: 10) {
                                     Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
@@ -187,7 +189,9 @@ struct SettingView: View {
                                 }
                             }
 
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.openPageButtonTapped(.faq))
+                            }) {
                                 HStack(spacing: 10) {
                                     Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
@@ -260,7 +264,9 @@ struct SettingView: View {
                         Text("terms_and_policies").font(.title2).fontWeight(.bold).lineLimit(1)
 
                         VStack(spacing: 18) {
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.navigateButtonTapped(.termsOfService))
+                            }) {
                                 HStack(spacing: 10) {
                                     HStack {
                                         Text("terms_of_service").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
@@ -270,7 +276,9 @@ struct SettingView: View {
                                 }
                             }
 
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.navigateButtonTapped(.privacyPolicy))
+                            }) {
                                 HStack(spacing: 10) {
                                     HStack {
                                         Text("privacy_policy").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
@@ -322,6 +330,10 @@ struct SettingView: View {
             if let store = destinationStore.scope(state: \.resetData, action: \.resetData) {
                 ResetDataView(store: store)
             }
+        case .termsOfService:
+            TermsOfServiceView()
+        case .privacyPolicy:
+            PrivacyPolicyView()
         }
     }
 
@@ -355,6 +367,15 @@ struct SettingView: View {
         }
         .onAppear { store.send(.onAppear) }
         .alert($store.scope(state: \.alert, action: \.alert))
+        .sheet(isPresented: Binding(
+            get: { store.safariURL != nil },
+            set: { if !$0 { store.send(.safariDismissed) } }
+        )) {
+            if let url = store.safariURL {
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
+        }
         .disabled(store.isDeletingAccount)
         .overlay {
             if store.isDeletingAccount {

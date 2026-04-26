@@ -6,11 +6,36 @@
 //
 
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 struct SettingFeature {
     @Dependency(\.myInfoService) var myInfoService
     @Dependency(\.authService) var authService
+
+    enum NotionPage: Equatable {
+        case userGuide, faq
+
+        var url: URL {
+            let lang = Locale.current.language.languageCode?.identifier ?? ""
+            let urlString: String
+            switch (self, lang) {
+            case (.userGuide, "ko"):
+                urlString = "https://www.notion.so/BookTracker-iOS-34da9263b178804ea636e157fe618b4a"
+            case (.userGuide, "ja"):
+                urlString = "https://www.notion.so/BookTracker-iOS-34ea9263b178807f8d12d16bebec2c70"
+            case (.userGuide, _):
+                urlString = "https://www.notion.so/BookTracker-iOS-Screen-by-Screen-User-Guide-34ea9263b178807a9751e60bc2cb445a"
+            case (.faq, "ko"):
+                urlString = "https://www.notion.so/BookTracker-34ea9263b17880cbac36c461d32f0719"
+            case (.faq, "ja"):
+                urlString = "https://www.notion.so/BookTracker-34ea9263b17880249438ee375b3ce034"
+            case (.faq, _):
+                urlString = "https://www.notion.so/BookTracker-Frequently-Asked-Questions-34ea9263b1788069bd44d94b1f2c6716"
+            }
+            return URL(string: urlString)!
+        }
+    }
 
     @ObservableState
     struct State: Equatable {
@@ -24,6 +49,8 @@ struct SettingFeature {
         var profile: MyProfile?
         var isDeletingAccount: Bool = false
 
+        var safariURL: URL?
+
         @Presents var alert: AlertState<Action.Alert>?
     }
 
@@ -36,6 +63,8 @@ struct SettingFeature {
 
         case path(StackAction<Path.State, Path.Action>)
         case navigateButtonTapped(PathCase)
+        case openPageButtonTapped(NotionPage)
+        case safariDismissed
         case logoutButtonTapped
         case deleteAccountButtonTapped
         case deleteAccountSucceeded
@@ -46,11 +75,9 @@ struct SettingFeature {
 
         enum PathCase: Equatable {
             case dataManage
-//            case userGuide
-//            case qna
-//            case servicePolicy
-//            case personalInfoPolicy
             case myInfo
+            case termsOfService
+            case privacyPolicy
         }
 
         enum Alert: Equatable {
@@ -102,7 +129,17 @@ struct SettingFeature {
                         return .none
                     }
                     state.path.append(.myInfo(MyInfoFeature.State(profile: profile)))
+                case .termsOfService:
+                    state.path.append(.termsOfService)
+                case .privacyPolicy:
+                    state.path.append(.privacyPolicy)
                 }
+                return .none
+            case .openPageButtonTapped(let page):
+                state.safariURL = page.url
+                return .none
+            case .safariDismissed:
+                state.safariURL = nil
                 return .none
             case .logoutButtonTapped:
                 state.alert = .confirmLogout()
@@ -168,12 +205,16 @@ extension SettingFeature {
             case dataManage(DataManageFeature.State = .init())
             case myInfo(MyInfoFeature.State = .init())
             case resetData(ResetDataFeature.State = .init())
+            case termsOfService
+            case privacyPolicy
         }
 
         enum Action: Equatable {
             case dataManage(DataManageFeature.Action)
             case myInfo(MyInfoFeature.Action)
             case resetData(ResetDataFeature.Action)
+            case termsOfService(Never)
+            case privacyPolicy(Never)
         }
 
         var body: some ReducerOf<Self> {
