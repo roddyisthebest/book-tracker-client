@@ -17,7 +17,6 @@ struct CollectionFormFeature {
 
         var title: String = ""
         var description: String = ""
-        var isDefault: Bool = false
 
         var isLoading: Bool = false
         var selectedBookIds: Set<UUID> = []
@@ -33,7 +32,6 @@ struct CollectionFormFeature {
             self.id = collection.id
             self.title = collection.name ?? ""
             self.description = collection.description ?? ""
-            self.isDefault = collection.isDefault
         }
     }
 
@@ -78,11 +76,11 @@ struct CollectionFormFeature {
                 {
                     return .none
                 }
-                let new = NewCollection(name: state.title, description: state.description, isDefault: false)
+                let new = NewCollection(name: state.title, description: state.description)
                 state.isLoading = true
                 return .run {
                     [new = new, ids = Array(state.selectedBookIds)] send in
-                    let result = try await collectionService.createWithBooks(new, ids)
+                    let result = await collectionService.createWithBooks(new, ids)
                     await send(.creationResponse(result))
                 }
             case .updateButtonTapped:
@@ -96,12 +94,12 @@ struct CollectionFormFeature {
                     return .none
                 }
 
-                let patch = CollectionPatch(name: state.title, description: state.description, isDefault: state.isDefault)
+                let patch = CollectionPatch(name: state.title, description: state.description)
 
                 state.isLoading = true
                 return .run {
                     [id = id] send in
-                    let result = try await collectionService.update(id, patch)
+                    let result = await collectionService.update(id, patch)
                     await send(.updateResponse(result))
                 }
             case .binding:
@@ -118,7 +116,8 @@ struct CollectionFormFeature {
                 state.alert = .showCreateConfirmation()
 
                 return .none
-            case .creationResponse(.failure):
+            case .creationResponse(.failure(let error)):
+                print(error)
                 state.isLoading = false
                 state.alert = .showCreationErrorAlert()
                 return .none

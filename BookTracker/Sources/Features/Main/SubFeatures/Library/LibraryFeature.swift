@@ -163,6 +163,9 @@ struct LibraryFeature {
             case .path(.element(_, .collections(.delegate(.updateCollection)))):
                 return .send(.loadCollections)
             case .deleteCollectionButtonTapped(let id):
+                guard let collections = try? state.collections.get(),
+                      collections.first(where: { $0.id == id })?.type == .custom
+                else { return .none }
                 state.destination = .alert(.deleteCollectionConfirmation(id: id))
                 return .none
             case .destination(.presented(.alert(.confirmCollectionDeletion(let id)))):

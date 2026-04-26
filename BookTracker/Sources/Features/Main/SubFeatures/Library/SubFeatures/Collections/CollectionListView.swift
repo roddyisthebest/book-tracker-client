@@ -205,17 +205,16 @@ struct CollectionListView: View {
                             id: UUID(),
                             userId: UUID(),
                             name: "구매한 책",
-                            isDefault: false,
+                            type: .purchase,
                             createdAt: Date(),
                             description: nil,
-                            previewBooks: [],
-                            bookCount: 0
+                            previewBooks: []
                         ),
                         .init(
                             id: UUID(),
                             userId: UUID(),
                             name: "읽고 싶은 책",
-                            isDefault: false,
+                            type: .custom,
                             createdAt: Date(),
                             description: nil,
                             previewBooks: [
@@ -229,8 +228,7 @@ struct CollectionListView: View {
                                     title: "Book B",
                                     thumbnail: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop"
                                 )
-                            ],
-                            bookCount: 0
+                            ]
                         )
                     ]
                 ),

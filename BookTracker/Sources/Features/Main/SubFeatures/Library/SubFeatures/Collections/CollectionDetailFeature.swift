@@ -147,11 +147,13 @@ struct CollectionDetailFeature {
                 state.destination = .selectBooks(CollectionSelectBooksFeature.State(collection: state.collection.toUserCollection()))
                 return .none
             case .editButtonTapped(.collection):
+                guard state.collection.type == .custom else { return .none }
                 state.destination = .formCollection(CollectionFormFeature.State(collection: state.collection.toUserCollection()))
                 return .none
             case .bookCardTapped:
                 return .none
             case .deleteButtonTapped:
+                guard state.collection.type == .custom else { return .none }
                 state.destination = .alert(.deleteConfirmation())
                 return .none
             case .destination(.presented(.formCollection(.delegate(.updateCollection(let collection))))):
