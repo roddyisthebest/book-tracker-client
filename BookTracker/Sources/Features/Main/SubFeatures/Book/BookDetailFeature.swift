@@ -27,6 +27,7 @@ struct BookDetailFeature {
         case deleteButtonTapped
         case updateButtonTapped
         case moreButtonTapped
+        case viewDetailButtonTapped
 
         case changeStatusButtonTapped(BookStatus)
 
@@ -86,6 +87,14 @@ struct BookDetailFeature {
                 return .none
 
             case .moreButtonTapped:
+                return .none
+
+            case .viewDetailButtonTapped:
+                guard let book = state.book, let externalBookId = book.externalBookId else {
+                    state.destination = .alert(.showNoExternalIdAlert())
+                    return .none
+                }
+                state.destination = .bookInfo(BookInfoFeature.State(externalBookId: externalBookId))
                 return .none
 
             case .onAppear:
@@ -185,6 +194,7 @@ extension BookDetailFeature {
     @Reducer(state: .equatable, action: .equatable)
     enum Destination {
         case formBook(BookFormFeature)
+        case bookInfo(BookInfoFeature)
         case alert(AlertState<BookDetailFeature.Action.Alert>)
     }
 }
@@ -209,6 +219,12 @@ extension AlertState where Action == BookDetailFeature.Action.Alert {
     static func showDeletionErrorAlert() -> Self {
         Self {
             TextState("book_delete_failed")
+        }
+    }
+
+    static func showNoExternalIdAlert() -> Self {
+        Self {
+            TextState("no_external_id")
         }
     }
 }
