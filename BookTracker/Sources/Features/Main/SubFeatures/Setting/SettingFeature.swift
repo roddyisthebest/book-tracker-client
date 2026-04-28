@@ -89,8 +89,6 @@ struct SettingFeature {
         enum Delegate: Equatable {
             case logout
             case deleteAccount
-            case appDataDeleted
-            case serverDataDeleted
         }
     }
 
@@ -178,10 +176,6 @@ struct SettingFeature {
             case .path(.element(_, .dataManage(.dataResetButtonTapped))):
                 state.path.append(.resetData(ResetDataFeature.State()))
                 return .none
-            case .path(.element(_, .resetData(.delegate(.appDataDeleted)))):
-                return .send(.delegate(.appDataDeleted))
-            case .path(.element(_, .resetData(.delegate(.serverDataDeleted)))):
-                return .send(.delegate(.serverDataDeleted))
             case .path:
                 return .none
             case .alert:

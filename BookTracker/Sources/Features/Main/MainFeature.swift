@@ -27,12 +27,6 @@ struct MainFeature {
         case home(HomeFeature.Action)
         case stat(StatFeature.Action)
         case setting(SettingFeature.Action)
-        case delegate(Delegate)
-
-        enum Delegate: Equatable {
-            case logout
-            case deleteAccount
-        }
     }
 
     var body: some ReducerOf<Self> {
@@ -69,21 +63,14 @@ struct MainFeature {
                 return .none
             case .stat:
                 return .none
-            case .setting(.delegate(.logout)):
-                return .send(.delegate(.logout))
-            case .setting(.delegate(.deleteAccount)):
-                return .send(.delegate(.deleteAccount))
-            case .setting(.delegate(.appDataDeleted)):
+            case .setting(.path(.element(_, .resetData(.delegate(.appDataDeleted))))):
                 state.search.destination = .suggestions(SearchSuggestionsFeature.State())
                 state.home.didInitialLoad = false
                 return .none
-            case .setting(.delegate(.serverDataDeleted)):
+            case .setting(.path(.element(_, .resetData(.delegate(.serverDataDeleted))))):
                 state.home.didInitialLoad = false
                 return .send(.library(.onAppear))
-
             case .setting:
-                return .none
-            case .delegate:
                 return .none
             }
         }

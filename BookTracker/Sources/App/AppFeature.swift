@@ -74,7 +74,7 @@ struct AppFeature {
                     return .none
                 }
 
-            case .main(.delegate(.deleteAccount)):
+            case .main(.setting(.delegate(.deleteAccount))):
                 state = .signingOut
                 return .run { [authService, searchHistory, localReceiptService] send in
                     try? await searchHistory.clearAll()
@@ -83,7 +83,7 @@ struct AppFeature {
                     await send(.logout)
                 }
 
-            case .main(.delegate(.logout)):
+            case .main(.setting(.delegate(.logout))):
                 // Show a dedicated signing-out state while performing logout.
                 state = .signingOut
                 return .run { _ in
