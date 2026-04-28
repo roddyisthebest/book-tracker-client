@@ -83,59 +83,15 @@ struct MyInfoView: View {
                                 }
                             }
 
-                            if store.isFetching {
+                            if let authInfo = store.authInfo, let email = authInfo.email, let provider = authInfo.provider {
+                                StatusRow(key: String(localized: "email_label"), value: email)
+                                StatusRow(key: String(localized: "login_method"), value: provider)
+                            } else {
                                 VStack(spacing: 25) {
                                     skeletonStatusRow(width: 80)
                                     skeletonStatusRow(width: 80)
                                 }
                                 .redacted(reason: .placeholder)
-
-                            } else if store.isError {
-                                VStack(alignment: .leading, spacing: 14) {
-                                    Text("account_info_load_failed")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(Color.appPrimaryText)
-
-                                    Button(action: {
-                                        store.send(.onRefresh)
-                                    }) {
-                                        Text("retry")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(Color.appPrimaryText)
-                                            .padding(.horizontal, 14)
-                                            .padding(.vertical, 8)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color.appSurface)
-                                            )
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            } else if let authInfo = store.myAuthInfo, let email = authInfo.email, let provider = authInfo.provider {
-                                StatusRow(key: String(localized: "email_label"), value: email)
-                                StatusRow(key: String(localized: "login_method"), value: provider)
-                            } else {
-                                VStack(alignment: .leading, spacing: 14) {
-                                    Text("no_account_info")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(Color.appPrimaryText)
-
-                                    Button(action: {
-                                        store.send(.onRefresh)
-                                    }) {
-                                        Text("refresh")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(Color.appPrimaryText)
-                                            .padding(.horizontal, 14)
-                                            .padding(.vertical, 8)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .fill(Color.appSurface)
-                                            )
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -157,7 +113,6 @@ struct MyInfoView: View {
                 updateNameStore in
                 UpdateNameView(store: updateNameStore)
             }
-            .onAppear { store.send(.onAppear) }
     }
 }
 

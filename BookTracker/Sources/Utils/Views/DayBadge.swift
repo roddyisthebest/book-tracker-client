@@ -21,7 +21,7 @@ struct DayBadge<Content: View>: View {
                 .font(.subheadline)
                 .foregroundStyle(Color.appSecondaryText)
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.appSurfaceDeeper)
+                .fill(Color.appDayBadge)
                 .frame(width: 40, height: 40)
                 .overlay(overlayContent)
         }

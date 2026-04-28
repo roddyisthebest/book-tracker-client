@@ -23,7 +23,7 @@ struct MyProfile: Equatable, Codable, Hashable, Sendable {
     }
 }
 
-struct MyAuthInfo: Equatable, Codable, Hashable {
+struct MyAuthInfo: Equatable, Codable, Hashable, Sendable {
     let email: String?
     let provider: String?
 }

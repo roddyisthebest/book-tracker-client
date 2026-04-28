@@ -1,3 +1,4 @@
+import Kingfisher
 import SwiftUI
 
 struct BookGridItem: View {
@@ -13,23 +14,14 @@ struct BookGridItem: View {
             ZStack(alignment: .topLeading) {
                 Group {
                     if let imageURL, let url = URL(string: imageURL) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
+                        KFImage(url)
+                            .placeholder {
                                 Color.gray.opacity(0.2)
-
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-
-                            case .failure:
-                                placeholder
-
-                            @unknown default:
-                                placeholder
                             }
-                        }
+                            .retry(maxCount: 2, interval: .seconds(1))
+                            .fade(duration: 0.2)
+                            .resizable()
+                            .scaledToFill()
                     } else {
                         placeholder
                     }

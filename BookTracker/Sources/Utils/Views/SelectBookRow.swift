@@ -1,3 +1,4 @@
+import Kingfisher
 import SwiftUI
 
 struct SelectBookRow: View {
@@ -92,25 +93,16 @@ struct SelectBookRow: View {
         if let thumbnail,
            let url = URL(string: thumbnail)
         {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .empty:
-                    thumbnailPlaceholder
-
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-
-                case .failure:
-                    thumbnailPlaceholder
-
-                @unknown default:
+            KFImage(url)
+                .placeholder {
                     thumbnailPlaceholder
                 }
-            }
-            .frame(width: 80, height: 100)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+                .retry(maxCount: 2, interval: .seconds(1))
+                .fade(duration: 0.2)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 100)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
         } else {
             thumbnailPlaceholder
         }

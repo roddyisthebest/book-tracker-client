@@ -57,10 +57,18 @@ struct AddBooksView: View {
         }
         .background(Color.appSurface)
         .navigationTitle("add_books")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .navigationSubtitle(String(localized: "add_books_subtitle"))
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 1) {
+                    Text("add_books")
+                        .font(.headline)
+                    Text("add_books_subtitle")
+                        .font(.caption)
+                        .foregroundStyle(Color.appSecondaryText)
+                }
+            }
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()

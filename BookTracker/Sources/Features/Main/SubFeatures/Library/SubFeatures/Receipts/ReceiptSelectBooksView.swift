@@ -168,14 +168,20 @@ struct ReceiptSelectBooksView: View {
         contentView
             .background(Color.appSurface.ignoresSafeArea())
             .navigationTitle(store.type == .purchase ? "issue_purchase_receipt" : "issue_rental_receipt")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle(
-                store.type == .purchase
-                    ? String(localized: "receipt_subtitle_purchase")
-                    : String(localized: "receipt_subtitle_rental")
-            )
-            .toolbar { toolbarContent }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text(store.type == .purchase ? "issue_purchase_receipt" : "issue_rental_receipt")
+                            .font(.headline)
+                        Text(store.type == .purchase ? "receipt_subtitle_purchase" : "receipt_subtitle_rental")
+                            .font(.caption)
+                            .foregroundStyle(Color.appSecondaryText)
+                    }
+                }
+                toolbarContent
+            }
             .overlay(alignment: .bottom) {
                 if !store.books.isEmpty {
                     bottomBar

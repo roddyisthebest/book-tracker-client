@@ -22,14 +22,8 @@ struct MyInfoFeature {
     @ObservableState
     struct State: Equatable {
         @Shared(.userProfile) var profile: MyProfile?
+        @SharedReader(.userAuthInfo) var authInfo: MyAuthInfo?
 
-        var email: String?
-        var loginMethod: LoginMethod?
-
-        var myAuthInfo: MyAuthInfo?
-
-        var isFetching: Bool = false
-        var isError: Bool = false
         var isUpdatingImage: Bool = false
 
         @Presents var destination: Destination.State?
@@ -40,11 +34,6 @@ struct MyInfoFeature {
         case profileImageViewTapped
         case updateImageUuidResponse(Result<MyProfile, AppError>)
 
-        case onAppear
-        case onRefresh
-        case loadAuthInfo
-        case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
-
         case destination(PresentationAction<Destination.Action>)
     }
 
@@ -52,26 +41,6 @@ struct MyInfoFeature {
         Reduce<State, Action> {
             state, action in
             switch action {
-            case .onAppear:
-                return .send(.loadAuthInfo)
-            case .onRefresh:
-                return .send(.onAppear)
-            case .loadAuthInfo:
-                state.isFetching = true
-                state.isError = false
-                return .run { send in
-                    let result = await myInfoService.loadAuthInfo()
-                    await send(.loadAuthInfoResponse(result))
-                }
-            case .loadAuthInfoResponse(.success(let myAuthInfo)):
-                state.isFetching = false
-                state.myAuthInfo = myAuthInfo
-                return .none
-            case .loadAuthInfoResponse(.failure):
-                state.isFetching = false
-                state.isError = true
-                state.myAuthInfo = nil
-                return .none
             case .nameEditButtonTapped:
                 state.destination = .updateName(UpdateNameFeature.State(name: state.profile?.name ?? ""))
                 return .none

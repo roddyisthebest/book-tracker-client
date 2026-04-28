@@ -12,6 +12,7 @@ import Sharing
 @Reducer
 struct SettingFeature {
     @Dependency(\.authService) var authService
+    @Dependency(\.appInfoService) var appInfoService
 
     enum NotionPage: Equatable {
         case userGuide, faq
@@ -43,6 +44,7 @@ struct SettingFeature {
 
         @SharedReader(.userProfile) var profile: MyProfile?
         var isDeletingAccount: Bool = false
+        var versionDisplay: String = ""
 
         var safariURL: URL?
 
@@ -50,6 +52,7 @@ struct SettingFeature {
     }
 
     enum Action: Equatable {
+        case onAppear
         case path(StackAction<Path.State, Path.Action>)
         case navigateButtonTapped(PathCase)
         case openPageButtonTapped(NotionPage)
@@ -85,6 +88,9 @@ struct SettingFeature {
         Reduce<State, Action> {
             state, action in
             switch action {
+            case .onAppear:
+                state.versionDisplay = appInfoService.versionDisplay()
+                return .none
             case .navigateButtonTapped(let pathCase):
                 switch pathCase {
                 case .dataManage:

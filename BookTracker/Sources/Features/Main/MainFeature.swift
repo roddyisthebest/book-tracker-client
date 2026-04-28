@@ -16,6 +16,7 @@ struct MainFeature {
     struct State: Equatable {
         var selectedTab: MainTab = .home
         @Shared(.userProfile) var profile: MyProfile?
+        @Shared(.userAuthInfo) var authInfo: MyAuthInfo?
 
         var library = LibraryFeature.State()
         var search = SearchFeature.State()
@@ -27,6 +28,7 @@ struct MainFeature {
     enum Action: Equatable {
         case onAppear
         case loadProfileResponse(Result<MyProfile, AppError>)
+        case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
 
         case tabSelected(MainTab)
         case library(LibraryFeature.Action)
@@ -61,14 +63,25 @@ struct MainFeature {
             switch action {
             case .onAppear:
                 guard state.profile == nil else { return .none }
-                return .run { [myInfoService] send in
-                    let result = await myInfoService.loadProfile()
-                    await send(.loadProfileResponse(result))
-                }
+                return .merge(
+                    .run { [myInfoService] send in
+                        let result = await myInfoService.loadProfile()
+                        await send(.loadProfileResponse(result))
+                    },
+                    .run { [myInfoService] send in
+                        let result = await myInfoService.loadAuthInfo()
+                        await send(.loadAuthInfoResponse(result))
+                    }
+                )
             case .loadProfileResponse(.success(let profile)):
                 state.$profile.withLock { $0 = profile }
                 return .none
             case .loadProfileResponse(.failure):
+                return .none
+            case .loadAuthInfoResponse(.success(let authInfo)):
+                state.$authInfo.withLock { $0 = authInfo }
+                return .none
+            case .loadAuthInfoResponse(.failure):
                 return .none
             case let .tabSelected(tab):
                 state.selectedTab = tab

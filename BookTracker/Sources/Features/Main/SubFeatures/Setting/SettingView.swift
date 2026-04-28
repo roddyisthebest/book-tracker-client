@@ -181,7 +181,7 @@ struct SettingView: View {
 
                                 HStack(spacing: 10) {
                                     Text("app_version").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
-                                    Text("v 1.05 (10)").font(.footnote).fontWeight(.semibold).foregroundStyle(.gray)
+                                    Text(store.versionDisplay).font(.footnote).fontWeight(.semibold).foregroundStyle(.gray)
                                 }
                                 Spacer()
                             }
@@ -326,6 +326,7 @@ struct SettingView: View {
                     .ignoresSafeArea()
             }
         }
+        .onAppear { store.send(.onAppear) }
         .disabled(store.isDeletingAccount)
         .overlay {
             if store.isDeletingAccount {

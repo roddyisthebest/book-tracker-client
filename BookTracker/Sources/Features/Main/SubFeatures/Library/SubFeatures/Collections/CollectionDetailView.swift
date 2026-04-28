@@ -131,10 +131,22 @@ struct CollectionDetailView: View {
                 }
             }
             .navigationTitle(store.collection.displayName)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle(store.collection.description ?? "")
-            .toolbar { toolbarContent }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text(store.collection.displayName)
+                            .font(.headline)
+                        if let desc = store.collection.description, !desc.isEmpty {
+                            Text(desc)
+                                .font(.caption)
+                                .foregroundStyle(Color.appSecondaryText)
+                        }
+                    }
+                }
+                toolbarContent
+            }
             .task {
                 await store.send(.onAppear).finish()
             }

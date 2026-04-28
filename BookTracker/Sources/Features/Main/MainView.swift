@@ -27,7 +27,7 @@ struct MainView: View {
                         )
                     )
                 }
-                .tabItem { Label("Home", systemImage: "house") }
+                .tabItem { Label("home", systemImage: "house") }
                 .tag(MainTab.home)
 
                 NavigationStack {
@@ -39,7 +39,7 @@ struct MainView: View {
                         isSheet: false
                     )
                 }
-                .tabItem { Label("Search", systemImage: "magnifyingglass") }
+                .tabItem { Label("search", systemImage: "magnifyingglass") }
                 .tag(MainTab.search)
 
                 NavigationStack {
@@ -72,7 +72,7 @@ struct MainView: View {
                         )
                     )
                 }
-                .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tabItem { Label("settings", systemImage: "gearshape") }
                 .tag(MainTab.setting)
             }
             .onAppear { store.send(.onAppear) }
