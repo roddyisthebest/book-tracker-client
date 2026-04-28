@@ -271,10 +271,10 @@ extension AlertState where Action == ExternalBookDetailFeature.Action.Alert {
         Self {
             TextState("price_not_set_confirm")
         } actions: {
-            ButtonState(role: .cancel, action: .addPrice) {
+            ButtonState(action: .addPrice) {
                 TextState("confirm")
             }
-            ButtonState(role: .destructive) {
+            ButtonState(role: .cancel) {
                 TextState("cancel")
             }
         }

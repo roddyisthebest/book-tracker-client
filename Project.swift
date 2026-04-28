@@ -23,8 +23,8 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
+                        "UIColorName": "LaunchBackground",
+                        "UIImageName": "Transparent_AppIcon",
                     ],
                     "SUPABASE_URL": "$(SUPABASE_URL)",
                     "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
@@ -37,6 +37,7 @@ let project = Project(
             ),
             sources: ["BookTracker/Sources/**"],
             resources: ["BookTracker/Resources/**"],
+            entitlements: "BookTracker/BookTracker.entitlements",
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .external(name: "Supabase"),

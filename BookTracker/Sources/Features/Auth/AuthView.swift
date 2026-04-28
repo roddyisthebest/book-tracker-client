@@ -9,15 +9,18 @@ import ComposableArchitecture
 import SwiftUI
 
 struct PressTintButtonStyle: ButtonStyle {
+    var color: Color = .appAccent
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? Color.appAccent.opacity(0.85) : Color.appAccent)
+            .background(configuration.isPressed ? color.opacity(0.85) : color)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
 struct DefaultButton<Label: View>: View {
     let action: () -> Void
+    var color: Color = .appAccent
     @ViewBuilder let label: () -> Label
 
     var body: some View {
@@ -28,7 +31,7 @@ struct DefaultButton<Label: View>: View {
                 .frame(maxWidth: .infinity)
         }
         .foregroundStyle(.white)
-        .buttonStyle(PressTintButtonStyle())
+        .buttonStyle(PressTintButtonStyle(color: color))
         .cornerRadius(10)
     }
 }
@@ -40,7 +43,10 @@ struct AuthView: View {
             VStack {
                 // 위 영역
                 VStack {
-                    Circle().foregroundStyle(Color.appAccent).frame(width: 200)
+                    Image("Transparent_AppIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200)
                 }
                 .frame(height: proxy.size.height * 0.7)
                 .frame(maxWidth: .infinity)

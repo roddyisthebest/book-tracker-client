@@ -91,7 +91,7 @@ struct ExternalBookDetailView: View {
                                         let code = book.saleInfo?.offers?.first?.retailPrice?.currencyCode
 
                                         Text(CurrencyCode.formattedPriceMicros(amountInMicros: micros, currencyCode: code))
-                                            .foregroundStyle(.blue.opacity(0.6)).font(.system(size: 20, weight: .bold))
+                                            .foregroundStyle(.blue).font(.system(size: 20, weight: .bold))
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                     }
@@ -114,11 +114,12 @@ struct ExternalBookDetailView: View {
                             }
                             .padding(.vertical, 5)
 
-                            Text(desc)
+                            Text(desc.strippingHTML)
+                                .font(.system(size: 15))
+                                .foregroundStyle(Color.appSecondaryText)
                                 .multilineTextAlignment(.leading)
                                 .lineLimit(store.isExtended ? 15 : 3)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(Color.appSecondaryText)
 
                             HStack {
                                 Button(action: {
@@ -170,7 +171,7 @@ struct ExternalBookDetailView: View {
                                         store.send(.addButtonTapped(.rental))
                                     }) {
                                         HStack(spacing: 8) {
-                                            if store.isPurchasingSaving {
+                                            if store.isRentalSaving {
                                                 ProgressView()
                                                     .controlSize(.small)
                                             } else {
@@ -188,16 +189,16 @@ struct ExternalBookDetailView: View {
                                         .padding()
                                         .background(Color.appButtonSurface)
                                         .cornerRadius(10)
-                                    }.disabled(store.isPurchasingSaving)
+                                    }.disabled(store.isRentalSaving)
 
                                     Button(action: {
                                         store.send(.addButtonTapped(.purchase))
                                     }) {
-                                        if store.isRentalSaving {
-                                            ProgressView()
-                                                .controlSize(.small)
-                                        } else {
-                                            HStack(spacing: 8) {
+                                        HStack(spacing: 8) {
+                                            if store.isPurchasingSaving {
+                                                ProgressView()
+                                                    .controlSize(.small)
+                                            } else {
                                                 Image(systemName: "receipt.fill")
                                                     .font(.system(size: 16, weight: .semibold))
                                                     .foregroundStyle(Color.appPurchaseAccent)
@@ -205,13 +206,12 @@ struct ExternalBookDetailView: View {
                                                     .foregroundStyle(Color.appSecondaryText)
                                                     .fontWeight(.semibold)
                                             }
-                                            .frame(maxWidth: .infinity)
-                                            .padding()
-                                            .background(Color.appButtonSurface)
-                                            .cornerRadius(10)
                                         }
-
-                                    }.disabled(store.isRentalSaving)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.appButtonSurface)
+                                        .cornerRadius(10)
+                                    }.disabled(store.isPurchasingSaving)
                                 }
                             }
                             Button(action: {
@@ -274,7 +274,7 @@ struct ExternalBookDetailView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Label("back", systemImage: "chevron.left")
+                    Image(systemName: "chevron.left")
                 }
             }
         }

@@ -84,9 +84,9 @@ struct HomeView: View {
                             .frame(maxWidth: .infinity)
                             DefaultButton(action: {
                                 store.send(.doneButtonTapped)
-                            }, label: {
+                            }, color: store.didReadToday == true ? .red : .blue, label: {
                                 if store.isTodayRecordUpdating {
-                                    ProgressView().tint(Color.appAccent)
+                                    ProgressView().tint(.white)
                                 } else if store.didReadToday == true {
                                     Text("did_read_today")
                                 } else {

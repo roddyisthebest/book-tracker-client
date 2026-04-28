@@ -99,13 +99,14 @@ struct LibraryView: View {
                 Button(action: {
                     store.send(.sectionTapped(.myBooks(status: .done)))
                 }) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "book.pages.fill")
-                        Text(String(format: String(localized: "status_done %@"), "\(counts[.done] ?? 0)"))
-                            .font(.subheadline)
+                    VStack(spacing: 6) {
+                        Text("\(counts[.done] ?? 0)")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("status_done")
+                            .font(.system(size: 11, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 82.5)
+                    .frame(height: 70)
                     .background(Color.appSurface)
                     .cornerRadius(10)
                     .foregroundStyle(Color.appSecondaryText)
@@ -114,13 +115,14 @@ struct LibraryView: View {
                 Button(action: {
                     store.send(.sectionTapped(.myBooks(status: .reading)))
                 }) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "book.pages.fill")
-                        Text(String(format: String(localized: "status_reading %@"), "\(counts[.reading] ?? 0)"))
-                            .font(.subheadline)
+                    VStack(spacing: 6) {
+                        Text("\(counts[.reading] ?? 0)")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("status_reading")
+                            .font(.system(size: 11, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 82.5)
+                    .frame(height: 70)
                     .background(Color.appSurface)
                     .cornerRadius(10)
                     .foregroundStyle(Color.appSecondaryText)
@@ -129,13 +131,14 @@ struct LibraryView: View {
                 Button(action: {
                     store.send(.sectionTapped(.myBooks(status: .want)))
                 }) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "book.pages.fill")
-                        Text(String(format: String(localized: "status_want %@"), "\(counts[.want] ?? 0)"))
-                            .font(.subheadline)
+                    VStack(spacing: 6) {
+                        Text("\(counts[.want] ?? 0)")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("status_want")
+                            .font(.system(size: 11, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 82.5)
+                    .frame(height: 70)
                     .background(Color.appSurface)
                     .cornerRadius(10)
                     .foregroundStyle(Color.appSecondaryText)
@@ -144,13 +147,14 @@ struct LibraryView: View {
                 Button(action: {
                     store.send(.sectionTapped(.myBooks(status: .dropped)))
                 }) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "book.pages.fill")
-                        Text(String(format: String(localized: "status_dropped %@"), "\(counts[.dropped] ?? 0)"))
-                            .font(.subheadline)
+                    VStack(spacing: 6) {
+                        Text("\(counts[.dropped] ?? 0)")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("status_dropped")
+                            .font(.system(size: 11, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 82.5)
+                    .frame(height: 70)
                     .background(Color.appSurface)
                     .cornerRadius(10)
                     .foregroundStyle(Color.appSecondaryText)

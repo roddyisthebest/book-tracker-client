@@ -4822,6 +4822,7 @@
       }
     },
     "no_profile_info" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5395,6 +5396,7 @@
       }
     },
     "profile_load_failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
