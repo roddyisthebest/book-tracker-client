@@ -22,9 +22,10 @@ struct SearchFeature {
         case destination(Destination.Action)
         case queryResetButtonTapped
         case binding(BindingAction<State>)
-        /// 내부 전용: 자식 검색 이펙트를 취소한 다음에 suggestions로 안전하게 전환할 때 사용.
-        /// setKeyword("")로 취소를 유도한 뒤, 순서를 보장하기 위해 .concatenate 다음 단계에서 이 액션을 보냅니다.
+        /// 내부 전용: 자식 이펙트를 취소한 다음에 안전하게 전환할 때 사용.
+        /// 취소를 유도한 뒤, 순서를 보장하기 위해 .concatenate 다음 단계에서 이 액션을 보냅니다.
         case _setSuggestions
+        case _setResults(String)
     }
 
     var body: some ReducerOf<Self> {
@@ -65,14 +66,16 @@ struct SearchFeature {
                         return .none
                     }
                 } else {
-                    // Ensure we are on the results screen, creating it if needed
                     if case .results = state.destination {
-                        // already on results, keep it
+                        // already on results — just pass keyword down (child debounces + searches)
+                        return .send(.destination(.results(.setKeyword(trimmed))))
                     } else {
-                        state.destination = .results(SearchResultFeature.State(keyword: trimmed))
+                        // suggestions → results: cancel suggestions effects first, then switch
+                        return .concatenate(
+                            .send(.destination(.suggestions(.cancelLoading))),
+                            .send(._setResults(trimmed))
+                        )
                     }
-                    // Pass keyword down to child (child debounces + searches)
-                    return .send(.destination(.results(.setKeyword(trimmed))))
                 }
 
             case .queryResetButtonTapped:
@@ -92,9 +95,11 @@ struct SearchFeature {
 
             case .destination(.suggestions(.delegate(.setKeyword(let keyword)))):
                 state.query = keyword
-
-                state.destination = .results(SearchResultFeature.State(keyword: keyword))
-                return .send(.destination(.results(.setKeyword(keyword))))
+                // suggestions → results: cancel suggestions effects first, then switch
+                return .concatenate(
+                    .send(.destination(.suggestions(.cancelLoading))),
+                    .send(._setResults(keyword))
+                )
 
             case .detailSheet(.presented(.destination(.presented(.formBook(.delegate(.confirmCreation(let book))))))):
                 print(book)
@@ -111,6 +116,10 @@ struct SearchFeature {
             case ._setSuggestions:
                 state.destination = .suggestions(SearchSuggestionsFeature.State())
                 return .none
+
+            case let ._setResults(keyword):
+                state.destination = .results(SearchResultFeature.State(keyword: keyword))
+                return .send(.destination(.results(.setKeyword(keyword))))
 
             case .destination:
                 return .none
