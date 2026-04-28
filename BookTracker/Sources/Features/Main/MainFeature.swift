@@ -6,12 +6,16 @@
 //
 
 import ComposableArchitecture
+import Sharing
 
 @Reducer
 struct MainFeature {
+    @Dependency(\.myInfoService) var myInfoService
+
     @ObservableState
     struct State: Equatable {
         var selectedTab: MainTab = .home
+        @Shared(.userProfile) var profile: MyProfile?
 
         var library = LibraryFeature.State()
         var search = SearchFeature.State()
@@ -21,6 +25,9 @@ struct MainFeature {
     }
 
     enum Action: Equatable {
+        case onAppear
+        case loadProfileResponse(Result<MyProfile, AppError>)
+
         case tabSelected(MainTab)
         case library(LibraryFeature.Action)
         case search(SearchFeature.Action)
@@ -52,6 +59,17 @@ struct MainFeature {
 
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                guard state.profile == nil else { return .none }
+                return .run { [myInfoService] send in
+                    let result = await myInfoService.loadProfile()
+                    await send(.loadProfileResponse(result))
+                }
+            case .loadProfileResponse(.success(let profile)):
+                state.$profile.withLock { $0 = profile }
+                return .none
+            case .loadProfileResponse(.failure):
+                return .none
             case let .tabSelected(tab):
                 state.selectedTab = tab
                 return .none

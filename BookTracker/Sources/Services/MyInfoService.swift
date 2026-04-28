@@ -8,7 +8,7 @@
 import Foundation
 import Supabase
 
-struct MyProfile: Equatable, Codable, Hashable {
+struct MyProfile: Equatable, Codable, Hashable, Sendable {
     let id: UUID
     var name: String?
     let role: String

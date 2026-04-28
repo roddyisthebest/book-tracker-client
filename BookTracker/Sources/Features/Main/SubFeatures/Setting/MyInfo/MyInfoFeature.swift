@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import Sharing
 
 enum LoginMethod: Equatable {
     case apple
@@ -20,7 +21,7 @@ struct MyInfoFeature {
 
     @ObservableState
     struct State: Equatable {
-        var profile: MyProfile?
+        @Shared(.userProfile) var profile: MyProfile?
 
         var email: String?
         var loginMethod: LoginMethod?
@@ -45,11 +46,6 @@ struct MyInfoFeature {
         case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
 
         case destination(PresentationAction<Destination.Action>)
-        case delegate(Delegate)
-
-        enum Delegate: Equatable {
-            case updateProfile(MyProfile)
-        }
     }
 
     var body: some Reducer<State, Action> {
@@ -89,18 +85,15 @@ struct MyInfoFeature {
                 }
             case .updateImageUuidResponse(.success(let profile)):
                 state.isUpdatingImage = false
-                state.profile = profile
-                return .send(.delegate(.updateProfile(profile)))
+                state.$profile.withLock { $0 = profile }
+                return .none
             case .updateImageUuidResponse(.failure):
                 state.isUpdatingImage = false
                 return .none
-            case .destination(.presented(.updateName(.delegate(.updateProfile(let profile))))):
+            case .destination(.presented(.updateName(.delegate(.didUpdate)))):
                 state.destination = nil
-                state.profile = profile
                 return .none
             case .destination:
-                return .none
-            case .delegate:
                 return .none
             }
         }

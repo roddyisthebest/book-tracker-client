@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import Sharing
 
 @Reducer
 struct UpdateNameFeature {
@@ -16,6 +17,7 @@ struct UpdateNameFeature {
     struct State: Equatable {
         var isLoading: Bool = false
 
+        @Shared(.userProfile) var profile: MyProfile?
         var name: String
         private var initialName: String
         var isSubmittable: Bool { name.trimmingCharacters(in: .whitespacesAndNewlines) != initialName && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -36,7 +38,7 @@ struct UpdateNameFeature {
 
         case delegate(Delegate)
         enum Delegate: Equatable {
-            case updateProfile(profile: MyProfile)
+            case didUpdate
         }
 
         case alert(PresentationAction<Alert>)
@@ -58,7 +60,8 @@ struct UpdateNameFeature {
                 }
             case .updateResponse(.success(let profile)):
                 state.isLoading = false
-                return .send(.delegate(.updateProfile(profile: profile)))
+                state.$profile.withLock { $0 = profile }
+                return .send(.delegate(.didUpdate))
             case .updateResponse(.failure(let error)):
                 print(error, "error")
                 state.isLoading = false

@@ -163,7 +163,7 @@ struct MyInfoView: View {
 
 #Preview {
     NavigationStack {
-        MyInfoView(store: Store(initialState: MyInfoFeature.State(profile: MyProfile(id: UUID(), name: "asdd", role: "as", phoneToken: "21312323", imageUuid: UUID(), createdAt: Date(), deletedAt: Date())), reducer: {
+        MyInfoView(store: Store(initialState: MyInfoFeature.State(), reducer: {
             MyInfoFeature()
         }))
     }

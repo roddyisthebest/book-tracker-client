@@ -75,6 +75,7 @@ struct MainView: View {
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(MainTab.setting)
             }
+            .onAppear { store.send(.onAppear) }
         }
     }
 }

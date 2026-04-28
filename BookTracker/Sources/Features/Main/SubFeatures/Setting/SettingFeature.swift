@@ -7,10 +7,10 @@
 
 import ComposableArchitecture
 import Foundation
+import Sharing
 
 @Reducer
 struct SettingFeature {
-    @Dependency(\.myInfoService) var myInfoService
     @Dependency(\.authService) var authService
 
     enum NotionPage: Equatable {
@@ -41,12 +41,7 @@ struct SettingFeature {
     struct State: Equatable {
         var path = StackState<Path.State>()
 
-        var hasLoadedProfile: Bool = false
-
-        var isFetching: Bool = false
-        var isError: Bool = false
-
-        var profile: MyProfile?
+        @SharedReader(.userProfile) var profile: MyProfile?
         var isDeletingAccount: Bool = false
 
         var safariURL: URL?
@@ -55,12 +50,6 @@ struct SettingFeature {
     }
 
     enum Action: Equatable {
-        case onRefresh
-
-        case onAppear
-        case loadProfile
-        case loadProfileResponse(Result<MyProfile, AppError>)
-
         case path(StackAction<Path.State, Path.Action>)
         case navigateButtonTapped(PathCase)
         case openPageButtonTapped(NotionPage)
@@ -96,37 +85,12 @@ struct SettingFeature {
         Reduce<State, Action> {
             state, action in
             switch action {
-            case .onAppear:
-                guard !state.hasLoadedProfile else { return .none }
-                state.hasLoadedProfile = true
-                return .send(.loadProfile)
-            case .onRefresh:
-                return .send(.loadProfile)
-            case .loadProfile:
-                state.isFetching = true
-                state.isError = false
-                return .run {
-                    send in
-                    let result = await myInfoService.loadProfile()
-                    await send(.loadProfileResponse(result))
-                }
-            case .loadProfileResponse(.success(let profile)):
-                state.isFetching = false
-                state.profile = profile
-                return .none
-            case .loadProfileResponse(.failure):
-                state.isFetching = false
-                state.isError = true
-                return .none
             case .navigateButtonTapped(let pathCase):
                 switch pathCase {
                 case .dataManage:
                     state.path.append(.dataManage(DataManageFeature.State()))
                 case .myInfo:
-                    guard let profile = state.profile else {
-                        return .none
-                    }
-                    state.path.append(.myInfo(MyInfoFeature.State(profile: profile)))
+                    state.path.append(.myInfo(MyInfoFeature.State()))
                 case .termsOfService:
                     state.path.append(.termsOfService)
                 case .privacyPolicy:
@@ -166,12 +130,6 @@ struct SettingFeature {
                 state.alert = .deleteAccountFailed()
                 return .none
             case .alert(.presented(.confirmDeleteAccountFailed)):
-                return .none
-            case .path(.element(_, .myInfo(.destination(.presented(.updateName(.delegate(.updateProfile(let profile)))))))):
-                state.profile = profile
-                return .none
-            case .path(.element(_, .myInfo(.delegate(.updateProfile(let profile))))):
-                state.profile = profile
                 return .none
             case .path(.element(_, .dataManage(.dataResetButtonTapped))):
                 state.path.append(.resetData(ResetDataFeature.State()))
