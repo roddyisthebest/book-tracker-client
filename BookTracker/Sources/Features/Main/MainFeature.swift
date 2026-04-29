@@ -6,12 +6,17 @@
 //
 
 import ComposableArchitecture
+import Sharing
 
 @Reducer
 struct MainFeature {
+    @Dependency(\.myInfoService) var myInfoService
+
     @ObservableState
     struct State: Equatable {
         var selectedTab: MainTab = .home
+        @Shared(.userProfile) var profile: MyProfile?
+        @Shared(.userAuthInfo) var authInfo: MyAuthInfo?
 
         var library = LibraryFeature.State()
         var search = SearchFeature.State()
@@ -21,18 +26,16 @@ struct MainFeature {
     }
 
     enum Action: Equatable {
+        case onAppear
+        case loadProfileResponse(Result<MyProfile, AppError>)
+        case loadAuthInfoResponse(Result<MyAuthInfo, AppError>)
+
         case tabSelected(MainTab)
         case library(LibraryFeature.Action)
         case search(SearchFeature.Action)
         case home(HomeFeature.Action)
         case stat(StatFeature.Action)
         case setting(SettingFeature.Action)
-        case delegate(Delegate)
-
-        enum Delegate: Equatable {
-            case logout
-            case deleteAccount
-        }
     }
 
     var body: some ReducerOf<Self> {
@@ -58,6 +61,28 @@ struct MainFeature {
 
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                guard state.profile == nil else { return .none }
+                return .merge(
+                    .run { [myInfoService] send in
+                        let result = await myInfoService.loadProfile()
+                        await send(.loadProfileResponse(result))
+                    },
+                    .run { [myInfoService] send in
+                        let result = await myInfoService.loadAuthInfo()
+                        await send(.loadAuthInfoResponse(result))
+                    }
+                )
+            case .loadProfileResponse(.success(let profile)):
+                state.$profile.withLock { $0 = profile }
+                return .none
+            case .loadProfileResponse(.failure):
+                return .none
+            case .loadAuthInfoResponse(.success(let authInfo)):
+                state.$authInfo.withLock { $0 = authInfo }
+                return .none
+            case .loadAuthInfoResponse(.failure):
+                return .none
             case let .tabSelected(tab):
                 state.selectedTab = tab
                 return .none
@@ -69,14 +94,14 @@ struct MainFeature {
                 return .none
             case .stat:
                 return .none
-            case .setting(.delegate(.logout)):
-                return .send(.delegate(.logout))
-            case .setting(.delegate(.deleteAccount)):
-                // Handle global delete account flow here (e.g., revoke credentials)
+            case .setting(.path(.element(_, .resetData(.delegate(.appDataDeleted))))):
+                state.search.destination = .suggestions(SearchSuggestionsFeature.State())
+                state.home.didInitialLoad = false
                 return .none
+            case .setting(.path(.element(_, .resetData(.delegate(.serverDataDeleted))))):
+                state.home.didInitialLoad = false
+                return .send(.library(.onAppear))
             case .setting:
-                return .none
-            case .delegate:
                 return .none
             }
         }

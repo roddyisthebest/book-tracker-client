@@ -4,6 +4,7 @@
 //
 //  Created by 배성연 on 4/4/26.
 //
+import Kingfisher
 import SwiftUI
 
 struct DoneBookThumbnailsGrid: View {
@@ -29,23 +30,13 @@ private struct ThumbnailCell: View {
         ZStack {
             RoundedRectangle(cornerRadius: 2)
                 .fill(Color(hex: "#2C2C35", default: .secondary))
-            // Image loading placeholder; replace with async image if available
             if let urlString = item.imageUrl, let url = URL(string: urlString) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
+                KFImage(url)
+                    .placeholder {
                         ProgressView().tint(.white)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure:
-                        Image(systemName: "book.fill")
-                            .foregroundStyle(.white.opacity(0.7))
-                    @unknown default:
-                        EmptyView()
                     }
-                }
+                    .resizable()
+                    .scaledToFill()
             } else {
                 Image(systemName: "book.fill")
                     .foregroundStyle(.white.opacity(0.7))

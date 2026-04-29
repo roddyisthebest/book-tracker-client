@@ -8,6 +8,11 @@ import Foundation
 import UIKit
 
 extension String {
+    var strippingHTML: String {
+        replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var htmlToAttributedStringStrippingStyles: AttributedString? {
         guard let data = data(using: .utf8) else { return nil }
         do {
@@ -38,6 +43,34 @@ extension String {
             return AttributedString(ns)
         } catch {
             return nil
+        }
+    }
+
+    func htmlToAttributedString(color: UIColor) -> AttributedString {
+        guard let data = data(using: .utf8) else { return AttributedString(self) }
+        do {
+            let ns = try NSMutableAttributedString(
+                data: data,
+                options: [
+                    .documentType: NSAttributedString.DocumentType.html,
+                    .characterEncoding: String.Encoding.utf8.rawValue
+                ],
+                documentAttributes: nil
+            )
+            let fullRange = NSRange(location: 0, length: ns.length)
+            ns.removeAttribute(.backgroundColor, range: fullRange)
+            ns.removeAttribute(.link, range: fullRange)
+            ns.addAttribute(.foregroundColor, value: color, range: fullRange)
+            ns.enumerateAttribute(.paragraphStyle, in: fullRange) { value, range, _ in
+                guard let style = value as? NSParagraphStyle else { return }
+                let m = NSMutableParagraphStyle()
+                m.alignment = style.alignment
+                m.lineBreakMode = .byWordWrapping
+                ns.addAttribute(.paragraphStyle, value: m, range: range)
+            }
+            return AttributedString(ns)
+        } catch {
+            return AttributedString(self)
         }
     }
 }

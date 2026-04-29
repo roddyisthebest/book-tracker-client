@@ -132,7 +132,7 @@ struct CollectionFormView: View {
 #Preview {
     CollectionFormView(
         store: Store(
-            initialState: CollectionFormFeature.State(collection: UserCollection(id: UUID(), userId: UUID(), name: "My Collection", isDefault: false, createdAt: Date(), description: "")),
+            initialState: CollectionFormFeature.State(collection: UserCollection(id: UUID(), userId: UUID(), name: "My Collection", type: .custom, createdAt: Date(), description: "")),
             reducer: { CollectionFormFeature() }
         )
     )

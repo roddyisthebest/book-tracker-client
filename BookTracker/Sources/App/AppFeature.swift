@@ -7,6 +7,7 @@
 
 import CasePaths
 import ComposableArchitecture
+import Sharing
 import Supabase
 
 @Reducer
@@ -31,6 +32,10 @@ struct AppFeature {
     }
 
     @Dependency(\.authService) var authService
+    @Dependency(\.searchHistory) var searchHistory
+    @Dependency(\.localReceiptService) var localReceiptService
+    @Shared(.userProfile) var userProfile: MyProfile?
+    @Shared(.userAuthInfo) var userAuthInfo: MyAuthInfo?
     private enum CancelID { case authChanges }
 
     var body: some ReducerOf<Self> {
@@ -65,6 +70,8 @@ struct AppFeature {
                     return .none
 
                 case .signedOut:
+                    $userProfile.withLock { $0 = nil }
+                    $userAuthInfo.withLock { $0 = nil }
                     state = .auth(AuthFeature.State())
                     return .none
 
@@ -72,7 +79,16 @@ struct AppFeature {
                     return .none
                 }
 
-            case .main(.delegate(.logout)):
+            case .main(.setting(.delegate(.deleteAccount))):
+                state = .signingOut
+                return .run { [authService, searchHistory, localReceiptService] send in
+                    try? await searchHistory.clearAll()
+                    _ = await localReceiptService.clearAll()
+                    try? await authService.signOut()
+                    await send(.logout)
+                }
+
+            case .main(.setting(.delegate(.logout))):
                 // Show a dedicated signing-out state while performing logout.
                 state = .signingOut
                 return .run { _ in
@@ -89,6 +105,8 @@ struct AppFeature {
                 return .none
 
             case .logout:
+                $userProfile.withLock { $0 = nil }
+                $userAuthInfo.withLock { $0 = nil }
                 state = .auth(AuthFeature.State())
                 return .none
 

@@ -23,19 +23,21 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
+                        "UIColorName": "LaunchBackground",
+                        "UIImageName": "Transparent_AppIcon",
                     ],
                     "SUPABASE_URL": "$(SUPABASE_URL)",
                     "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
                     "ENV": "$(ENV)",
                     "GOOGLE_BOOKS_API_KEY": "$(GOOGLE_BOOKS_API_KEY)",
+                    "NSPhotoLibraryAddUsageDescription": "Save calendar images to your photo library.",
                     "CFBundleLocalizations": ["ko", "en", "ja"],
                     "CFBundleDevelopmentRegion": "ko",
                 ]
             ),
             sources: ["BookTracker/Sources/**"],
             resources: ["BookTracker/Resources/**"],
+            entitlements: "BookTracker/BookTracker.entitlements",
             dependencies: [
                 .external(name: "ComposableArchitecture"),
                 .external(name: "Supabase"),

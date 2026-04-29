@@ -20,6 +20,8 @@ struct ReadingCalendarFeature {
         var isError: Bool = false
 
         var readingRecords: [Date: ReadingRecord?]?
+
+        @Presents var alert: AlertState<Action.Alert>?
     }
 
     enum Action: Equatable, BindableAction {
@@ -27,6 +29,10 @@ struct ReadingCalendarFeature {
         case onAppear
         case loadData
         case loadDataResponse(Result<[Date: ReadingRecord?], AppError>)
+        case saveSuccess
+        case saveFailed
+        case alert(PresentationAction<Alert>)
+        enum Alert: Equatable {}
     }
 
     var body: some Reducer<State, Action> {
@@ -60,7 +66,38 @@ struct ReadingCalendarFeature {
                     state.isError = true
                 }
                 return .none
+            case .saveSuccess:
+                state.alert = .saveSuccess()
+                return .none
+            case .saveFailed:
+                state.alert = .saveFailed()
+                return .none
+            case .alert:
+                return .none
             }
+        }
+        .ifLet(\.$alert, action: \.alert)
+    }
+}
+
+extension AlertState where Action == ReadingCalendarFeature.Action.Alert {
+    static func saveSuccess() -> Self {
+        Self {
+            TextState("save_success")
+        } actions: {
+            ButtonState(role: .cancel) { TextState("confirm") }
+        } message: {
+            TextState("save_success_message")
+        }
+    }
+
+    static func saveFailed() -> Self {
+        Self {
+            TextState("save_failed")
+        } actions: {
+            ButtonState(role: .cancel) { TextState("confirm") }
+        } message: {
+            TextState("save_failed_message")
         }
     }
 }

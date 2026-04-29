@@ -282,6 +282,15 @@ extension Color {
                 : UIColor(red: 0.90, green: 0.90, blue: 0.92, alpha: 1.0)
         })
     }
+
+    static var appDayBadge: Color {
+        Color(UIColor { trait in
+            let isDark = (trait.userInterfaceStyle == .dark)
+            return isDark
+                ? UIColor(red: 0.173, green: 0.173, blue: 0.208, alpha: 1.0) // #2C2C35
+                : UIColor(red: 0.90, green: 0.90, blue: 0.92, alpha: 1.0)
+        })
+    }
 }
 
 // MARK: - App Theme: Button Surface

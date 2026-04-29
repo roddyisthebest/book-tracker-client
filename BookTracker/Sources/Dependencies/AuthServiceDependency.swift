@@ -18,7 +18,9 @@ private enum AuthServiceKey: DependencyKey {
         googleSignIn: { throw Unimplemented("unimplemented") },
         signOut: {},
         currentSession: { nil },
-        authStateChanges: { AsyncStream { $0.finish() } }
+        authStateChanges: { AsyncStream { $0.finish() } },
+        deleteMyAppData: { .success(true) },
+        deleteAccountOnServer: { .success(()) }
     )
 }
 

@@ -169,6 +169,9 @@ struct CollectionListFeature {
                 state.destination = .viewCollectionDetail(CollectionDetailFeature.State(collection: collection))
                 return .none
             case .deleteButtonTapped(let id):
+                guard state.collections.first(where: { $0.id == id })?.type == .custom else {
+                    return .none
+                }
                 state.destination = .alert(.deleteConfirmation(id: id))
                 return .none
             case .updateButtonTapped(let id):

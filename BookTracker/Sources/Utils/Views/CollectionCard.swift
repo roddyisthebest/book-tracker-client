@@ -5,6 +5,7 @@
 //  Created by 배성연 on 2/11/26.
 //
 
+import Kingfisher
 import SwiftUI
 
 struct CollectionCard: View {
@@ -23,14 +24,7 @@ struct CollectionCard: View {
     }
 
     private var titleText: String {
-        if let name = summary.name, !name.isEmpty {
-            return name
-        }
-        return String(localized: "unnamed_collection")
-    }
-
-    private var countText: String {
-        String(format: String(localized: "book_count %@"), "\(summary.bookCount)")
+        summary.displayName
     }
 
     private var previewBooks: [CollectionPreviewBook] {
@@ -42,17 +36,11 @@ struct CollectionCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 previewArea
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(titleText)
-                        .font(.headline)
-                        .foregroundStyle(Color.appPrimaryText)
-                        .lineLimit(1)
-
-                    Text(countText)
-                        .font(.subheadline)
-                        .foregroundStyle(Color.appSecondaryText)
-                }
-                .padding(.top, 8)
+                Text(titleText)
+                    .font(.headline)
+                    .foregroundStyle(Color.appPrimaryText)
+                    .lineLimit(1)
+                    .padding(.top, 8)
             }
             .padding(15)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -62,10 +50,12 @@ struct CollectionCard: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label("delete", systemImage: "trash")
+            if summary.type == .custom {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("delete", systemImage: "trash")
+                }
             }
         }
     }
@@ -118,25 +108,24 @@ struct CollectionCard: View {
 
     @ViewBuilder
     private func remoteBookImage(urlString: String?) -> some View {
-        let url = urlString.flatMap(URL.init(string:))
-
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .empty:
-                imagePlaceholder(systemName: "book.closed")
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
-            case .failure:
-                imagePlaceholder(systemName: "photo")
-            @unknown default:
-                imagePlaceholder(systemName: "photo")
-            }
+        if let urlString, let url = URL(string: urlString) {
+            KFImage(url)
+                .placeholder {
+                    imagePlaceholder(systemName: "book.closed")
+                }
+                .retry(maxCount: 2, interval: .seconds(1))
+                .fade(duration: 0.2)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        } else {
+            imagePlaceholder(systemName: "book.closed")
+                .frame(maxWidth: .infinity)
+                .frame(height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 80)
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
     private func imagePlaceholder(systemName: String) -> some View {
@@ -158,11 +147,10 @@ struct CollectionCard: View {
             id: UUID(),
             userId: UUID(),
             name: "구매한 책",
-            isDefault: false,
+            type: .custom,
             createdAt: Date(),
             description: "아직 책이 없는 컬렉션",
-            previewBooks: [],
-            bookCount: 0
+            previewBooks: []
         ),
         onTap: {},
         onDelete: {}
@@ -178,7 +166,7 @@ struct CollectionCard: View {
             id: UUID(),
             userId: UUID(),
             name: "읽는 중",
-            isDefault: false,
+            type: .custom,
             createdAt: Date(),
             description: "한 권만 있는 컬렉션",
             previewBooks: [
@@ -187,8 +175,7 @@ struct CollectionCard: View {
                     title: "Atomic Habits",
                     thumbnail: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop"
                 )
-            ],
-            bookCount: 0
+            ]
         ),
         onTap: {},
         onDelete: {}
@@ -204,7 +191,7 @@ struct CollectionCard: View {
             id: UUID(),
             userId: UUID(),
             name: "추가한 책",
-            isDefault: false,
+            type: .custom,
             createdAt: Date(),
             description: "대표 책 2권",
             previewBooks: [
@@ -218,8 +205,7 @@ struct CollectionCard: View {
                     title: "Book B",
                     thumbnail: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=600&auto=format&fit=crop"
                 )
-            ],
-            bookCount: 0
+            ]
         ),
         onTap: {},
         onDelete: {}
@@ -236,11 +222,10 @@ struct CollectionCard: View {
                 id: UUID(),
                 userId: UUID(),
                 name: "빈 컬렉션",
-                isDefault: false,
+                type: .custom,
                 createdAt: Date(),
                 description: nil,
-                previewBooks: [],
-                bookCount: 0
+                previewBooks: []
             ),
             onTap: {},
             onDelete: {}
@@ -252,7 +237,7 @@ struct CollectionCard: View {
                 id: UUID(),
                 userId: UUID(),
                 name: "보관함",
-                isDefault: false,
+                type: .purchase,
                 createdAt: Date(),
                 description: nil,
                 previewBooks: [
@@ -266,8 +251,7 @@ struct CollectionCard: View {
                         title: "Book B",
                         thumbnail: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop"
                     )
-                ],
-                bookCount: 0
+                ]
             ),
             onTap: {},
             onDelete: {}

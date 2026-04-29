@@ -9,7 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct DataManageView: View {
-    @Bindable var store: StoreOf<DataManageFeature>
+    let store: StoreOf<DataManageFeature>
 
     private var mainContent: some View {
         ScrollView {
@@ -97,7 +97,6 @@ struct DataManageView: View {
                         .onDisappear { store.send(.shareDismissed) }
                 }
             }
-            .alert(store: store.scope(state: \.$alert, action: \.alert))
     }
 }
 

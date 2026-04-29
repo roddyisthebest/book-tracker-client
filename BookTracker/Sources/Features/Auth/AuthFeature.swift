@@ -5,6 +5,7 @@
 //  Created by 배성연 on 2/2/26.
 //
 
+import AuthenticationServices
 import ComposableArchitecture
 import Foundation
 
@@ -28,8 +29,8 @@ struct AuthFeature {
         case snsLoginButtonTapped(SnsLoginMethod)
         case emailLoginButtonTapped
 
-        case appleLoginFailed
-        case googleLoginFailed
+        case appleLoginFailed(userCancelled: Bool)
+        case googleLoginFailed(userCancelled: Bool)
         case alert(PresentationAction<Alert>)
 
         enum Alert: Equatable {}
@@ -56,9 +57,11 @@ struct AuthFeature {
                             let payload = try await appleAuthClient.signIn()
                             _ = try await authService.appleSignIn(payload.idToken, payload.nonce)
                             await send(.delegate(.login))
+                        } catch let error as ASAuthorizationError where error.code == .canceled {
+                            await send(.appleLoginFailed(userCancelled: true))
                         } catch {
                             print(error)
-                            await send(.appleLoginFailed)
+                            await send(.appleLoginFailed(userCancelled: false))
                         }
                     }
                     .cancellable(id: "apple-login", cancelInFlight: true)
@@ -69,9 +72,13 @@ struct AuthFeature {
                         do {
                             _ = try await authService.googleSignIn()
                             await send(.delegate(.login))
+                        } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+                            await send(.googleLoginFailed(userCancelled: true))
+                        } catch is CancellationError {
+                            await send(.googleLoginFailed(userCancelled: true))
                         } catch {
                             print(error)
-                            await send(.googleLoginFailed)
+                            await send(.googleLoginFailed(userCancelled: false))
                         }
                     }
                 }
@@ -90,14 +97,17 @@ struct AuthFeature {
                 return .send(.delegate(.login))
             case .path:
                 return .none
-            case .appleLoginFailed:
+            case .appleLoginFailed(let userCancelled):
                 state.isAppleLoginLoading = false
-                state.alert = .showErrorMsg()
-
+                if !userCancelled {
+                    state.alert = .showErrorMsg()
+                }
                 return .none
-            case .googleLoginFailed:
+            case .googleLoginFailed(let userCancelled):
                 state.isGoogleLoginLoading = false
-                state.alert = .showErrorMsg()
+                if !userCancelled {
+                    state.alert = .showErrorMsg()
+                }
                 return .none
             }
         }

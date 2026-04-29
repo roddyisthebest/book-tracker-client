@@ -17,6 +17,8 @@ struct AuthService {
     var signOut: () async throws -> Void
     var currentSession: () async throws -> Session?
     var authStateChanges: () -> AsyncStream<(AuthChangeEvent, Session?)>
+    var deleteMyAppData: () async -> Result<Bool, AppError>
+    var deleteAccountOnServer: () async -> Result<Void, AppError>
 }
 
 extension AuthService {
@@ -69,6 +71,44 @@ extension AuthService {
                     continuation.onTermination = { _ in
                         task.cancel()
                     }
+                }
+            },
+            deleteMyAppData: {
+                do {
+                    _ = try await client
+                        .rpc("delete_my_app_data")
+                        .execute()
+                    return .success(true)
+                } catch {
+                    return .failure(.unknown(message: error.localizedDescription))
+                }
+            },
+            deleteAccountOnServer: {
+                do {
+                    let session = try await client.auth.session
+                    let accessToken = session.accessToken
+
+                    guard let baseURL = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
+                          let url = URL(string: "\(baseURL)/functions/v1/delete-account") else {
+                        return .failure(.unknown(message: "Invalid Supabase URL"))
+                    }
+
+                    var request = URLRequest(url: url)
+                    request.httpMethod = "POST"
+                    request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+                    let (_, response) = try await URLSession.shared.data(for: request)
+
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode) else {
+                        let statusCode = (response as? HTTPURLResponse)?.statusCode
+                        return .failure(.function(status: statusCode, message: "Failed to delete account"))
+                    }
+
+                    return .success(())
+                } catch {
+                    return .failure(AppError.map(error))
                 }
             }
         )

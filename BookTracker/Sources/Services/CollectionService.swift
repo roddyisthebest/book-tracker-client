@@ -28,6 +28,10 @@ enum CollectionServiceError: Error, LocalizedError {
 
 // MARK: - Domain Models
 
+enum CollectionType: String, Codable, Equatable, Hashable, CaseIterable {
+    case custom, purchase, rental
+}
+
 struct CollectionPreviewBook: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     let title: String?
@@ -38,20 +42,29 @@ struct UserCollectionSummary: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     let userId: UUID?
     var name: String?
-    let isDefault: Bool
+    let type: CollectionType
     let createdAt: Date?
     var description: String?
     let previewBooks: [CollectionPreviewBook]
-    let bookCount: Int
 }
 
 struct UserCollection: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     let userId: UUID?
     let name: String?
-    let isDefault: Bool
+    let type: CollectionType
     let createdAt: Date?
     let description: String?
+
+    var displayName: String {
+        switch type {
+        case .purchase, .rental:
+            return type.defaultDisplayName
+        case .custom:
+            if let name, !name.isEmpty { return name }
+            return type.defaultDisplayName
+        }
+    }
 }
 
 struct CollectionItem: Identifiable, Codable, Hashable {
@@ -64,13 +77,11 @@ struct CollectionItem: Identifiable, Codable, Hashable {
 struct NewCollection {
     var name: String?
     var description: String?
-    var isDefault: Bool
 }
 
 struct CollectionPatch {
     var name: String? = nil
     var description: String? = nil
-    var isDefault: Bool? = nil
 }
 
 // MARK: - Database Row Models
@@ -85,21 +96,19 @@ private struct CollectionSummaryRow: Decodable {
     let id: UUID
     let userId: UUID?
     let name: String?
-    let isDefault: Bool?
+    let type: String?
     let createdAt: Date?
     let description: String?
-    let previewBooks: [CollectionPreviewBookRow]?
-    let bookCount: Int?
+    let books: [CollectionPreviewBookRow]?
 
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"
         case name
-        case isDefault = "is_default"
+        case type
         case createdAt = "created_at"
         case description
-        case previewBooks = "preview_books"
-        case bookCount = "book_count"
+        case books
     }
 }
 
@@ -127,7 +136,7 @@ private struct CollectionsTableRow: Decodable {
     let id: UUID
     let userId: UUID?
     let name: String?
-    let isDefault: Bool?
+    let type: String?
     let createdAt: Date?
     let description: String?
 
@@ -135,7 +144,7 @@ private struct CollectionsTableRow: Decodable {
         case id
         case userId = "user_id"
         case name
-        case isDefault = "is_default"
+        case type
         case createdAt = "created_at"
         case description
     }
@@ -144,30 +153,15 @@ private struct CollectionsTableRow: Decodable {
 private struct CollectionsInsertRow: Encodable {
     let name: String?
     let description: String?
-    let isDefault: Bool?
-
-    enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case isDefault = "is_default"
-    }
 }
 
 private struct CollectionsUpdateRow: Encodable {
     let name: String?
     let description: String?
-    let isDefault: Bool?
-
-    enum CodingKeys: String, CodingKey {
-        case name
-        case description
-        case isDefault = "is_default"
-    }
 
     init(from patch: CollectionPatch) {
         self.name = patch.name
         self.description = patch.description
-        self.isDefault = patch.isDefault
     }
 }
 
@@ -246,13 +240,11 @@ private struct CollectionBookRow: Decodable {
 private struct CreateCollectionWithBooksParams: Encodable {
     let pName: String?
     let pDescription: String?
-    let pIsDefault: Bool
     let pBookIds: [UUID]?
 
     enum CodingKeys: String, CodingKey {
         case pName = "p_name"
         case pDescription = "p_description"
-        case pIsDefault = "p_is_default"
         case pBookIds = "p_book_ids"
     }
 }
@@ -295,7 +287,7 @@ private extension CollectionsTableRow {
             id: id,
             userId: userId,
             name: name,
-            isDefault: isDefault ?? false,
+            type: CollectionType(rawValue: type ?? "custom") ?? .custom,
             createdAt: createdAt,
             description: description
         )
@@ -317,7 +309,6 @@ private extension CollectionsInsertRow {
     init(from new: NewCollection) {
         self.name = new.name
         self.description = new.description
-        self.isDefault = new.isDefault
     }
 }
 
@@ -337,11 +328,10 @@ private extension CollectionSummaryRow {
             id: id,
             userId: userId,
             name: name,
-            isDefault: isDefault ?? false,
+            type: CollectionType(rawValue: type ?? "custom") ?? .custom,
             createdAt: createdAt,
             description: description,
-            previewBooks: (previewBooks ?? []).map { $0.toDomain() },
-            bookCount: bookCount ?? 0
+            previewBooks: (books ?? []).map { $0.toDomain() }
         )
     }
 }
@@ -352,7 +342,7 @@ extension UserCollectionSummary {
             id: id,
             userId: userId,
             name: name,
-            isDefault: isDefault,
+            type: type,
             createdAt: createdAt,
             description: description
         )
@@ -361,18 +351,16 @@ extension UserCollectionSummary {
 
 extension UserCollection {
     func toSummary(
-        previewBooks: [CollectionPreviewBook] = [],
-        bookCount: Int = 0
+        previewBooks: [CollectionPreviewBook] = []
     ) -> UserCollectionSummary {
         UserCollectionSummary(
             id: id,
             userId: userId,
             name: name,
-            isDefault: isDefault,
+            type: type,
             createdAt: createdAt,
             description: description,
-            previewBooks: previewBooks,
-            bookCount: bookCount
+            previewBooks: previewBooks
         )
     }
 
@@ -380,7 +368,7 @@ extension UserCollection {
         UserCollection(id: UUID(),
                        userId: UUID(),
                        name: "",
-                       isDefault: false, createdAt: Date(),
+                       type: .custom, createdAt: Date(),
                        description: "")
     }
 }
@@ -391,12 +379,33 @@ extension UserCollectionSummary {
             id: collection.id,
             userId: collection.userId,
             name: collection.name,
-            isDefault: collection.isDefault,
+            type: collection.type,
             createdAt: collection.createdAt,
             description: collection.description,
-            previewBooks: previewBooks,
-            bookCount: bookCount
+            previewBooks: previewBooks
         )
+    }
+
+    var displayName: String {
+        switch type {
+        case .purchase, .rental:
+            return type.defaultDisplayName
+        case .custom:
+            if let name, !name.isEmpty { return name }
+            return type.defaultDisplayName
+        }
+    }
+
+    var isEditable: Bool { type == .custom }
+}
+
+extension CollectionType {
+    var defaultDisplayName: String {
+        switch self {
+        case .custom: return String(localized: "unnamed_collection")
+        case .purchase: return String(localized: "collection_purchased_books")
+        case .rental: return String(localized: "collection_rented_books")
+        }
     }
 }
 
@@ -531,7 +540,6 @@ extension CollectionService {
                     let params = CreateCollectionWithBooksParams(
                         pName: new.name,
                         pDescription: new.description,
-                        pIsDefault: new.isDefault,
                         pBookIds: uniqueIds.isEmpty ? nil : uniqueIds
                     )
 

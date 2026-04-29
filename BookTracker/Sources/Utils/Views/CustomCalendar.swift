@@ -139,8 +139,8 @@ public extension CustomCalendar where DayContent == Text {
     init(calendar: Calendar = .current, monthDate: Binding<Date>, selection: Binding<Date?>? = nil, showsHeader: Bool = true) {
         self.init(calendar: calendar, monthDate: monthDate, selection: selection, showsHeader: showsHeader) { date in
             let day = calendar.component(.day, from: date)
-            return Text("\(day)")
-                .foregroundStyle(Color.appPrimaryText)
+            Text("\(day)")
+                .foregroundColor(Color.appPrimaryText)
         }
     }
 }
@@ -156,9 +156,9 @@ public extension CustomCalendar where DayContent == Text {
                     let day = calendar.component(.day, from: date)
                     // 예시: 주말은 아이콘, 평일은 숫자
                     if calendar.isDateInWeekend(date) {
-                        return AnyView(Image(systemName: "book.fill").foregroundStyle(.cyan))
+                        AnyView(Image(systemName: "book.fill").foregroundStyle(.cyan))
                     } else {
-                        return AnyView(Text("\(day)").foregroundStyle(.white))
+                        AnyView(Text("\(day)").foregroundStyle(.white))
                     }
                 }
                 .frame(maxWidth: .infinity)

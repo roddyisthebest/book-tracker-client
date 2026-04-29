@@ -111,7 +111,7 @@ struct BookDetailView: View {
                             }.padding(.horizontal, 15).padding(.vertical, 10)
                             Divider().background(Color.appSeparator)
                             HStack {
-                                Button(action: {}, label: {
+                                Button(action: { store.send(.viewDetailButtonTapped) }, label: {
                                     Text("view_detail")
                                     Image(systemName: "chevron.forward")
                                 })
@@ -273,6 +273,11 @@ struct BookDetailView: View {
             }
             .sheet(item: $store.scope(state: \.destination?.formBook, action: \.destination.formBook)) { formBookStore in
                 BookFormView(store: formBookStore)
+            }
+            .sheet(item: $store.scope(state: \.destination?.bookInfo, action: \.destination.bookInfo)) { bookInfoStore in
+                NavigationStack {
+                    BookInfoView(store: bookInfoStore)
+                }
             }
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .task {

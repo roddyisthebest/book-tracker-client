@@ -17,20 +17,17 @@ struct StatView: View {
                 Button(action: {
                     store.send(.navigateButtonTapped(.readingReport))
                 }) {
-                    HStack(spacing: 20) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            HStack {
-                                Rectangle().fill(Color.appSurface)
-                                    .frame(width: 30, height: 30).cornerRadius(10).overlay {
-                                        Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
-                                    }
-                                Text("reading_report").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
-                                Spacer()
-                            }
-                            Text("reading_report_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText)
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack {
+                            Rectangle().fill(Color.appSurface)
+                                .frame(width: 30, height: 30).cornerRadius(10).overlay {
+                                    Image(systemName: "text.page.fill").foregroundStyle(Color(hex: "#72FFD2", default: .accentColor)).font(.caption)
+                                }
+                            Text("reading_report").font(.title2).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                            Spacer()
+                            Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
                         }
-                        Image(systemName: "chevron.right").fontWeight(.semibold).foregroundStyle(Color.appSecondaryText).font(.system(size: 16))
-
+                        Text("reading_report_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
                     }.padding()
                 }
 

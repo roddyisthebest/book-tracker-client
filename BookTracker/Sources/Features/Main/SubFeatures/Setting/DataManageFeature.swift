@@ -14,7 +14,6 @@ struct DataManageFeature {
 
     @ObservableState
     struct State: Equatable {
-        @Presents var alert: AlertState<Action.Alert>?
         var isSharePresented: Bool = false
         var isExporting: Bool = false
         var exportFilePath: String? = nil
@@ -25,10 +24,6 @@ struct DataManageFeature {
         case csvExportButtonTapped
         case csvExportResponse(Result<String, AppError>)
         case dataResetButtonTapped
-        case alert(PresentationAction<Alert>)
-        enum Alert: Equatable {
-            case confirmResetData
-        }
     }
 
     var body: some Reducer<State, Action> {
@@ -65,25 +60,7 @@ struct DataManageFeature {
                 state.isExporting = false
                 return .none
             case .dataResetButtonTapped:
-                state.alert = .confirmResetData()
                 return .none
-            case .alert(.presented(.confirmResetData)):
-                return .none
-            case .alert:
-                return .none
-            }
-        }
-        .ifLet(\.$alert, action: \.alert)
-    }
-}
-
-extension AlertState where Action == DataManageFeature.Action.Alert {
-    static func confirmResetData() -> Self {
-        Self {
-            TextState("confirm_data_reset")
-        } actions: {
-            ButtonState(role: .destructive, action: .confirmResetData) {
-                TextState("reset")
             }
         }
     }

@@ -17,51 +17,7 @@ struct SettingView: View {
             Button(action: {
                 store.send(.navigateButtonTapped(.myInfo))
             }) {
-                if store.isFetching {
-                    HStack {
-                        Circle()
-                            .fill(Color.appSurface)
-                            .frame(width: 60, height: 60)
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.appSurface)
-                                .frame(width: 120, height: 20)
-
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.appSurface)
-                                .frame(width: 80, height: 16)
-                        }
-
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    .redacted(reason: .placeholder)
-
-                } else if store.isError {
-                    VStack(spacing: 10) {
-                        Text("profile_load_failed")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Color.appPrimaryText)
-
-                        Button {
-                            store.send(.onRefresh)
-                        } label: {
-                            Text("retry")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.appPrimaryText)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.appSurface)
-                                )
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-
-                } else if let profile = store.profile {
+                if let profile = store.profile {
                     HStack {
                         Circle()
                             .fill(Color.appSurface)
@@ -108,27 +64,25 @@ struct SettingView: View {
                     .padding(.horizontal)
 
                 } else {
-                    VStack(spacing: 10) {
-                        Text("no_profile_info")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Color.appPrimaryText)
+                    HStack {
+                        Circle()
+                            .fill(Color.appSurface)
+                            .frame(width: 60, height: 60)
 
-                        Button {
-                            store.send(.onRefresh)
-                        } label: {
-                            Text("refresh")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.appPrimaryText)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.appSurface)
-                                )
+                        VStack(alignment: .leading, spacing: 6) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.appSurface)
+                                .frame(width: 120, height: 20)
+
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.appSurface)
+                                .frame(width: 80, height: 16)
                         }
+
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity)
                     .padding(.horizontal)
+                    .redacted(reason: .placeholder)
                 }
 
             }.padding(.bottom, 10)
@@ -172,7 +126,9 @@ struct SettingView: View {
                         Text("app_usage_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
 
                         VStack(spacing: 18) {
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.openPageButtonTapped(.userGuide))
+                            }) {
                                 HStack(spacing: 10) {
                                     Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
@@ -187,7 +143,9 @@ struct SettingView: View {
                                 }
                             }
 
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.openPageButtonTapped(.faq))
+                            }) {
                                 HStack(spacing: 10) {
                                     Rectangle().fill(Color.appSurface)
                                         .frame(width: 30, height: 30).cornerRadius(10).overlay {
@@ -223,7 +181,7 @@ struct SettingView: View {
 
                                 HStack(spacing: 10) {
                                     Text("app_version").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
-                                    Text("v 1.05 (10)").font(.footnote).fontWeight(.semibold).foregroundStyle(.gray)
+                                    Text(store.versionDisplay).font(.footnote).fontWeight(.semibold).foregroundStyle(.gray)
                                 }
                                 Spacer()
                             }
@@ -234,13 +192,10 @@ struct SettingView: View {
                                         Image(systemName: "info.circle.fill").foregroundStyle(.gray).font(.system(size: 16))
                                     }
                                 VStack(alignment: .leading, spacing: 3) {
-                                    HStack(spacing: 10) {
-                                        Text("contact_feedback").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
-                                        Button(action: {}) {
-                                            Text("jessebae0123@gmail.com").font(.footnote).fontWeight(.semibold)
-                                        }
+                                    Text("contact_feedback").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
+                                    Button(action: {}) {
+                                        Text("jessebae0123@gmail.com").font(.footnote).fontWeight(.semibold)
                                     }
-
                                     Text("contact_feedback_description").font(.system(size: 15, weight: .semibold)).foregroundStyle(Color.appSecondaryText).lineLimit(1)
                                 }.padding(.top, 2.5)
 
@@ -260,7 +215,9 @@ struct SettingView: View {
                         Text("terms_and_policies").font(.title2).fontWeight(.bold).lineLimit(1)
 
                         VStack(spacing: 18) {
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.navigateButtonTapped(.termsOfService))
+                            }) {
                                 HStack(spacing: 10) {
                                     HStack {
                                         Text("terms_of_service").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
@@ -270,7 +227,9 @@ struct SettingView: View {
                                 }
                             }
 
-                            Button(action: {}) {
+                            Button(action: {
+                                store.send(.navigateButtonTapped(.privacyPolicy))
+                            }) {
                                 HStack(spacing: 10) {
                                     HStack {
                                         Text("privacy_policy").font(.title3).fontWeight(.bold).foregroundStyle(Color.appPrimaryText)
@@ -318,6 +277,14 @@ struct SettingView: View {
             if let store = destinationStore.scope(state: \.myInfo, action: \.myInfo) {
                 MyInfoView(store: store)
             }
+        case .resetData:
+            if let store = destinationStore.scope(state: \.resetData, action: \.resetData) {
+                ResetDataView(store: store)
+            }
+        case .termsOfService:
+            TermsOfServiceView()
+        case .privacyPolicy:
+            PrivacyPolicyView()
         }
     }
 
@@ -349,8 +316,26 @@ struct SettingView: View {
                 }
             }
         }
-        .onAppear { store.send(.onAppear) }
         .alert($store.scope(state: \.alert, action: \.alert))
+        .sheet(isPresented: Binding(
+            get: { store.safariURL != nil },
+            set: { if !$0 { store.send(.safariDismissed) } }
+        )) {
+            if let url = store.safariURL {
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
+        }
+        .onAppear { store.send(.onAppear) }
+        .disabled(store.isDeletingAccount)
+        .overlay {
+            if store.isDeletingAccount {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    ProgressView().tint(.white)
+                }
+            }
+        }
     }
 }
 

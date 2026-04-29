@@ -11,6 +11,8 @@ struct DoneBooksCalendarFeature {
         var isLoading: Bool = false
         var isError: Bool = false
         var thumbnailsByDate: [Date: [BookCalendarSummary]]?
+
+        @Presents var alert: AlertState<Action.Alert>?
     }
 
     enum Action: Equatable, BindableAction {
@@ -18,6 +20,10 @@ struct DoneBooksCalendarFeature {
         case onAppear
         case loadData
         case loadDataResponse(Result<[Date: [BookCalendarSummary]], AppError>)
+        case saveSuccess
+        case saveFailed
+        case alert(PresentationAction<Alert>)
+        enum Alert: Equatable {}
     }
 
     var body: some Reducer<State, Action> {
@@ -51,7 +57,38 @@ struct DoneBooksCalendarFeature {
                     state.isError = true
                 }
                 return .none
+            case .saveSuccess:
+                state.alert = .saveSuccess()
+                return .none
+            case .saveFailed:
+                state.alert = .saveFailed()
+                return .none
+            case .alert:
+                return .none
             }
+        }
+        .ifLet(\.$alert, action: \.alert)
+    }
+}
+
+extension AlertState where Action == DoneBooksCalendarFeature.Action.Alert {
+    static func saveSuccess() -> Self {
+        Self {
+            TextState("save_success")
+        } actions: {
+            ButtonState(role: .cancel) { TextState("confirm") }
+        } message: {
+            TextState("save_success_message")
+        }
+    }
+
+    static func saveFailed() -> Self {
+        Self {
+            TextState("save_failed")
+        } actions: {
+            ButtonState(role: .cancel) { TextState("confirm") }
+        } message: {
+            TextState("save_failed_message")
         }
     }
 }

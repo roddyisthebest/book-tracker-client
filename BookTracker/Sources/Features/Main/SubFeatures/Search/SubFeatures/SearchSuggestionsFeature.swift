@@ -29,6 +29,7 @@ struct SearchSuggestionsFeature {
         case searchTapped(text: String)
         case deleteButtonTapped(id: String)
         case onAppear
+        case cancelLoading
 
         case loadSearchKeyword
         case loadSearchKeywordResponse(Result<[SearchKeyword], AppError>)
@@ -41,6 +42,8 @@ struct SearchSuggestionsFeature {
             case setKeyword(String)
         }
     }
+
+    private enum CancelID { case loadKeywords, loadRecents }
 
     var body: some Reducer<State, Action> {
         Reduce<State, Action> {
@@ -64,6 +67,13 @@ struct SearchSuggestionsFeature {
                     return .run { _ in
                         try await searchHistory.delete(id)
                     }
+                case .cancelLoading:
+                    state.isSearchKeywordsLoading = false
+                    state.isSearchesLoading = false
+                    return .merge(
+                        .cancel(id: CancelID.loadKeywords),
+                        .cancel(id: CancelID.loadRecents)
+                    )
                 case .loadSearchKeyword:
                     state.isSearchKeywordsLoading = true
                     return .run {
@@ -71,6 +81,7 @@ struct SearchSuggestionsFeature {
                         let result = await searchKeywordService.list(5)
                         await send(.loadSearchKeywordResponse(result))
                     }
+                    .cancellable(id: CancelID.loadKeywords, cancelInFlight: true)
                 case .loadRecents:
                     state.isSearchesLoading = true
                     return .run {
@@ -83,6 +94,7 @@ struct SearchSuggestionsFeature {
                             await send(.loadRecentsResponse(.failure(appError)))
                         }
                     }
+                    .cancellable(id: CancelID.loadRecents, cancelInFlight: true)
                 case .onAppear:
                     return .merge(
                         .send(.loadRecents),

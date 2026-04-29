@@ -9,7 +9,7 @@ import Foundation
 
 struct Collection: Equatable, Identifiable {
     let id: UUID
-    let isDefault: Bool
+    let type: CollectionType
     let title: String
     let description: String
 }

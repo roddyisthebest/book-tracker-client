@@ -37,26 +37,24 @@ struct AppView: View {
             }
 
         case .launching:
-            VStack(spacing: 16) {
-                Image(systemName: "books.vertical.fill")
-                    .font(.system(size: 40))
-                    .foregroundStyle(Color.accentColor)
-                ProgressView()
-                    .tint(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.appBackground)
-            .task {
-                store.send(.onAppear)
-            }
+            ProgressView()
+                .tint(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appBackground)
+                .task {
+                    store.send(.onAppear)
+                }
 
         case .signingOut:
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
+                Image("Transparent_AppIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120)
                 ProgressView()
-                    .scaleEffect(1.1)
                     .tint(.secondary)
                 Text("signing_out")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.appSecondaryText)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

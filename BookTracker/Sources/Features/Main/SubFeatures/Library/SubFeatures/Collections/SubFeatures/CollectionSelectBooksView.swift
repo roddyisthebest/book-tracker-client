@@ -101,11 +101,23 @@ struct CollectionSelectBooksView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .navigationTitle("purchased_books")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle(store.collection.displayName)
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .navigationSubtitle(String(localized: "edit_books_subtitle"))
-            .toolbar { toolbarContent }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text(store.collection.displayName)
+                            .font(.headline)
+                        if store.collection.type == .custom, let desc = store.collection.description, !desc.isEmpty {
+                            Text(desc)
+                                .font(.caption)
+                                .foregroundStyle(Color.appSecondaryText)
+                        }
+                    }
+                }
+                toolbarContent
+            }
             .task {
                 await store.send(.onAppear).finish()
             }
