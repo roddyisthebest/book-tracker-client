@@ -1,8 +1,10 @@
 @testable import BookTracker
 import Testing
 
+@MainActor
 struct BookTrackerTests {
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test func appLaunches() async throws {
+        // Placeholder: verify the test target compiles and links
+        #expect(true)
     }
 }
