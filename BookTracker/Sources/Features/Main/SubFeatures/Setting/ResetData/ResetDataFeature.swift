@@ -12,7 +12,9 @@ import Foundation
 struct ResetDataFeature {
     @Dependency(\.searchHistory) var searchHistory
     @Dependency(\.localReceiptService) var localReceiptService
+    @Dependency(\.localCustomBookService) var localCustomBookService
     @Dependency(\.authService) var authService
+    @Shared(.userProfile) var profile: MyProfile?
 
     @ObservableState
     struct State: Equatable {
@@ -55,10 +57,12 @@ struct ResetDataFeature {
 
             case .confirmDeleteAppData:
                 state.isAppDataDeleting = true
-                return .run { [searchHistory, localReceiptService] send in
+                let userId = profile?.id.uuidString ?? ""
+                return .run { [searchHistory, localReceiptService, localCustomBookService] send in
                     do {
-                        try await searchHistory.clearAll()
-                        let receiptResult = await localReceiptService.clearAll()
+                        try await searchHistory.clearAll(userId)
+                        let receiptResult = await localReceiptService.clearAll(userId)
+                        _ = await localCustomBookService.clearAll(userId)
                         switch receiptResult {
                         case .success:
                             await send(.deleteAppDataResponse(.success(true)))

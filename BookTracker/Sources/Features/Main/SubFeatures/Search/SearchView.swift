@@ -59,6 +59,9 @@ struct SearchView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(isSheet ? Color.appSurface : Color.appBackground)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
         .sheet(
             item: $store.scope(state: \.detailSheet, action: \.detailSheet)
         ) { store in
@@ -75,6 +78,14 @@ struct SearchView: View {
                         Label("back", systemImage: "chevron.left")
                     }
                 }
+            }
+        }
+        .sheet(item: $store.scope(state: \.customBookForm, action: \.customBookForm)) { customBookStore in
+            CustomBookFormView(store: customBookStore)
+        }
+        .sheet(item: $store.scope(state: \.customBookList, action: \.customBookList)) { listStore in
+            NavigationStack {
+                CustomBookListView(store: listStore)
             }
         }
     }

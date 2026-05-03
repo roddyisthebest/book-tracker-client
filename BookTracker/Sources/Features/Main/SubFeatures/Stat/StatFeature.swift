@@ -9,6 +9,8 @@ import ComposableArchitecture
 
 @Reducer
 struct StatFeature {
+    @Dependency(\.date) var date
+
     @ObservableState
     struct State: Equatable {
         var path = StackState<Path.State>()
@@ -30,13 +32,14 @@ struct StatFeature {
             state, action in
             switch action {
             case .navigateButtonTapped(let path):
+                let now = date.now
                 switch path {
                 case .doneBookCalandar:
-                    state.path.append(.doneBookCalandar(DoneBooksCalendarFeature.State()))
+                    state.path.append(.doneBookCalandar(DoneBooksCalendarFeature.State(date: now)))
                 case .readingReport:
-                    state.path.append(.readingReport(ReadingReportFeature.State()))
+                    state.path.append(.readingReport(ReadingReportFeature.State(date: now)))
                 case .readingTrakcer:
-                    state.path.append(.readingCalendar(ReadingCalendarFeature.State()))
+                    state.path.append(.readingCalendar(ReadingCalendarFeature.State(date: now)))
                 }
 
                 return .none

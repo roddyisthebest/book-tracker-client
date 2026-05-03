@@ -92,6 +92,9 @@ struct CollectionFormView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
             .background(Color.appSurface)
+            .onTapGesture {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
             .navigationTitle(store.isEditing ? "collection_edit" : "collection_create")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

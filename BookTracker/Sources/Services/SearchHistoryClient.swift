@@ -5,10 +5,10 @@ import Foundation
 // MARK: - Public Client Interface
 
 struct SearchHistoryClient {
-    var fetchRecent: (_ limit: Int) async throws -> [Search]
-    var add: (_ text: String, _ createdAt: Date) async throws -> Void
-    var delete: (_ id: String) async throws -> Void
-    var clearAll: () async throws -> Void
+    var fetchRecent: (_ userId: String, _ limit: Int) async throws -> [Search]
+    var add: (_ userId: String, _ text: String, _ createdAt: Date) async throws -> Void
+    var delete: (_ userId: String, _ id: String) async throws -> Void
+    var clearAll: (_ userId: String) async throws -> Void
 }
 
 // MARK: - Live Implementation (Core Data)
@@ -24,9 +24,10 @@ extension SearchHistoryClient {
         }
 
         return Self(
-            fetchRecent: { limit in
+            fetchRecent: { userId, limit in
                 try await context.perform { () -> [Search] in
                     let request = entityFetchRequest()
+                    request.predicate = NSPredicate(format: "userId == %@", userId)
                     request.fetchLimit = limit
                     request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
                     let results = try context.fetch(request)
@@ -40,12 +41,12 @@ extension SearchHistoryClient {
                     }
                 }
             },
-            add: { text, createdAt in
+            add: { userId, text, createdAt in
                 try await context.perform {
                     // Upsert by id: use the text itself as id for uniqueness
                     let id = text
                     let request = entityFetchRequest()
-                    request.predicate = NSPredicate(format: "id == %@", id)
+                    request.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, id)
                     request.fetchLimit = 1
                     let existing = try context.fetch(request).first
                     let obj: NSManagedObject
@@ -55,6 +56,7 @@ extension SearchHistoryClient {
                         let entity = NSEntityDescription.entity(forEntityName: SearchHistoryCoreDataStack.entityName, in: context)!
                         obj = NSManagedObject(entity: entity, insertInto: context)
                         obj.setValue(id, forKey: "id")
+                        obj.setValue(userId, forKey: "userId")
                     }
                     obj.setValue(text, forKey: "text")
                     obj.setValue(createdAt, forKey: "createdAt")
@@ -62,10 +64,10 @@ extension SearchHistoryClient {
                     try context.obtainPermanentIDs(for: [obj])
                 }
             },
-            delete: { id in
+            delete: { userId, id in
                 try await context.perform {
                     let request = entityFetchRequest()
-                    request.predicate = NSPredicate(format: "id == %@", id)
+                    request.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, id)
                     request.fetchLimit = 1
                     if let obj = try context.fetch(request).first {
                         context.delete(obj)
@@ -73,18 +75,19 @@ extension SearchHistoryClient {
                     }
                 }
             },
-            clearAll: {
+            clearAll: { userId in
                 try await context.perform {
-                    let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: SearchHistoryCoreDataStack.entityName)
-                    let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetch)
-                    deleteRequest.resultType = .resultTypeObjectIDs
-                    let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
-                    if let objectIDs = result?.result as? [NSManagedObjectID] {
-                        let changes = [NSDeletedObjectsKey: objectIDs]
-                        NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+                    let request = entityFetchRequest()
+                    request.predicate = NSPredicate(format: "userId == %@", userId)
+                    let results = try context.fetch(request)
+                    for obj in results {
+                        context.delete(obj)
+                    }
+                    if context.hasChanges {
+                        try context.save()
                     }
                 }
-            }
+            },
         )
     }
 }

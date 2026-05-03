@@ -10,12 +10,14 @@ import SwiftUI
 
 @Reducer
 struct HomeFeature {
-    private var todayKey: Date {
-        Calendar.current.startOfDay(for: Date())
-    }
-
+    @Dependency(\.date) var date
     @Dependency(\.readingRecordService) var readingRecordService
     @Dependency(\.localReceiptService) var localReceiptService
+    @Shared(.userProfile) var profile: MyProfile?
+
+    private var todayKey: Date {
+        Calendar.current.startOfDay(for: date.now)
+    }
 
     @ObservableState
     struct State: Equatable {
@@ -101,8 +103,8 @@ struct HomeFeature {
                     }
                     .cancellable(id: CancelID.toggle, cancelInFlight: true)
                 } else {
-                    return .run { [readingRecordService] send in
-                        let result = try await readingRecordService.create(Date())
+                    return .run { [readingRecordService, now = date.now] send in
+                        let result = try await readingRecordService.create(now)
                         switch result {
                         case .success(let record):
                             await send(.createTodayResponse(record))
@@ -167,9 +169,10 @@ struct HomeFeature {
 
             case .loadBookCount:
                 state.isBookCountFetching = true
+                let userId = profile?.id.uuidString ?? ""
                 return .run {
                     send in
-                    let result = await localReceiptService.counts()
+                    let result = await localReceiptService.counts(userId)
                     await send(.loadBookCountResponse(result))
                 }
 

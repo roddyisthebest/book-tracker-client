@@ -9,6 +9,11 @@ import ComposableArchitecture
 
 private enum SearchKeywordServiceKey: DependencyKey {
     static let liveValue: SearchKeywordService = .live(client: SupabaseFactory.make())
+
+    static let testValue: SearchKeywordService = .init(
+        record: { _ in .failure(.unknown(message: "unimplemented")) },
+        list: { _ in .failure(.unknown(message: "unimplemented")) }
+    )
 }
 
 extension DependencyValues {

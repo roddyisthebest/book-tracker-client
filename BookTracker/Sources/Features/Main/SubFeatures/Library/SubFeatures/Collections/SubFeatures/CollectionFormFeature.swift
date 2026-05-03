@@ -55,6 +55,7 @@ struct CollectionFormFeature {
             case confirmCreation
         }
 
+        @CasePathable
         enum Delegate: Equatable {
             case refreshCollection
             case updateCollection(collection: UserCollection)

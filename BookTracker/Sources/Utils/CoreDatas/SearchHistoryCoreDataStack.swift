@@ -56,8 +56,13 @@ struct SearchHistoryCoreDataStack {
         createdAtAttribute.attributeType = .dateAttributeType
         createdAtAttribute.isOptional = false
 
-        entity.properties = [idAttribute, textAttribute, createdAtAttribute]
-        entity.uniquenessConstraints = [["id"]]
+        let userIdAttribute = NSAttributeDescription()
+        userIdAttribute.name = "userId"
+        userIdAttribute.attributeType = .stringAttributeType
+        userIdAttribute.isOptional = true
+
+        entity.properties = [idAttribute, userIdAttribute, textAttribute, createdAtAttribute]
+        entity.uniquenessConstraints = [["userId", "id"]]
 
         let model = NSManagedObjectModel()
         model.entities = [entity]

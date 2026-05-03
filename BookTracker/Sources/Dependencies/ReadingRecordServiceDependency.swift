@@ -10,18 +10,19 @@ import ComposableArchitecture
 private enum ReadingRecordServiceKey: DependencyKey {
     static let liveValue: ReadingRecordService = .live(client: SupabaseFactory.make())
 
-//    static let testValue: ReadingRecordService = .init(
-//        create: { _ in throw Unimplemented("ReadingRecordService.create is unimplemented") },
-//        fetch: { _ in throw Unimplemented("ReadingRecordService.fetch is unimplemented") },
-//        list: { _, _ in throw Unimplemented("ReadingRecordService.list is unimplemented") },
-//        hasRecordToday: { throw Unimplemented("ReadingRecordService.hasRecordToday is unimplemented") },
-//        recordForToday: { throw Unimplemented("ReadingRecordService.recordForToday is unimplemented") },
-//        listRecentDays: { _ in throw Unimplemented("ReadingRecordService.delete is unimplemented") },
-//        listRecentDaysByDate: { _ in throw Unimplemented("ReadingRecordService.listRecentDays is unimplemented") },
-//        delete: {
-//            _ in throw Unimplemented("ReadingRecordService.listRecentDaysByDate is unimplemented"),
-//        }
-//    )
+    static let testValue: ReadingRecordService = .init(
+        create: { _ in .failure(.unknown(message: "unimplemented")) },
+        fetch: { _ in .failure(.unknown(message: "unimplemented")) },
+        list: { _, _ in .failure(.unknown(message: "unimplemented")) },
+        hasRecordToday: { .failure(.unknown(message: "unimplemented")) },
+        recordForToday: { .failure(.unknown(message: "unimplemented")) },
+        listRecentDays: { _ in .failure(.unknown(message: "unimplemented")) },
+        listRecentDaysByDate: { _ in .failure(.unknown(message: "unimplemented")) },
+        delete: { _ in .failure(.unknown(message: "unimplemented")) },
+        monthlyReport: { _, _ in .failure(.unknown(message: "unimplemented")) },
+        listByMonth: { _, _ in .failure(.unknown(message: "unimplemented")) },
+        listByMonthByDate: { _, _ in .failure(.unknown(message: "unimplemented")) }
+    )
 
     static let previewValue: ReadingRecordService = liveValue
 }

@@ -11,6 +11,7 @@ import Foundation
 @Reducer
 struct BookDetailFeature {
     @Dependency(\.bookService) var bookService
+    @Dependency(\.date) var date
 
     @ObservableState
     struct State: Equatable {
@@ -71,7 +72,7 @@ struct BookDetailFeature {
                     return .none
                 }
 
-                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: nil))
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: nil, now: date.now))
                 return .none
 
             case let .changeStatusButtonTapped(bookStatus):
@@ -83,14 +84,17 @@ struct BookDetailFeature {
                     return .none
                 }
 
-                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: bookStatus))
+                state.destination = .formBook(BookFormFeature.State(externalId: externalBookId, bookId: book.id, book: book, changeMode: bookStatus, now: date.now))
                 return .none
 
             case .moreButtonTapped:
                 return .none
 
             case .viewDetailButtonTapped:
-                guard let book = state.book, let externalBookId = book.externalBookId else {
+                guard let book = state.book,
+                      let externalBookId = book.externalBookId,
+                      !externalBookId.hasPrefix("custom_")
+                else {
                     state.destination = .alert(.showNoExternalIdAlert())
                     return .none
                 }

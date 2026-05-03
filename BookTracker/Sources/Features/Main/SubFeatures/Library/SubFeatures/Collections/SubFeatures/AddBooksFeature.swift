@@ -45,6 +45,7 @@ struct AddBooksFeature {
         case bookSelected(UUID)
         case delegate(Delegate)
         case addButtonTapped
+        @CasePathable
         enum Delegate: Equatable {
             case addBooksToCollection([Book])
         }

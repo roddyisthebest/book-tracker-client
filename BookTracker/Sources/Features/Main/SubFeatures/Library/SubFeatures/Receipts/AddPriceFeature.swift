@@ -10,6 +10,7 @@ import Foundation
 @Reducer
 struct AddPriceFeature {
     @Dependency(\.localReceiptService) var localReceiptService
+    @Shared(.userProfile) var profile: MyProfile?
 
     @ObservableState
     struct State: Equatable {
@@ -64,8 +65,9 @@ struct AddPriceFeature {
                     currencyCode: state.currencyCode
                 )
 
+                let userId = profile?.id.uuidString ?? ""
                 return .run { [book = receiptBook] send in
-                    let result = await localReceiptService.saveReceiptBook(book)
+                    let result = await localReceiptService.saveReceiptBook(userId, book)
                     await send(.addResponse(result))
                 }
 

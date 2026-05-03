@@ -75,7 +75,7 @@ struct MainFeature {
                 )
             case .loadProfileResponse(.success(let profile)):
                 state.$profile.withLock { $0 = profile }
-                return .none
+                return .send(.home(.loadBookCount))
             case .loadProfileResponse(.failure):
                 return .none
             case .loadAuthInfoResponse(.success(let authInfo)):

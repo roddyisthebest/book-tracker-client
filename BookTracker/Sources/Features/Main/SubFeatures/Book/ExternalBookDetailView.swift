@@ -107,29 +107,39 @@ struct ExternalBookDetailView: View {
                     Divider().background(Color.appSeparator)
 
                     VStack {
-                        if let book = store.book, let desc = book.description {
-                            HStack {
-                                Text("book_intro").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
-                                Spacer()
-                            }
-                            .padding(.vertical, 5)
-
-                            Text(desc.strippingHTML)
-                                .font(.system(size: 15))
-                                .foregroundStyle(Color.appSecondaryText)
-                                .multilineTextAlignment(.leading)
-                                .lineLimit(store.isExtended ? 15 : 3)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            HStack {
-                                Button(action: {
-                                    store.send(.extendButtonTapped)
-                                }) {
-                                    Text(store.isExtended ? String(localized: "collapse") : String(localized: "show_more"))
+                        if let book = store.book {
+                            if let desc = book.description {
+                                HStack {
+                                    Text("book_intro").foregroundStyle(Color.appPrimaryText).font(.system(size: 22)).fontWeight(.black)
+                                    Spacer()
                                 }
-                                Spacer()
+                                .padding(.vertical, 5)
+
+                                Text(desc.strippingHTML)
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(Color.appSecondaryText)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(store.isExtended ? 15 : 3)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                HStack {
+                                    Button(action: {
+                                        store.send(.extendButtonTapped)
+                                    }) {
+                                        Text(store.isExtended ? String(localized: "collapse") : String(localized: "show_more"))
+                                    }
+                                    Spacer()
+                                }
+                                .padding(.vertical, 5)
+                            } else if book.isCustom {
+                                HStack {
+                                    Text("custom_book_placeholder")
+                                        .font(.system(size: 15))
+                                        .foregroundStyle(Color.appSecondaryText)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 5)
                             }
-                            .padding(.vertical, 5)
                         }
 
                         VStack(spacing: 12) {

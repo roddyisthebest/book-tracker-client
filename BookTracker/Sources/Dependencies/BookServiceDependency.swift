@@ -11,16 +11,16 @@ import Foundation
 private enum BookServiceKey: DependencyKey {
     static let liveValue: BookService = .live(client: SupabaseFactory.make())
 
-//    static let testValue: BookService = .init(
-//        create: { _ in throw BookServiceError.notFound },
-//        fetch: { _ in throw BookServiceError.notFound },
-//        list: { _, _, _ in throw BookServiceError.notFound },
-//        update: { _, _ in throw BookServiceError.notFound },
-//        delete: { _ in throw BookServiceError.notFound },
-//        isAlreadyRegistered: { _ in throw BookServiceError.notFound },
-//        statusCounts: { throw BookServiceError.notFound },
-//        calendarByMonth: { _, _, _, _ in AppError.client(code: "", message: "not implemented") }
-//    )
+    static let testValue: BookService = .init(
+        create: { _ in .failure(.unknown(message: "unimplemented")) },
+        fetch: { _ in .failure(.unknown(message: "unimplemented")) },
+        list: { _, _, _, _ in .failure(.unknown(message: "unimplemented")) },
+        update: { _, _ in .failure(.unknown(message: "unimplemented")) },
+        delete: { _ in .failure(.unknown(message: "unimplemented")) },
+        isAlreadyRegistered: { _ in .failure(.unknown(message: "unimplemented")) },
+        statusCounts: { .failure(.unknown(message: "unimplemented")) },
+        calendarByMonth: { _, _, _, _ in .failure(.unknown(message: "unimplemented")) }
+    )
 
     static let previewValue: BookService = liveValue
 }

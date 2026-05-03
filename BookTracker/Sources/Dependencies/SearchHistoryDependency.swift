@@ -9,10 +9,10 @@ import ComposableArchitecture
 private enum SearchHistoryClientKey: DependencyKey {
     static let liveValue: SearchHistoryClient = .live()
     static let testValue: SearchHistoryClient = .init(
-        fetchRecent: { _ in [] },
-        add: { _, _ in },
-        delete: { _ in },
-        clearAll: {}
+        fetchRecent: { _, _ in [] },
+        add: { _, _, _ in },
+        delete: { _, _ in },
+        clearAll: { _ in }
     )
     static let previewValue: SearchHistoryClient = liveValue
 }

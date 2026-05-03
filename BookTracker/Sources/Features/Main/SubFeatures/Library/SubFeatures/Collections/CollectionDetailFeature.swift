@@ -150,7 +150,8 @@ struct CollectionDetailFeature {
                 guard state.collection.type == .custom else { return .none }
                 state.destination = .formCollection(CollectionFormFeature.State(collection: state.collection.toUserCollection()))
                 return .none
-            case .bookCardTapped:
+            case .bookCardTapped(let bookId):
+                state.destination = .viewBookDetail(BookDetailFeature.State(id: bookId))
                 return .none
             case .deleteButtonTapped:
                 guard state.collection.type == .custom else { return .none }
@@ -163,6 +164,11 @@ struct CollectionDetailFeature {
                 return .none
             case .destination(.presented(.selectBooks(.delegate(.updateCollection)))):
                 state.destination = nil
+                return .send(.loadBooks)
+            case .destination(.presented(.viewBookDetail(.delegate(.confirmDeletion)))):
+                state.destination = nil
+                return .send(.loadBooks)
+            case .destination(.presented(.viewBookDetail(.destination(.presented(.formBook(.delegate(.confirmUpdate))))))):
                 return .send(.loadBooks)
             case .destination(.presented(.alert(.confirmDeletion))):
                 state.isDeleting = true
@@ -196,6 +202,7 @@ extension CollectionDetailFeature {
     enum Destination {
         case selectBooks(CollectionSelectBooksFeature)
         case formCollection(CollectionFormFeature)
+        case viewBookDetail(BookDetailFeature)
         case alert(AlertState<CollectionDetailFeature.Action.Alert>)
     }
 }

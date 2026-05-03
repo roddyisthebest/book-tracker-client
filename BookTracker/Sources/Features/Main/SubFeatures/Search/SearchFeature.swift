@@ -9,16 +9,23 @@ import ComposableArchitecture
 
 @Reducer
 struct SearchFeature {
+    @Dependency(\.localCustomBookService) var localCustomBookService
+    @Shared(.userProfile) var profile: MyProfile?
+
     @ObservableState
     struct State: Equatable {
         var query: String = ""
         var destination: Destination.State = .suggestions(SearchSuggestionsFeature.State())
 
         @Presents var detailSheet: ExternalBookDetailFeature.State?
+        @Presents var customBookForm: CustomBookFormFeature.State?
+        @Presents var customBookList: CustomBookListFeature.State?
     }
 
     enum Action: Equatable, BindableAction {
         case detailSheet(PresentationAction<ExternalBookDetailFeature.Action>)
+        case customBookForm(PresentationAction<CustomBookFormFeature.Action>)
+        case customBookList(PresentationAction<CustomBookListFeature.Action>)
         case destination(Destination.Action)
         case queryResetButtonTapped
         case binding(BindingAction<State>)
@@ -53,11 +60,8 @@ struct SearchFeature {
             case .binding(\.query):
                 let trimmed = state.query.trimmingCharacters(in: .whitespacesAndNewlines)
                 if trimmed.isEmpty {
-                    // When query becomes empty, cancel any in-flight search in the results child first,
-                    // then switch to suggestions to avoid "child action when state is different case" warnings.
                     switch state.destination {
                     case .results:
-                        // 1) 자식 검색 취소 → 2) suggestions 전환 (.concatenate로 순서 보장)
                         return .concatenate(
                             .send(.destination(.results(.cancelSearch))),
                             .send(._setSuggestions)
@@ -67,10 +71,8 @@ struct SearchFeature {
                     }
                 } else {
                     if case .results = state.destination {
-                        // already on results — just pass keyword down (child debounces + searches)
                         return .send(.destination(.results(.setKeyword(trimmed))))
                     } else {
-                        // suggestions → results: cancel suggestions effects first, then switch
                         return .concatenate(
                             .send(.destination(.suggestions(.cancelLoading))),
                             .send(._setResults(trimmed))
@@ -80,10 +82,8 @@ struct SearchFeature {
 
             case .queryResetButtonTapped:
                 state.query = ""
-                // If currently showing results, cancel child's search first, then switch to suggestions
                 switch state.destination {
                 case .results:
-                    // 1) 자식 검색 취소 → 2) suggestions 전환 (.concatenate로 순서 보장)
                     return .concatenate(
                         .send(.destination(.results(.cancelSearch))),
                         .send(._setSuggestions)
@@ -95,15 +95,47 @@ struct SearchFeature {
 
             case .destination(.suggestions(.delegate(.setKeyword(let keyword)))):
                 state.query = keyword
-                // suggestions → results: cancel suggestions effects first, then switch
                 return .concatenate(
                     .send(.destination(.suggestions(.cancelLoading))),
                     .send(._setResults(keyword))
                 )
 
+            case .destination(.suggestions(.delegate(.addCustomBook))):
+                state.customBookForm = CustomBookFormFeature.State()
+                return .none
+
+            case .destination(.suggestions(.delegate(.openCustomBookList))):
+                state.customBookList = CustomBookListFeature.State()
+                return .none
+
+            case .customBookList(.presented(.delegate(.openBook(let book)))):
+                state.customBookList = nil
+                state.detailSheet = ExternalBookDetailFeature.State(id: book.id, book: book)
+                return .none
+
+            case .customBookList:
+                return .none
+
+            case .customBookForm(.presented(.delegate(.didCreate(let externalBook)))):
+                state.customBookForm = nil
+                state.detailSheet = ExternalBookDetailFeature.State(id: externalBook.id, book: externalBook)
+                let userId = profile?.id.uuidString ?? ""
+                return .run { [localCustomBookService] _ in
+                    _ = await localCustomBookService.save(externalBook, userId)
+                }
+
+            case .customBookForm:
+                return .none
+
             case .detailSheet(.presented(.destination(.presented(.formBook(.delegate(.confirmCreation(let book))))))):
-                print(book)
+                let externalId = book.externalBookId
                 state.detailSheet = nil
+                if let externalId, externalId.hasPrefix("custom_") {
+                    let userId = profile?.id.uuidString ?? ""
+                    return .run { [localCustomBookService] _ in
+                        _ = await localCustomBookService.remove(externalId, userId)
+                    }
+                }
                 return .none
 
             case .detailSheet:
@@ -130,6 +162,8 @@ struct SearchFeature {
         }
 
         .ifLet(\.$detailSheet, action: \.detailSheet) { ExternalBookDetailFeature() }
+        .ifLet(\.$customBookForm, action: \.customBookForm) { CustomBookFormFeature() }
+        .ifLet(\.$customBookList, action: \.customBookList) { CustomBookListFeature() }
     }
 }
 
