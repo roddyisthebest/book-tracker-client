@@ -50,6 +50,7 @@ struct SearchResultFeature {
     @Dependency(\.searchKeywordService) var searchKeywordService
 
     @Dependency(\.date) var date
+    @Shared(.userProfile) var profile: MyProfile?
     private enum CancelID { case search, loadMore }
 
     var body: some ReducerOf<Self> {
@@ -186,11 +187,12 @@ struct SearchResultFeature {
                     return .none
                 }
                 let trimmed = book.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                let userId = profile?.id.uuidString ?? ""
                 return .merge(
                     .send(.delegate(.tapBook(id: id))),
                     .run { [searchHistory, date, trimmed] _ in
                         guard !trimmed.isEmpty else { return }
-                        try await searchHistory.add(trimmed, date())
+                        try await searchHistory.add(userId, trimmed, date())
                     }
                 )
 

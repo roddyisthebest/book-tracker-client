@@ -3,6 +3,7 @@ import Foundation
 
 @Reducer
 struct DoneBooksCalendarFeature {
+    @Dependency(\.date) var date
     @Dependency(\.bookService) var bookService
 
     @ObservableState
@@ -42,8 +43,8 @@ struct DoneBooksCalendarFeature {
                 state.thumbnailsByDate = nil
                 let calendar = Calendar(identifier: .gregorian)
                 let comps = calendar.dateComponents([.year, .month], from: state.date)
-                let year = comps.year ?? calendar.component(.year, from: Date())
-                let month = comps.month ?? calendar.component(.month, from: Date())
+                let year = comps.year ?? calendar.component(.year, from: date.now)
+                let month = comps.month ?? calendar.component(.month, from: date.now)
                 return .run { send in
                     let result = await bookService.calendarByMonth(year, month, .done, nil)
                     await send(.loadDataResponse(result))

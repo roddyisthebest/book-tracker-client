@@ -14,6 +14,7 @@ struct SearchSuggestionsFeature {
     @Dependency(\.searchKeywordService) var searchKeywordService
 
     @Dependency(\.date) var date
+    @Shared(.userProfile) var profile: MyProfile?
 
     @ObservableState
     struct State: Equatable {
@@ -21,7 +22,6 @@ struct SearchSuggestionsFeature {
         var searchesResult: Result<[Search], AppError> = .success([])
 
         var isSearchKeywordsLoading: Bool = false
-
         var isSearchesLoading: Bool = false
     }
 
@@ -37,9 +37,14 @@ struct SearchSuggestionsFeature {
         case loadRecents
         case loadRecentsResponse(Result<[Search], AppError>)
 
+        case addCustomBookTapped
+        case openCustomBookListTapped
+
         case delegate(Delegate)
         enum Delegate: Equatable {
             case setKeyword(String)
+            case addCustomBook
+            case openCustomBookList
         }
     }
 
@@ -50,13 +55,13 @@ struct SearchSuggestionsFeature {
             state, action in
             switch action {
                 case .searchTapped(let text):
-                    // 1) 상위로 검색 실행 위임, 2) 로컬 히스토리에 저장
+                    let userId = profile?.id.uuidString ?? ""
                     return .merge(
                         .send(.delegate(.setKeyword(text))),
                         .run { [date] _ in
                             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
                             guard !trimmed.isEmpty else { return }
-                            try await searchHistory.add(trimmed, date())
+                            try await searchHistory.add(userId, trimmed, date())
                         }
                     )
                 case .deleteButtonTapped(let id):
@@ -64,8 +69,9 @@ struct SearchSuggestionsFeature {
                         items.removeAll(where: { $0.id == id })
                         state.searchesResult = .success(items)
                     }
+                    let userId = profile?.id.uuidString ?? ""
                     return .run { _ in
-                        try await searchHistory.delete(id)
+                        try await searchHistory.delete(userId, id)
                     }
                 case .cancelLoading:
                     state.isSearchKeywordsLoading = false
@@ -84,10 +90,11 @@ struct SearchSuggestionsFeature {
                     .cancellable(id: CancelID.loadKeywords, cancelInFlight: true)
                 case .loadRecents:
                     state.isSearchesLoading = true
+                    let userId = profile?.id.uuidString ?? ""
                     return .run {
                         send in
                         do {
-                            let items = try await searchHistory.fetchRecent(50)
+                            let items = try await searchHistory.fetchRecent(userId, 50)
                             await send(.loadRecentsResponse(.success(items)))
                         } catch {
                             let appError: AppError = .client(code: "RECENTS_LOAD_FAILED", message: error.localizedDescription)
@@ -108,6 +115,13 @@ struct SearchSuggestionsFeature {
                     state.searchKeywordsResult = result
                     state.isSearchKeywordsLoading = false
                     return .none
+
+                case .addCustomBookTapped:
+                    return .send(.delegate(.addCustomBook))
+
+                case .openCustomBookListTapped:
+                    return .send(.delegate(.openCustomBookList))
+
                 case .delegate:
                     return .none
             }

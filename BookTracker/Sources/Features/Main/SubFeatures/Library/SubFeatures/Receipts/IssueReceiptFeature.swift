@@ -12,6 +12,7 @@ import Foundation
 struct IssueReceiptFeature {
     @Dependency(\.receiptService) var receiptService
     @Dependency(\.localReceiptService) var localReceiptService
+    @Shared(.userProfile) var profile: MyProfile?
 
     @ObservableState
     struct State: Equatable {
@@ -47,6 +48,7 @@ struct IssueReceiptFeature {
         case binding(BindingAction<State>)
         case delegate(Delegate)
 
+        @CasePathable
         enum Delegate: Equatable {
             case issueReceiptCompleted
         }
@@ -90,9 +92,10 @@ struct IssueReceiptFeature {
                 return .none
             case .alert(.presented(.confirmCreation)):
                 let type = state.type
+                let userId = profile?.id.uuidString ?? ""
                 return .run {
                     send in
-                    let _ = await localReceiptService.removeSpecificTypes(type)
+                    let _ = await localReceiptService.removeSpecificTypes(userId, type)
                     await send(.delegate(.issueReceiptCompleted))
                 }
             case .binding:

@@ -45,6 +45,7 @@ struct BookFormView: View {
                 statusSpecific
             }
             .conditionalListStyle(isPlain: store.isChangeModeActive)
+            .scrollDismissesKeyboard(.interactively)
             .padding(0)
             .navigationTitle(store.title)
             .navigationBarTitleDisplayMode(.large)

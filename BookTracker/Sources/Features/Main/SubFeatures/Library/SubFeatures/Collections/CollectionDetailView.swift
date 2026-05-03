@@ -159,6 +159,9 @@ struct CollectionDetailView: View {
                     CollectionSelectBooksView(store: selectBookStore)
                 }
             }
+            .sheet(item: $store.scope(state: \.destination?.viewBookDetail, action: \.destination.viewBookDetail)) { bookDetailStore in
+                BookDetailView(store: bookDetailStore)
+            }
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
         }
     }

@@ -55,6 +55,11 @@ struct ReceiptCoreDataStack {
         idAttribute.attributeType = .stringAttributeType
         idAttribute.isOptional = false
 
+        let userIdAttribute = NSAttributeDescription()
+        userIdAttribute.name = "userId"
+        userIdAttribute.attributeType = .stringAttributeType
+        userIdAttribute.isOptional = true
+
         let typeRawValueAttribute = NSAttributeDescription()
         typeRawValueAttribute.name = "typeRawValue"
         typeRawValueAttribute.attributeType = .stringAttributeType
@@ -102,6 +107,7 @@ struct ReceiptCoreDataStack {
 
         entity.properties = [
             idAttribute,
+            userIdAttribute,
             typeRawValueAttribute,
             titleAttribute,
             authorsDataAttribute,
@@ -113,7 +119,7 @@ struct ReceiptCoreDataStack {
             currencyCodeAttribute,
         ]
 
-        entity.uniquenessConstraints = [["id", "typeRawValue"]]
+        entity.uniquenessConstraints = [["userId", "id", "typeRawValue"]]
 
         let model = NSManagedObjectModel()
         model.entities = [entity]

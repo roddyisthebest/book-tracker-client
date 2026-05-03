@@ -109,16 +109,18 @@ struct BookDetailView: View {
                                 Spacer()
 
                             }.padding(.horizontal, 15).padding(.vertical, 10)
+                            if !(book.externalBookId?.hasPrefix("custom_") ?? false) {
                             Divider().background(Color.appSeparator)
-                            HStack {
-                                Button(action: { store.send(.viewDetailButtonTapped) }, label: {
-                                    Text("view_detail")
-                                    Image(systemName: "chevron.forward")
-                                })
+                                HStack {
+                                    Button(action: { store.send(.viewDetailButtonTapped) }, label: {
+                                        Text("view_detail")
+                                        Image(systemName: "chevron.forward")
+                                    })
 
-                            }.foregroundStyle(Color.appSecondaryText).font(.headline)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 8)
+                                }.foregroundStyle(Color.appSecondaryText).font(.headline)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 8)
+                            }
                             Rectangle().fill(Color.appSurfaceDeeper).frame(height: 15)
 
                             VStack {
@@ -293,4 +295,3 @@ struct BookDetailView: View {
         BookDetailFeature()
     }))
 }
-

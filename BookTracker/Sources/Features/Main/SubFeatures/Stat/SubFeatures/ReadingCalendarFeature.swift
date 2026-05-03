@@ -10,6 +10,7 @@ import Foundation
 
 @Reducer
 struct ReadingCalendarFeature {
+    @Dependency(\.date) var date
     @Dependency(\.readingRecordService) var readingRecordService
 
     @ObservableState
@@ -51,8 +52,8 @@ struct ReadingCalendarFeature {
                 state.readingRecords = nil
                 let calendar = Calendar(identifier: .gregorian)
                 let comps = calendar.dateComponents([.year, .month], from: state.date)
-                let year = comps.year ?? calendar.component(.year, from: Date())
-                let month = comps.month ?? calendar.component(.month, from: Date())
+                let year = comps.year ?? calendar.component(.year, from: date.now)
+                let month = comps.month ?? calendar.component(.month, from: date.now)
                 return .run { send in
                     let result = await readingRecordService.listByMonthByDate(year, month)
                     await send(.loadDataResponse(result))

@@ -233,7 +233,7 @@ extension BookFormFeature.State {
 
 extension BookFormFeature.State {
     // create
-    init(externalId: String, externalBook: ExternalBook) {
+    init(externalId: String, externalBook: ExternalBook, now: Date = Date()) {
         self.externalId = externalId
 
         self.entirePage = externalBook.pageCount.map(String.init) ?? "100"
@@ -241,10 +241,12 @@ extension BookFormFeature.State {
         self.externalBook = externalBook
 
         self.pageCountEditable = externalBook.pageCount == nil
+        self.startedAt = now
+        self.endedAt = now
     }
 
     // update
-    init(externalId: String, bookId: UUID, book: Book, changeMode: BookStatus?) {
+    init(externalId: String, bookId: UUID, book: Book, changeMode: BookStatus?, now: Date = Date()) {
         self.bookId = bookId
         self.externalId = externalId
 
@@ -265,8 +267,8 @@ extension BookFormFeature.State {
         self.progress = (Double(readCount) / Double(pageCount)) * 100
 
         self.rating = book.score ?? 0
-        self.startedAt = book.startedAt ?? Date()
-        self.endedAt = book.endedAt ?? Date()
+        self.startedAt = book.startedAt ?? now
+        self.endedAt = book.endedAt ?? now
 
         self.reason = book.droppedReason ?? ""
         self.note = book.memo ?? ""

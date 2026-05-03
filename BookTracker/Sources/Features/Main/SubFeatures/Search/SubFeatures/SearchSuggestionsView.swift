@@ -109,6 +109,45 @@ struct SearchSuggestionsView: View {
                     }
                 }
                 .padding(.horizontal, 15)
+                .padding(.bottom)
+
+                // My Custom Books Section
+                Text("my_custom_books")
+                    .font(.headline)
+                    .foregroundStyle(Color.appPrimaryText)
+                    .padding(.horizontal, 15)
+
+                VStack(spacing: 14) {
+                    Button {
+                        store.send(.addCustomBookTapped)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 14, weight: .bold))
+                            Text("add_custom_book")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundStyle(Color.appPrimaryText)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.appSurfaceDeep)
+                        .cornerRadius(20)
+                    }
+
+                    Button {
+                        store.send(.openCustomBookListTapped)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("view_custom_books")
+                                .font(.system(size: 13, weight: .medium))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                        .foregroundStyle(Color.appSecondaryText)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 4)
             }
             .padding(.top, 12)
         }

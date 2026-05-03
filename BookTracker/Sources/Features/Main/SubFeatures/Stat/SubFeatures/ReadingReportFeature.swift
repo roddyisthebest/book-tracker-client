@@ -9,6 +9,7 @@ import Foundation
 
 @Reducer
 struct ReadingReportFeature {
+    @Dependency(\.date) var date
     @Dependency(\.readingRecordService) var readingRecordService
 
     @ObservableState
@@ -51,8 +52,8 @@ struct ReadingReportFeature {
                 state.isLoading = true
                 state.isError = false
                 let components = Calendar.current.dateComponents([.year, .month], from: state.date)
-                let year = components.year ?? Calendar.current.component(.year, from: Date())
-                let month = components.month ?? Calendar.current.component(.month, from: Date())
+                let year = components.year ?? Calendar.current.component(.year, from: date.now)
+                let month = components.month ?? Calendar.current.component(.month, from: date.now)
                 print("year", year)
                 print("month", month)
 

@@ -16,26 +16,27 @@ enum LocalReceiptError: Error, Equatable {
 }
 
 struct LocalReceiptService {
-    var fetchAll: () async -> Result<[ReceiptBook], LocalReceiptError>
-    var fetchBooks: (_ type: ReceiptType) async -> Result<[ReceiptBook], LocalReceiptError>
+    var fetchAll: (_ userId: String) async -> Result<[ReceiptBook], LocalReceiptError>
+    var fetchBooks: (_ userId: String, _ type: ReceiptType) async -> Result<[ReceiptBook], LocalReceiptError>
 
-    var save: (_ externalBook: ExternalBook, _ type: ReceiptType) async -> Result<ReceiptType, LocalReceiptError>
+    var save: (_ userId: String, _ externalBook: ExternalBook, _ type: ReceiptType) async -> Result<ReceiptType, LocalReceiptError>
 
-    var saveReceiptBook: (_ receiptBook: ReceiptBook) async -> Result<ReceiptBook, LocalReceiptError>
+    var saveReceiptBook: (_ userId: String, _ receiptBook: ReceiptBook) async -> Result<ReceiptBook, LocalReceiptError>
 
-    var remove: (_ externalBookId: String, _ type: ReceiptType) async -> Result<String, LocalReceiptError>
-    var removeSpecificTypes: (_ type: ReceiptType) async -> Result<Bool, LocalReceiptError>
-    var removeAllTypes: (_ externalBookId: String) async -> Result<Void, LocalReceiptError>
-    var clearAll: () async -> Result<Void, LocalReceiptError>
+    var remove: (_ userId: String, _ externalBookId: String, _ type: ReceiptType) async -> Result<String, LocalReceiptError>
+    var removeSpecificTypes: (_ userId: String, _ type: ReceiptType) async -> Result<Bool, LocalReceiptError>
+    var removeAllTypes: (_ userId: String, _ externalBookId: String) async -> Result<Void, LocalReceiptError>
+    var clearAll: (_ userId: String) async -> Result<Void, LocalReceiptError>
 
-    var contains: (_ externalBookId: String, _ type: ReceiptType) async -> Result<Bool, LocalReceiptError>
-    var registeredTypes: (_ externalBookId: String) async -> Result<[ReceiptType], LocalReceiptError>
+    var contains: (_ userId: String, _ externalBookId: String, _ type: ReceiptType) async -> Result<Bool, LocalReceiptError>
+    var registeredTypes: (_ userId: String, _ externalBookId: String) async -> Result<[ReceiptType], LocalReceiptError>
 
-    var isRegisteredInPurchase: (_ externalBookId: String) async -> Result<Bool, LocalReceiptError>
-    var isRegisteredInRental: (_ externalBookId: String) async -> Result<Bool, LocalReceiptError>
+    var isRegisteredInPurchase: (_ userId: String, _ externalBookId: String) async -> Result<Bool, LocalReceiptError>
+    var isRegisteredInRental: (_ userId: String, _ externalBookId: String) async -> Result<Bool, LocalReceiptError>
 
-    var count: (_ type: ReceiptType) async -> Result<Int, LocalReceiptError>
-    var counts: () async -> Result<[ReceiptType: Int], LocalReceiptError>
+    var count: (_ userId: String, _ type: ReceiptType) async -> Result<Int, LocalReceiptError>
+    var counts: (_ userId: String) async -> Result<[ReceiptType: Int], LocalReceiptError>
+
 }
 
 extension LocalReceiptService {
@@ -99,10 +100,11 @@ extension LocalReceiptService {
         }
 
         return Self(
-            fetchAll: {
+            fetchAll: { userId in
                 do {
                     let books = try await context.perform {
                         let request = entityFetchRequest()
+                        request.predicate = NSPredicate(format: "userId == %@", userId)
                         request.sortDescriptors = [
                             NSSortDescriptor(key: "title", ascending: true)
                         ]
@@ -116,11 +118,11 @@ extension LocalReceiptService {
                 }
             },
 
-            fetchBooks: { type in
+            fetchBooks: { userId, type in
                 do {
                     let books = try await context.perform {
                         let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "typeRawValue == %@", type.rawValue)
+                        request.predicate = NSPredicate(format: "userId == %@ AND typeRawValue == %@", userId, type.rawValue)
                         request.sortDescriptors = [
                             NSSortDescriptor(key: "title", ascending: true)
                         ]
@@ -134,14 +136,15 @@ extension LocalReceiptService {
                 }
             },
 
-            save: { externalBook, type in
+            save: { userId, externalBook, type in
                 do {
                     try await context.perform {
                         let receiptBook = ReceiptBook(externalBook: externalBook, type: type)
 
                         let request = entityFetchRequest()
                         request.predicate = NSPredicate(
-                            format: "id == %@ AND typeRawValue == %@",
+                            format: "userId == %@ AND id == %@ AND typeRawValue == %@",
+                            userId,
                             receiptBook.id,
                             receiptBook.type.rawValue
                         )
@@ -159,6 +162,7 @@ extension LocalReceiptService {
                             )!
                             obj = NSManagedObject(entity: entity, insertInto: context)
                             obj.setValue(receiptBook.id, forKey: "id")
+                            obj.setValue(userId, forKey: "userId")
                             obj.setValue(receiptBook.type.rawValue, forKey: "typeRawValue")
                         }
 
@@ -185,12 +189,13 @@ extension LocalReceiptService {
                     return .failure(mapError(error))
                 }
             },
-            saveReceiptBook: { receiptBook in
+            saveReceiptBook: { userId, receiptBook in
                 do {
                     try await context.perform {
                         let request = entityFetchRequest()
                         request.predicate = NSPredicate(
-                            format: "id == %@ AND typeRawValue == %@",
+                            format: "userId == %@ AND id == %@ AND typeRawValue == %@",
+                            userId,
                             receiptBook.id,
                             receiptBook.type.rawValue
                         )
@@ -208,6 +213,7 @@ extension LocalReceiptService {
                             )!
                             obj = NSManagedObject(entity: entity, insertInto: context)
                             obj.setValue(receiptBook.id, forKey: "id")
+                            obj.setValue(userId, forKey: "userId")
                             obj.setValue(receiptBook.type.rawValue, forKey: "typeRawValue")
                         }
 
@@ -235,12 +241,13 @@ extension LocalReceiptService {
                 }
             },
 
-            remove: { externalBookId, type in
+            remove: { userId, externalBookId, type in
                 do {
                     try await context.perform {
                         let request = entityFetchRequest()
                         request.predicate = NSPredicate(
-                            format: "id == %@ AND typeRawValue == %@",
+                            format: "userId == %@ AND id == %@ AND typeRawValue == %@",
+                            userId,
                             externalBookId,
                             type.rawValue
                         )
@@ -256,13 +263,13 @@ extension LocalReceiptService {
                     return .failure(mapError(error))
                 }
             },
-            removeSpecificTypes: {
-                type in
+            removeSpecificTypes: { userId, type in
                 do {
                     try await context.perform {
                         let request = entityFetchRequest()
                         request.predicate = NSPredicate(
-                            format: "typeRawValue == %@",
+                            format: "userId == %@ AND typeRawValue == %@",
+                            userId,
                             type.rawValue
                         )
                         let results = try context.fetch(request)
@@ -279,11 +286,11 @@ extension LocalReceiptService {
                     return .failure(mapError(error))
                 }
             },
-            removeAllTypes: { externalBookId in
+            removeAllTypes: { userId, externalBookId in
                 do {
                     try await context.perform {
                         let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "id == %@", externalBookId)
+                        request.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, externalBookId)
 
                         let results = try context.fetch(request)
                         for obj in results {
@@ -300,17 +307,17 @@ extension LocalReceiptService {
                 }
             },
 
-            clearAll: {
+            clearAll: { userId in
                 do {
                     try await context.perform {
-                        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: ReceiptCoreDataStack.entityName)
-                        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetch)
-                        deleteRequest.resultType = .resultTypeObjectIDs
-
-                        let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
-                        if let objectIDs = result?.result as? [NSManagedObjectID] {
-                            let changes = [NSDeletedObjectsKey: objectIDs]
-                            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+                        let request = entityFetchRequest()
+                        request.predicate = NSPredicate(format: "userId == %@", userId)
+                        let results = try context.fetch(request)
+                        for obj in results {
+                            context.delete(obj)
+                        }
+                        if context.hasChanges {
+                            try context.save()
                         }
                     }
                     return .success(())
@@ -319,12 +326,13 @@ extension LocalReceiptService {
                 }
             },
 
-            contains: { externalBookId, type in
+            contains: { userId, externalBookId, type in
                 do {
                     let contains = try await context.perform {
                         let request = entityFetchRequest()
                         request.predicate = NSPredicate(
-                            format: "id == %@ AND typeRawValue == %@",
+                            format: "userId == %@ AND id == %@ AND typeRawValue == %@",
+                            userId,
                             externalBookId,
                             type.rawValue
                         )
@@ -337,11 +345,11 @@ extension LocalReceiptService {
                 }
             },
 
-            registeredTypes: { externalBookId in
+            registeredTypes: { userId, externalBookId in
                 do {
                     let types = try await context.perform {
                         let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "id == %@", externalBookId)
+                        request.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, externalBookId)
 
                         let results = try context.fetch(request)
 
@@ -360,19 +368,19 @@ extension LocalReceiptService {
                 }
             },
 
-            isRegisteredInPurchase: { externalBookId in
-                await Self.live(container: container).contains(externalBookId, .purchase)
+            isRegisteredInPurchase: { userId, externalBookId in
+                await Self.live(container: container).contains(userId, externalBookId, .purchase)
             },
 
-            isRegisteredInRental: { externalBookId in
-                await Self.live(container: container).contains(externalBookId, .rental)
+            isRegisteredInRental: { userId, externalBookId in
+                await Self.live(container: container).contains(userId, externalBookId, .rental)
             },
 
-            count: { type in
+            count: { userId, type in
                 do {
                     let count = try await context.perform {
                         let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "typeRawValue == %@", type.rawValue)
+                        request.predicate = NSPredicate(format: "userId == %@ AND typeRawValue == %@", userId, type.rawValue)
                         return try context.count(for: request)
                     }
                     return .success(count)
@@ -381,12 +389,12 @@ extension LocalReceiptService {
                 }
             },
 
-            counts: {
+            counts: { userId in
                 do {
                     let value = try await context.perform {
                         func count(for type: ReceiptType) throws -> Int {
                             let request = entityFetchRequest()
-                            request.predicate = NSPredicate(format: "typeRawValue == %@", type.rawValue)
+                            request.predicate = NSPredicate(format: "userId == %@ AND typeRawValue == %@", userId, type.rawValue)
                             return try context.count(for: request)
                         }
 
@@ -399,7 +407,8 @@ extension LocalReceiptService {
                 } catch {
                     return .failure(mapError(error))
                 }
-            }
+            },
+
         )
     }
 }

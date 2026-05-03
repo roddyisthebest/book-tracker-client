@@ -10,9 +10,11 @@ import Foundation
 
 @Reducer
 struct ExternalBookDetailFeature {
+    @Dependency(\.date) var date
     @Dependency(\.externalBookService) var bookService
     @Dependency(\.bookService) var myBookService
     @Dependency(\.localReceiptService) var localReceiptService
+    @Shared(.userProfile) var profile: MyProfile?
 
     @ObservableState
     struct State: Equatable {
@@ -54,6 +56,7 @@ struct ExternalBookDetailFeature {
 
         case loadDetail
         case detailResponse(Result<ExternalBook, ExternalBookService.ServiceError>)
+        case checkAlreadyRegistered
         case alreadyRegisteredResponse(Result<Bool, AppError>)
         case addButtonTapped(AddType)
         case extendButtonTapped
@@ -79,16 +82,18 @@ struct ExternalBookDetailFeature {
             case .onAppear:
                 return .merge(
                     .send(.loadDetail),
-                    .send(.loadReceiptTypes)
+                    .send(.loadReceiptTypes),
+                    .send(.checkAlreadyRegistered)
                 )
             case .loadReceiptTypes:
                 state.isRegisteredReceiptTypesLoading = true
                 state.isRegisteredReceiptTypesLoadError = false
                 state.isRegisteredReceiptTypesLoadSuccess = false
                 let bookId = state.id
+                let userId = profile?.id.uuidString ?? ""
                 return .run {
                     send in
-                    let result = await localReceiptService.registeredTypes(bookId)
+                    let result = await localReceiptService.registeredTypes(userId, bookId)
                     await send(.loadReceiptTypesResponse(result))
                 }
             case .loadReceiptTypesResponse(.success(let receiptTypes)):
@@ -103,6 +108,10 @@ struct ExternalBookDetailFeature {
                 state.isRegisteredReceiptTypesLoadError = true
                 return .none
             case .loadDetail:
+                if state.id.hasPrefix("custom_"), state.book != nil {
+                    state.isLoading = false
+                    return .none
+                }
                 state.isLoading = true
                 state.errorMessage = nil
                 return .run { [id = state.id] send in
@@ -114,6 +123,8 @@ struct ExternalBookDetailFeature {
                 state.isLoading = false
                 state.errorMessage = nil
                 state.book = book
+                return .none
+            case .checkAlreadyRegistered:
                 return .run { [externalId = state.id] send in
                     let result = try await myBookService.isAlreadyRegistered(externalId)
                     await send(.alreadyRegisteredResponse(result))
@@ -140,7 +151,7 @@ struct ExternalBookDetailFeature {
                             return .none
                         }
 
-                        state.destination = .formBook(BookFormFeature.State(externalId: externalId, externalBook: book))
+                        state.destination = .formBook(BookFormFeature.State(externalId: externalId, externalBook: book, now: date.now))
                         return .none
                     }
                 } else {
@@ -172,9 +183,10 @@ struct ExternalBookDetailFeature {
                     state.isRentalSaving = true
                 }
 
+                let userId = profile?.id.uuidString ?? ""
                 return .run {
                     send in
-                    let result = await localReceiptService.save(book, type)
+                    let result = await localReceiptService.save(userId, book, type)
                     await send(.saveReceiptResponse(result))
                 }
             case .saveReceiptResponse(let result):

@@ -29,6 +29,8 @@ struct ExternalBook: Equatable, Identifiable, Decodable {
     let isbn13: String?
     let saleInfo: SaleInfo?
 
+    var isCustom: Bool { id.hasPrefix("custom_") }
+
     // MARK: - Manual initializer to keep call sites simple
 
     init(

@@ -48,7 +48,8 @@ struct CollectionSelectBooksFeature {
         case onRefresh
 
         case delegate(Delegate)
-        enum Delegate {
+        @CasePathable
+        enum Delegate: Equatable {
             case updateCollection
         }
 

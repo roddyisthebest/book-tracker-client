@@ -34,6 +34,7 @@ struct AppFeature {
     @Dependency(\.authService) var authService
     @Dependency(\.searchHistory) var searchHistory
     @Dependency(\.localReceiptService) var localReceiptService
+    @Dependency(\.localCustomBookService) var localCustomBookService
     @Shared(.userProfile) var userProfile: MyProfile?
     @Shared(.userAuthInfo) var userAuthInfo: MyAuthInfo?
     private enum CancelID { case authChanges }
@@ -80,10 +81,12 @@ struct AppFeature {
                 }
 
             case .main(.setting(.delegate(.deleteAccount))):
+                let userId = userProfile?.id.uuidString ?? ""
                 state = .signingOut
-                return .run { [authService, searchHistory, localReceiptService] send in
-                    try? await searchHistory.clearAll()
-                    _ = await localReceiptService.clearAll()
+                return .run { [authService, searchHistory, localReceiptService, localCustomBookService] send in
+                    try? await searchHistory.clearAll(userId)
+                    _ = await localReceiptService.clearAll(userId)
+                    _ = await localCustomBookService.clearAll(userId)
                     try? await authService.signOut()
                     await send(.logout)
                 }

@@ -31,6 +31,7 @@ let project = Project(
                     "ENV": "$(ENV)",
                     "GOOGLE_BOOKS_API_KEY": "$(GOOGLE_BOOKS_API_KEY)",
                     "NSPhotoLibraryAddUsageDescription": "Save calendar images to your photo library.",
+                    "NSPhotoLibraryUsageDescription": "Select a cover image for your book.",
                     "CFBundleLocalizations": ["ko", "en", "ja"],
                     "CFBundleDevelopmentRegion": "ko",
                 ]
@@ -71,6 +72,7 @@ let project = Project(
         .scheme(
             name: "BookTracker-Dev",
             buildAction: .buildAction(targets: [.target("BookTracker")]),
+            testAction: .targets(["BookTrackerTests"]),
             runAction: .runAction(configuration: .debug),
             archiveAction: .archiveAction(configuration: .debug),
             profileAction: .profileAction(configuration: .debug),
