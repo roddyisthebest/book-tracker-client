@@ -15,47 +15,8 @@ struct SearchView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Search Field
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(Color.appSecondaryText)
-                TextField(
-                    "search_placeholder",
-                    text: $store.query
-                )
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .foregroundStyle(Color.appPrimaryText)
-                .submitLabel(.search)
-                .overlay(alignment: .trailing) {
-                    if !$store.query.wrappedValue.isEmpty {
-                        Button {
-                            store.send(.queryResetButtonTapped)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(Color.appSecondaryText)
-                                .padding(.horizontal, 6)
-                        }
-                    }
-                }
-            }
-            .padding(12)
-            .background(Color.appSurfaceDeep)
-            .cornerRadius(12)
-            .padding(.horizontal, 15)
-            .padding(.top)
-            .padding(.bottom, 5)
-
-            switch store.state.destination {
-            case .suggestions:
-                if let suggestionsStore = store.scope(state: \.destination.suggestions, action: \.destination.suggestions) {
-                    SearchSuggestionsView(store: suggestionsStore)
-                }
-            case .results:
-                if let resultsStore = store.scope(state: \.destination.results, action: \.destination.results) {
-                    SearchResultView(store: resultsStore)
-                }
-            }
+            searchField
+            destinationContent
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(isSheet ? Color.appSurface : Color.appBackground)
@@ -87,6 +48,48 @@ struct SearchView: View {
             NavigationStack {
                 CustomBookListView(store: listStore)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var searchField: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Color.appSecondaryText)
+            TextField(
+                "search_placeholder",
+                text: $store.query
+            )
+            .textInputAutocapitalization(.never)
+            .disableAutocorrection(true)
+            .foregroundStyle(Color.appPrimaryText)
+            .submitLabel(.search)
+            .overlay(alignment: .trailing) {
+                if !$store.query.wrappedValue.isEmpty {
+                    Button {
+                        store.send(.queryResetButtonTapped)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Color.appSecondaryText)
+                            .padding(.horizontal, 6)
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(Color.appSurfaceDeep)
+        .cornerRadius(12)
+        .padding(.horizontal, 15)
+        .padding(.top)
+        .padding(.bottom, 5)
+    }
+
+    @ViewBuilder
+    private var destinationContent: some View {
+        if let suggestionsStore = store.scope(state: \.destination?.suggestions, action: \.destination.suggestions) {
+            SearchSuggestionsView(store: suggestionsStore)
+        } else if let resultsStore = store.scope(state: \.destination?.results, action: \.destination.results) {
+            SearchResultView(store: resultsStore)
         }
     }
 }
