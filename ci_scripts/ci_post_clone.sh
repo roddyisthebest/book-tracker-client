@@ -45,9 +45,12 @@ mise exec tuist@4.134.0 -- tuist install
 echo "=== Generating project ==="
 mise exec tuist@4.134.0 -- tuist generate --no-open
 
-echo "=== Suppressing strict concurrency for all targets (Swift 6 / Xcode 26) ==="
+echo "=== Forcing Swift 5 language mode for all targets (Xcode 26 compatibility) ==="
 find "$CI_PRIMARY_REPOSITORY_PATH" -name "project.pbxproj" | while read pbxproj; do
+    # 기존 SWIFT_VERSION 제거 후 Swift 5로 통일
+    sed -i '' '/SWIFT_VERSION = /d' "$pbxproj"
     sed -i '' '/buildSettings = {/a\
+				SWIFT_VERSION = 5;\
 				SWIFT_STRICT_CONCURRENCY = minimal;
 ' "$pbxproj"
 done
