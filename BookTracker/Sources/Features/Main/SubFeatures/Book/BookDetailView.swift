@@ -152,7 +152,7 @@ struct BookDetailView: View {
                                             let readCountRaw = book.readCount ?? 0
                                             let pageCountRaw = max(book.pageCount ?? 0, 1)
                                             let progress = Int((Double(readCountRaw) / Double(pageCountRaw)) * 100.0)
-                                            let pagesText = "\(readCountRaw)p"
+                                            let pagesText = "\(readCountRaw.commaFormatted)p"
                                             StatusRow(key: String(localized: "progress_label"), value: "\(progress)% (\(pagesText))")
                                             let memoText = (book.memo?.isEmpty == false) ? (book.memo ?? "") : String(localized: "no_memo")
                                             StatusRow(key: String(localized: "memo_label"), value: memoText)

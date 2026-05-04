@@ -14,7 +14,7 @@ struct ResetDataFeature {
     @Dependency(\.localReceiptService) var localReceiptService
     @Dependency(\.localCustomBookService) var localCustomBookService
     @Dependency(\.authService) var authService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -57,7 +57,7 @@ struct ResetDataFeature {
 
             case .confirmDeleteAppData:
                 state.isAppDataDeleting = true
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run { [searchHistory, localReceiptService, localCustomBookService] send in
                     do {
                         try await searchHistory.clearAll(userId)

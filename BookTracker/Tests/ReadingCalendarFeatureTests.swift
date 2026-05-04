@@ -24,12 +24,12 @@ struct ReadingCalendarFeatureTests {
 
         await store.send(.onAppear)
         await store.receive(\.loadData) {
-            $0.isLoading = true
+            $0.loadingState = .loading
             $0.readingRecords = nil
         }
 
         await store.receive(\.loadDataResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.readingRecords = records
         }
     }
@@ -47,13 +47,12 @@ struct ReadingCalendarFeatureTests {
         store.dependencies.readingRecordService.listByMonthByDate = { _, _ in .failure(.unknown(message: "fail")) }
 
         await store.send(.loadData) {
-            $0.isLoading = true
+            $0.loadingState = .loading
             $0.readingRecords = nil
         }
 
         await store.receive(\.loadDataResponse) {
-            $0.isLoading = false
-            $0.isError = true
+                        $0.loadingState = .error
         }
     }
 

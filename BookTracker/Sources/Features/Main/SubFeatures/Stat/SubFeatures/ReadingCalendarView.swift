@@ -142,7 +142,7 @@ struct ReadingCalendarView: View {
                 }
                 .padding()
 
-                if store.isLoading && store.readingRecords == nil {
+                if store.loadingState == .loading && store.readingRecords == nil {
                     VStack(spacing: 8) {
                         ProgressView().tint(.white)
                         Text("loading")
@@ -151,7 +151,7 @@ struct ReadingCalendarView: View {
                     }
                     .frame(maxWidth: .infinity, minHeight: 200)
                     .padding()
-                } else if store.isError {
+                } else if store.loadingState == .error {
                     VStack(spacing: 8) {
                         Text("calendar_load_failed")
                             .font(.footnote)
@@ -189,7 +189,7 @@ struct ReadingCalendarView: View {
                     } label: {
                         Image(systemName: "square.and.arrow.down")
                     }
-                    .disabled(store.isLoading || store.isError || store.readingRecords == nil)
+                    .disabled(store.loadingState == .loading || store.loadingState == .error || store.readingRecords == nil)
                 }
             }
             .alert(store: store.scope(state: \.$alert, action: \.alert))

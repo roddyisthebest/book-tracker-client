@@ -25,7 +25,7 @@ struct AddPriceView: View {
                         HStack(spacing: 10) {
                             TextField(
                                 "",
-                                text: priceBinding,
+                                text: $store.price.commaFormatted(),
                                 prompt: Text("enter_price").foregroundStyle(Color.appSecondaryText)
                             )
                             .keyboardType(.numberPad)
@@ -141,38 +141,11 @@ struct AddPriceView: View {
         }
     }
 
-    private var priceBinding: Binding<String> {
-        Binding(
-            get: {
-                formatPrice(store.price)
-            },
-            set: { newValue in
-                let digits = onlyDigits(newValue)
-                store.send(.binding(.set(\.price, digits)))
-            }
-        )
-    }
-
     private var formattedPreviewPrice: String {
         guard let value = Int(store.price), value > 0 else {
             return "- \(store.currencyCode.rawValue)"
         }
-        return "\(formatNumber(value)) \(store.currencyCode.rawValue)"
-    }
-
-    private func onlyDigits(_ string: String) -> String {
-        string.filter(\.isNumber)
-    }
-
-    private func formatPrice(_ raw: String) -> String {
-        guard let value = Int(raw), value > 0 else { return raw }
-        return formatNumber(value)
-    }
-
-    private func formatNumber(_ value: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+        return "\(value.commaFormatted) \(store.currencyCode.rawValue)"
     }
 }
 

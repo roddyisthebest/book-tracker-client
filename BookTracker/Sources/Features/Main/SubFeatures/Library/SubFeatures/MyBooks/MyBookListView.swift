@@ -85,10 +85,10 @@ struct MyBookListView: View {
 
         } else {
             Picker("tab", selection: $store.bookStatus) {
-                Text("\(String(localized: "status_done")) (\((store.statusCounts?[.done]) ?? 0))").tag(BookStatus.done)
-                Text("\(String(localized: "status_reading")) (\((store.statusCounts?[.reading]) ?? 0))").tag(BookStatus.reading)
-                Text("\(String(localized: "status_want")) (\((store.statusCounts?[.want]) ?? 0))").tag(BookStatus.want)
-                Text("\(String(localized: "status_dropped")) (\((store.statusCounts?[.dropped]) ?? 0))").tag(BookStatus.dropped)
+                Text("\(String(localized: "status_done")) (\((store.statusCounts?[.done] ?? 0).commaFormatted))").tag(BookStatus.done)
+                Text("\(String(localized: "status_reading")) (\((store.statusCounts?[.reading] ?? 0).commaFormatted))").tag(BookStatus.reading)
+                Text("\(String(localized: "status_want")) (\((store.statusCounts?[.want] ?? 0).commaFormatted))").tag(BookStatus.want)
+                Text("\(String(localized: "status_dropped")) (\((store.statusCounts?[.dropped] ?? 0).commaFormatted))").tag(BookStatus.dropped)
             }
             .pickerStyle(.segmented)
             .controlSize(.large)
@@ -99,13 +99,13 @@ struct MyBookListView: View {
 
     @ViewBuilder
     private var list: some View {
-        if store.isLoading && store.books.isEmpty && !store.isError {
+        if store.loadingState == .loading && store.books.isEmpty {
             ProgressView()
                 .scaleEffect(1.1)
                 .padding(16)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if store.isError && store.books.isEmpty {
+        } else if store.loadingState == .error && store.books.isEmpty {
             MyBooksErrorView {
                 store.send(.refresh)
             }

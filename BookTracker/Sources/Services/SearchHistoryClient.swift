@@ -77,15 +77,16 @@ extension SearchHistoryClient {
             },
             clearAll: { userId in
                 try await context.perform {
-                    let request = entityFetchRequest()
-                    request.predicate = NSPredicate(format: "userId == %@", userId)
-                    let results = try context.fetch(request)
-                    for obj in results {
-                        context.delete(obj)
-                    }
-                    if context.hasChanges {
-                        try context.save()
-                    }
+                    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: SearchHistoryCoreDataStack.entityName)
+                    fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
+                    let batchDelete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                    batchDelete.resultType = .resultTypeObjectIDs
+                    let result = try context.execute(batchDelete) as? NSBatchDeleteResult
+                    let objectIDs = result?.result as? [NSManagedObjectID] ?? []
+                    NSManagedObjectContext.mergeChanges(
+                        fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                        into: [context]
+                    )
                 }
             },
         )

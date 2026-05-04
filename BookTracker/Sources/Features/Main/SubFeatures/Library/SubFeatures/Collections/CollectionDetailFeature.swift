@@ -19,9 +19,8 @@ struct CollectionDetailFeature {
         var books: [Book] = []
         var sortOption: BookSortOption = .newest
 
-        var isLoading: Bool = false
+        var loadingState: LoadingState = .idle
         var isLoadingMore: Bool = false
-        var isError: Bool = false
 
         var nextIndex: Int = 0
         var pageSize: Int = 20
@@ -85,8 +84,7 @@ struct CollectionDetailFeature {
             case .onRefresh:
                 return .send(.onAppear)
             case .loadBooks:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 state.nextIndex = 0
                 state.hasMore = true
 
@@ -102,20 +100,19 @@ struct CollectionDetailFeature {
                     .cancellable(id: CancelID.loadBooks, cancelInFlight: true)
                 )
             case .loadBooksResponse(.success(let books)):
-                state.isLoading = false
+                state.loadingState = .loaded
                 state.books = books
                 state.nextIndex = books.count
                 state.hasMore = books.count == state.pageSize
                 return .none
             case .loadBooksResponse(.failure(let error)):
-                state.isLoading = false
+                state.loadingState = .error
                 state.books = []
-                state.isError = true
                 state.nextIndex = 0
                 state.hasMore = false
                 return .none
             case .loadMore:
-                guard !state.isLoading,
+                guard state.loadingState != .loading,
                       !state.isLoadingMore,
                       state.hasMore
                 else {

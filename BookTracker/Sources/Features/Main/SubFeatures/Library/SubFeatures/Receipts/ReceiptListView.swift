@@ -75,9 +75,9 @@ struct ReceiptListView: View {
     private var content: some View {
         VStack {
             segmentedPicker
-            if store.isLoading && store.list.isEmpty && !store.isError {
+            if store.loadingState == .loading && store.list.isEmpty {
                 loadingView
-            } else if store.isError && store.list.isEmpty {
+            } else if store.loadingState == .error && store.list.isEmpty {
                 errorView
             } else if store.list.isEmpty {
                 emptyView

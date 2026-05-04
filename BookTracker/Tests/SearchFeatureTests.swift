@@ -15,10 +15,10 @@ struct SearchFeatureTests {
 
         await store.send(.binding(.set(\.query, "swift"))) {
             $0.query = "swift"
+            $0.destination = .results(SearchResultFeature.State(keyword: "swift"))
         }
 
-        // Should trigger _setResults transition via cancelLoading + _setResults
-        await store.receive(\._setResults)
+        await store.receive(\.destination)
     }
 
     @Test func queryCleared_switchesResultsToSuggestions() async {
@@ -34,10 +34,6 @@ struct SearchFeatureTests {
 
         await store.send(.binding(.set(\.query, ""))) {
             $0.query = ""
-        }
-
-        // Should trigger cancelSearch + _setSuggestions
-        await store.receive(\._setSuggestions) {
             $0.destination = .suggestions(SearchSuggestionsFeature.State())
         }
     }
@@ -55,9 +51,6 @@ struct SearchFeatureTests {
 
         await store.send(.queryResetButtonTapped) {
             $0.query = ""
-        }
-
-        await store.receive(\._setSuggestions) {
             $0.destination = .suggestions(SearchSuggestionsFeature.State())
         }
     }
@@ -70,11 +63,12 @@ struct SearchFeatureTests {
         store.exhaustivity = .off
         store.dependencies.continuousClock = TestClock()
 
-        await store.send(.destination(.suggestions(.delegate(.setKeyword("swift"))))) {
+        await store.send(.destination(.presented(.suggestions(.delegate(.setKeyword("swift")))))) {
             $0.query = "swift"
+            $0.destination = .results(SearchResultFeature.State(keyword: "swift"))
         }
 
-        await store.receive(\._setResults)
+        await store.receive(\.destination)
     }
 
     @Test func resultDelegate_tapBook_presentsDetailSheet() async {
@@ -87,7 +81,7 @@ struct SearchFeatureTests {
         )
         store.exhaustivity = .off
 
-        await store.send(.destination(.results(.delegate(.tapBook(id: "ext-001"))))) {
+        await store.send(.destination(.presented(.results(.delegate(.tapBook(id: "ext-001")))))) {
             $0.detailSheet = ExternalBookDetailFeature.State(id: "ext-001")
         }
     }
@@ -99,7 +93,7 @@ struct SearchFeatureTests {
         )
         store.exhaustivity = .off
 
-        await store.send(.destination(.suggestions(.delegate(.addCustomBook)))) {
+        await store.send(.destination(.presented(.suggestions(.delegate(.addCustomBook))))) {
             $0.customBookForm = CustomBookFormFeature.State()
         }
     }
@@ -111,7 +105,7 @@ struct SearchFeatureTests {
         )
         store.exhaustivity = .off
 
-        await store.send(.destination(.suggestions(.delegate(.openCustomBookList)))) {
+        await store.send(.destination(.presented(.suggestions(.delegate(.openCustomBookList))))) {
             $0.customBookList = CustomBookListFeature.State()
         }
     }

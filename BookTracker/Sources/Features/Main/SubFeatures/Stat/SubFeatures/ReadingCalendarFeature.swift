@@ -17,8 +17,7 @@ struct ReadingCalendarFeature {
     struct State: Equatable {
         var date: Date = .init()
 
-        var isLoading: Bool = false
-        var isError: Bool = false
+        var loadingState: LoadingState = .idle
 
         var readingRecords: [Date: ReadingRecord?]?
 
@@ -47,8 +46,7 @@ struct ReadingCalendarFeature {
             case .onAppear:
                 return .send(.loadData)
             case .loadData:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 state.readingRecords = nil
                 let calendar = Calendar(identifier: .gregorian)
                 let comps = calendar.dateComponents([.year, .month], from: state.date)
@@ -59,12 +57,12 @@ struct ReadingCalendarFeature {
                     await send(.loadDataResponse(result))
                 }
             case .loadDataResponse(let result):
-                state.isLoading = false
                 switch result {
                 case .success(let data):
+                    state.loadingState = .loaded
                     state.readingRecords = data
                 case .failure:
-                    state.isError = true
+                    state.loadingState = .error
                 }
                 return .none
             case .saveSuccess:

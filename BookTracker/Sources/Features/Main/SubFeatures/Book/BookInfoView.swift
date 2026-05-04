@@ -120,7 +120,7 @@ struct BookInfoView: View {
                         if let pageCount = book.pageCount {
                             InfoRow(
                                 label: String(localized: "page_count_info"),
-                                value: "\(pageCount)"
+                                value: pageCount.commaFormatted
                             )
                         }
 

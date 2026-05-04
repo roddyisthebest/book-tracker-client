@@ -207,14 +207,89 @@ enum Destination의 case 전환 로직을 작성할 때:
 - [ ] 부모에서 `state.destination = ...` 직접 대입 대신 `.concatenate(cancel → _set전환)` 사용하는가?
 - [ ] `_set전환` 내부 액션이 정의되어 있는가?
 
+## 리팩토링: @Reducer enum 전환으로 workaround 제거
+
+위 Cancellation-First Transition 패턴은 수동 `Scope`의 한계를 우회하기 위한 workaround였다. 이후 `@Reducer enum` + `@Presents` + `.ifLet` 패턴으로 전환하여 **workaround 자체를 제거**했다.
+
+### Before (수동 Scope + Cancellation-First Transition)
+
+```swift
+// 매 전환마다 boilerplate 필요
+return .concatenate(
+    .send(.destination(.suggestions(.cancelLoading))),
+    .send(._setResults(trimmed))
+)
+
+// 내부 전환 전용 액션 2개 필요
+case _setSuggestions
+case _setResults(String)
+```
+
+### After (@Reducer enum + @Presents)
+
+```swift
+// Destination 선언
+@Reducer(state: .equatable, action: .equatable)
+enum Destination {
+    case suggestions(SearchSuggestionsFeature)
+    case results(SearchResultFeature)
+}
+
+// State
+@Presents var destination: Destination.State? = .suggestions(SearchSuggestionsFeature.State())
+
+// Action
+case destination(PresentationAction<Destination.Action>)
+
+// Body
+.ifLet(\.$destination, action: \.destination)
+
+// 전환: 직접 대입하면 자동 취소됨
+state.destination = .results(SearchResultFeature.State(keyword: trimmed))
+return .send(.destination(.presented(.results(.setKeyword(trimmed)))))
+```
+
+### View 패턴 (inline enum destination)
+
+`@Presents` enum을 sheet가 아닌 인라인 콘텐츠 전환에 사용할 때, `store.scope` 후 `.case` 접근 시 `PresentationAction<Action>` vs `Action` 타입 불일치 에러가 발생한다. 각 case를 개별 scope로 분리하여 해결:
+
+```swift
+@ViewBuilder
+private var destinationContent: some View {
+    if let suggestionsStore = store.scope(state: \.destination?.suggestions, action: \.destination.suggestions) {
+        SearchSuggestionsView(store: suggestionsStore)
+    } else if let resultsStore = store.scope(state: \.destination?.results, action: \.destination.results) {
+        SearchResultView(store: resultsStore)
+    }
+}
+```
+
+### 제거된 것
+
+| 항목 | 설명 |
+|------|------|
+| `_setSuggestions` 액션 | 내부 전환 전용 → 불필요 |
+| `_setResults(String)` 액션 | 내부 전환 전용 → 불필요 |
+| `.concatenate(cancel, transition)` | 4곳 전부 → 직접 대입으로 대체 |
+| `Scope(state: \.destination, action: \.destination) { Destination() }` | → `.ifLet(\.$destination, action: \.destination)` |
+| `struct Destination` (수동 Scope body) | → `@Reducer enum Destination` |
+| Cancellation-First Transition 주석 블록 | 패턴 자체 불필요 |
+
+### 수치
+
+- **코드**: 137줄 삭제, 73줄 추가 = 순 64줄 감소
+- **내부 액션**: 2개 제거 (`_setSuggestions`, `_setResults`)
+- **전환 boilerplate**: 4곳의 `.concatenate` 패턴 전부 제거
+- **TCA 경고**: 완전 해소 (자동 취소로 case 불일치 원천 차단)
+
 ## 관련 파일
 
 - `BookTracker/Sources/Features/Main/SubFeatures/Search/SearchFeature.swift`
+- `BookTracker/Sources/Features/Main/SubFeatures/Search/SearchView.swift`
 - `BookTracker/Sources/Features/Main/SubFeatures/Search/SubFeatures/SearchSuggestionsFeature.swift`
 - `BookTracker/Sources/Features/Main/SubFeatures/Search/SubFeatures/SearchResultFeature.swift`
 
 ## 환경
 
 - TCA (swift-composable-architecture)
-- 수동 `Scope` + enum State/Action 패턴 (legacy)
-- `@Reducer enum` 사용 시에는 `ifCaseLet`이 자동 취소하므로 이 패턴 불필요
+- 수동 `Scope` → `@Reducer enum` + `@Presents` + `.ifLet` (최종)

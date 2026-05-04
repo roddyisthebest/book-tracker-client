@@ -32,12 +32,11 @@ struct MyBookListFeatureTests {
         store.dependencies.bookService.list = { _, _, _, _ in .success([TestFixtures.book]) }
 
         await store.send(.loadBooks) {
-            $0.isLoading = true
-            $0.isError = false
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadBooksResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = [TestFixtures.book]
             $0.nextIndex = 1
             $0.hasMore = false
@@ -79,7 +78,7 @@ struct MyBookListFeatureTests {
 
         await store.receive(\.loadMoreResponse) {
             $0.isLoadingMore = false
-            $0.isError = true
+            $0.loadingState = .error
         }
     }
 
@@ -93,14 +92,13 @@ struct MyBookListFeatureTests {
         store.dependencies.bookService.list = { _, _, _, _ in .failure(.unknown(message: "fail")) }
 
         await store.send(.loadBooks) {
-            $0.isLoading = true
-            $0.isError = false
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadBooksResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = []
-            $0.isError = true
+            $0.loadingState = .error
             $0.nextIndex = 0
             $0.hasMore = false
         }
@@ -134,7 +132,7 @@ struct MyBookListFeatureTests {
 
     @Test func loadMore_guardPreventsWhenAlreadyLoading() async {
         var state = MyBookListFeature.State(bookStatus: .reading)
-        state.isLoading = true
+        state.loadingState = .loading
 
         let store = TestStore(
             initialState: state,

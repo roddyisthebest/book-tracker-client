@@ -11,7 +11,7 @@ import Foundation
 @Reducer
 struct ReceiptSelectBooksFeature {
     @Dependency(\.localReceiptService) var localReceiptService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -63,7 +63,7 @@ struct ReceiptSelectBooksFeature {
             case .loadBooks:
                 state.isFetching = true
                 state.isError = false
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     [type = state.type] send in
                     let result = await localReceiptService.fetchBooks(userId, type)
@@ -82,7 +82,7 @@ struct ReceiptSelectBooksFeature {
                 return .none
             case .deleteButtonTapped(let id):
                 state.isDeleting = true
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     [type = state.type] send in
                     let result = await localReceiptService.remove(userId, id, type)

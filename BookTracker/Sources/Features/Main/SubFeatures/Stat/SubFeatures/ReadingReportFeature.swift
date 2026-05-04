@@ -17,8 +17,7 @@ struct ReadingReportFeature {
         var date: Date = .init()
         var monthlyReadingReport: MonthlyReadingReport?
 
-        var isLoading: Bool = false
-        var isError: Bool = false
+        var loadingState: LoadingState = .idle
 
         @Presents var alert: AlertState<Action.Alert>?
         var isSharePresented: Bool = false
@@ -49,8 +48,7 @@ struct ReadingReportFeature {
             case .onAppear:
                 return .send(.loadData)
             case .loadData:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 let components = Calendar.current.dateComponents([.year, .month], from: state.date)
                 let year = components.year ?? Calendar.current.component(.year, from: date.now)
                 let month = components.month ?? Calendar.current.component(.month, from: date.now)
@@ -63,12 +61,12 @@ struct ReadingReportFeature {
                     await send(.loadDataResponse(result))
                 }
             case .loadDataResponse(let result):
-                state.isLoading = false
                 switch result {
                 case .success(let data):
+                    state.loadingState = .loaded
                     state.monthlyReadingReport = data
                 case .failure:
-                    state.isError = true
+                    state.loadingState = .error
                 }
                 return .none
             case .shareButtonTapped:

@@ -23,7 +23,7 @@ struct ExternalBookDetailFeatureTests {
             $0.isLoading = true
         }
         await store.receive(\.loadReceiptTypes) {
-            $0.isRegisteredReceiptTypesLoading = true
+            $0.receiptTypesLoadState = .loading
         }
         await store.receive(\.checkAlreadyRegistered)
 
@@ -220,7 +220,7 @@ struct ExternalBookDetailFeatureTests {
 
     @Test func loadReceiptTypesResponse_success_setsTypes() async {
         var state = ExternalBookDetailFeature.State(id: "ext-001")
-        state.isRegisteredReceiptTypesLoading = true
+        state.receiptTypesLoadState = .loading
 
         let store = TestStore(
             initialState: state,
@@ -228,15 +228,14 @@ struct ExternalBookDetailFeatureTests {
         )
 
         await store.send(.loadReceiptTypesResponse(.success([.purchase, .rental]))) {
-            $0.isRegisteredReceiptTypesLoading = false
-            $0.isRegisteredReceiptTypesLoadSuccess = true
+            $0.receiptTypesLoadState = .loaded
             $0.registeredReceiptTypes = [.purchase, .rental]
         }
     }
 
     @Test func loadReceiptTypesResponse_failure_setsError() async {
         var state = ExternalBookDetailFeature.State(id: "ext-001")
-        state.isRegisteredReceiptTypesLoading = true
+        state.receiptTypesLoadState = .loading
 
         let store = TestStore(
             initialState: state,
@@ -244,10 +243,8 @@ struct ExternalBookDetailFeatureTests {
         )
 
         await store.send(.loadReceiptTypesResponse(.failure(.unknown))) {
-            $0.isRegisteredReceiptTypesLoading = false
-            $0.isRegisteredReceiptTypesLoadSuccess = false
+            $0.receiptTypesLoadState = .error
             $0.registeredReceiptTypes = []
-            $0.isRegisteredReceiptTypesLoadError = true
         }
     }
 

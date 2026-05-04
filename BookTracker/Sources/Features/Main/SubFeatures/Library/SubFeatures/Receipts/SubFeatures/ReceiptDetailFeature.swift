@@ -20,8 +20,7 @@ struct ReceiptDetailFeature {
         var detail: ReceiptDetail? = nil
         var targetCurrency: CurrencyCode?
 
-        var isLoading: Bool = false
-        var isError: Bool = false
+        var loadingState: LoadingState = .idle
         var isDeleting: Bool = false
 
         @Presents var alert: AlertState<ReceiptDetailFeature.Action.Alert>?
@@ -59,22 +58,19 @@ struct ReceiptDetailFeature {
             case .onRefresh:
                 return .send(.loadReceipt)
             case .loadReceipt:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 return .run { [id = state.id] send in
                     let result = await receiptService.loadReceiptDetail(id)
                     await send(.loadReceiptResponse(result))
                 }
                 .cancellable(id: CancelID.loadReceipt, cancelInFlight: true)
             case .loadReceiptResponse(.success(let detail)):
-                state.isLoading = false
-                state.isError = false
+                state.loadingState = .loaded
                 state.detail = detail
                 print(detail, "detail")
                 return .none
             case .loadReceiptResponse(.failure(let error)):
-                state.isLoading = false
-                state.isError = true
+                state.loadingState = .error
                 return .none
             case .currencyChanged(let currency):
                 state.targetCurrency = currency

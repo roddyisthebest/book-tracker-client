@@ -9,73 +9,66 @@ import ComposableArchitecture
 import SwiftUI
 
 struct MainView: View {
-    let store: StoreOf<MainFeature>
+    @Bindable var store: StoreOf<MainFeature>
 
     var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
-            TabView(
-                selection: viewStore.binding(
-                    get: \.selectedTab,
-                    send: MainFeature.Action.tabSelected
+        TabView(selection: $store.selectedTab.sending(\.tabSelected)) {
+            NavigationStack {
+                HomeView(
+                    store: store.scope(
+                        state: \.home,
+                        action: \.home
+                    )
                 )
-            ) {
-                NavigationStack {
-                    HomeView(
-                        store: store.scope(
-                            state: \.home,
-                            action: \.home
-                        )
-                    )
-                }
-                .tabItem { Label("home", systemImage: "house") }
-                .tag(MainTab.home)
-
-                NavigationStack {
-                    SearchView(
-                        store: store.scope(
-                            state: \.search,
-                            action: \.search
-                        ),
-                        isSheet: false
-                    )
-                }
-                .tabItem { Label("search", systemImage: "magnifyingglass") }
-                .tag(MainTab.search)
-
-                NavigationStack {
-                    LibraryView(
-                        store: store.scope(
-                            state: \.library,
-                            action: \.library
-                        )
-                    )
-                }
-                .tabItem { Label("Books", systemImage: "books.vertical") }
-                .tag(MainTab.library)
-
-                NavigationStack {
-                    StatView(
-                        store: store.scope(
-                            state: \.stat,
-                            action: \.stat
-                        )
-                    )
-                }
-                .tabItem { Label("Stats", systemImage: "chart.bar") }
-                .tag(MainTab.stat)
-
-                NavigationStack {
-                    SettingView(
-                        store: store.scope(
-                            state: \.setting,
-                            action: \.setting
-                        )
-                    )
-                }
-                .tabItem { Label("settings", systemImage: "gearshape") }
-                .tag(MainTab.setting)
             }
-            .onAppear { store.send(.onAppear) }
+            .tabItem { Label("home", systemImage: "house") }
+            .tag(MainTab.home)
+
+            NavigationStack {
+                SearchView(
+                    store: store.scope(
+                        state: \.search,
+                        action: \.search
+                    ),
+                    isSheet: false
+                )
+            }
+            .tabItem { Label("search", systemImage: "magnifyingglass") }
+            .tag(MainTab.search)
+
+            NavigationStack {
+                LibraryView(
+                    store: store.scope(
+                        state: \.library,
+                        action: \.library
+                    )
+                )
+            }
+            .tabItem { Label("Books", systemImage: "books.vertical") }
+            .tag(MainTab.library)
+
+            NavigationStack {
+                StatView(
+                    store: store.scope(
+                        state: \.stat,
+                        action: \.stat
+                    )
+                )
+            }
+            .tabItem { Label("Stats", systemImage: "chart.bar") }
+            .tag(MainTab.stat)
+
+            NavigationStack {
+                SettingView(
+                    store: store.scope(
+                        state: \.setting,
+                        action: \.setting
+                    )
+                )
+            }
+            .tabItem { Label("settings", systemImage: "gearshape") }
+            .tag(MainTab.setting)
         }
+        .onAppear { store.send(.onAppear) }
     }
 }

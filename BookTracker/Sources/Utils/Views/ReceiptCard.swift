@@ -69,7 +69,7 @@ struct ReceiptCard: View {
 
                     let restQuantity = max(receipt.totalQuantity - 1, 0)
                     if restQuantity > 0 {
-                        Text(String(format: String(localized: "and_more_count %@"), "\(restQuantity)"))
+                        Text(String(format: String(localized: "and_more_count %@"), restQuantity.commaFormatted))
                             .foregroundStyle(Color.appPrimaryText)
                             .fontWeight(.bold).layoutPriority(1)
                     }

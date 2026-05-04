@@ -108,7 +108,7 @@ struct ReadingReportView: View {
                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
                     }
-                StatusRow(key: String(localized: "completed_books"), value: "\((store.monthlyReadingReport?.month.completedCount ?? 0))\(String(localized: "book_unit"))")
+                StatusRow(key: String(localized: "completed_books"), value: "\((store.monthlyReadingReport?.month.completedCount ?? 0).commaFormatted)\(String(localized: "book_unit"))")
 
             }.frame(maxWidth: .infinity, alignment: .leading)
 
@@ -117,7 +117,7 @@ struct ReadingReportView: View {
                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                         Image(systemName: "xmark.circle.fill").foregroundStyle(.red).font(.caption)
                     }
-                StatusRow(key: String(localized: "unfinished_books"), value: "\((store.monthlyReadingReport?.month.unfinishedCount ?? 0))\(String(localized: "book_unit"))")
+                StatusRow(key: String(localized: "unfinished_books"), value: "\((store.monthlyReadingReport?.month.unfinishedCount ?? 0).commaFormatted)\(String(localized: "book_unit"))")
 
             }.frame(maxWidth: .infinity, alignment: .leading)
 
@@ -135,7 +135,7 @@ struct ReadingReportView: View {
                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                         Image(systemName: "receipt.fill").foregroundStyle(Color.appPurchaseAccent).font(.caption)
                     }
-                StatusRow(key: String(localized: "purchase"), value: "\((store.monthlyReadingReport?.month.purchaseCount ?? 0))\(String(localized: "book_unit"))")
+                StatusRow(key: String(localized: "purchase"), value: "\((store.monthlyReadingReport?.month.purchaseCount ?? 0).commaFormatted)\(String(localized: "book_unit"))")
 
             }.frame(maxWidth: .infinity, alignment: .leading)
 
@@ -144,7 +144,7 @@ struct ReadingReportView: View {
                     .frame(width: 30, height: 30).cornerRadius(10).overlay {
                         Image(systemName: "person.text.rectangle.fill").foregroundStyle(Color.appRentalAccent).font(.caption)
                     }
-                StatusRow(key: String(localized: "rental"), value: "\((store.monthlyReadingReport?.month.rentalCount ?? 0))\(String(localized: "book_unit"))")
+                StatusRow(key: String(localized: "rental"), value: "\((store.monthlyReadingReport?.month.rentalCount ?? 0).commaFormatted)\(String(localized: "book_unit"))")
 
             }.frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -165,12 +165,12 @@ struct ReadingReportView: View {
                 } value: {
                     VStack(alignment: .trailing, spacing: 5) {
                         HStack {
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousCompletedCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.previousCompletedCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
                             Image(systemName: "arrow.right").fontWeight(.semibold)
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentCompletedCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.currentCompletedCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
@@ -190,12 +190,12 @@ struct ReadingReportView: View {
                 } value: {
                     VStack(alignment: .trailing, spacing: 5) {
                         HStack {
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousUnfinishedCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.previousUnfinishedCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
                             Image(systemName: "arrow.right").fontWeight(.semibold)
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentUnfinishedCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.currentUnfinishedCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
@@ -250,12 +250,12 @@ struct ReadingReportView: View {
                 } value: {
                     VStack(alignment: .trailing, spacing: 5) {
                         HStack {
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.previousRentalCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.previousRentalCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appSecondaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
                             Image(systemName: "arrow.right").fontWeight(.semibold)
-                            Text(String(format: String(localized: "book_count %@"), "\(store.monthlyReadingReport?.comparison.currentRentalCount ?? 0)"))
+                            Text(String(format: String(localized: "book_count %@"), (store.monthlyReadingReport?.comparison.currentRentalCount ?? 0).commaFormatted))
                                 .foregroundStyle(Color.appPrimaryText)
                                 .font(.system(size: 18, weight: .bold))
                                 .multilineTextAlignment(.trailing)
@@ -393,7 +393,7 @@ struct ReadingReportView: View {
 
     private var mainContent: some View {
         ScrollView {
-            if store.isLoading {
+            if store.loadingState == .loading {
                 VStack(spacing: 12) {
                     ProgressView()
                         .tint(.white)
@@ -402,7 +402,7 @@ struct ReadingReportView: View {
                         .foregroundStyle(Color.appSecondaryText)
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
-            } else if store.isError {
+            } else if store.loadingState == .error {
                 VStack(spacing: 14) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 28))
@@ -472,7 +472,7 @@ struct ReadingReportView: View {
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
-                    .disabled(store.isLoading || store.isError || store.monthlyReadingReport == nil)
+                    .disabled(store.loadingState == .loading || store.loadingState == .error || store.monthlyReadingReport == nil)
                 }
             }
             .sheet(isPresented: Binding(

@@ -23,7 +23,7 @@ struct ProgressSectionView: View {
 
                     HStack {
                         HStack(spacing: 5) {
-                            TextField("0", text: $store.page)
+                            TextField("0", text: $store.page.commaFormatted())
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
                                 .background(Color.appPlaceholder)
@@ -38,7 +38,7 @@ struct ProgressSectionView: View {
                         }
                         Text("/").foregroundStyle(Color.appSecondaryText)
                         if store.pageCountEditable {
-                            TextField("0", text: $store.entirePage)
+                            TextField("0", text: $store.entirePage.commaFormatted())
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
                                 .background(Color.appPlaceholder)
@@ -51,7 +51,7 @@ struct ProgressSectionView: View {
                                 .frame(maxWidth: 60)
                         }
                         else {
-                            Text("\(store.entirePage)p")
+                            Text("\(Int(store.entirePage)?.commaFormatted ?? store.entirePage)p")
                         }
                     }
 

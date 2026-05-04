@@ -30,12 +30,12 @@ struct DoneBooksCalendarFeatureTests {
 
         await store.send(.onAppear)
         await store.receive(\.loadData) {
-            $0.isLoading = true
+            $0.loadingState = .loading
             $0.thumbnailsByDate = nil
         }
 
         await store.receive(\.loadDataResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.thumbnailsByDate = data
         }
     }
@@ -53,13 +53,12 @@ struct DoneBooksCalendarFeatureTests {
         store.dependencies.bookService.calendarByMonth = { _, _, _, _ in .failure(.unknown(message: "fail")) }
 
         await store.send(.loadData) {
-            $0.isLoading = true
+            $0.loadingState = .loading
             $0.thumbnailsByDate = nil
         }
 
         await store.receive(\.loadDataResponse) {
-            $0.isLoading = false
-            $0.isError = true
+                        $0.loadingState = .error
         }
     }
 

@@ -143,7 +143,7 @@ struct DoneBooksCalendarView: View {
                     }
                     .padding()
                     
-                    if store.isLoading && store.thumbnailsByDate == nil {
+                    if store.loadingState == .loading && store.thumbnailsByDate == nil {
                         VStack(spacing: 8) {
                             ProgressView().tint(.white)
                             Text("loading")
@@ -152,7 +152,7 @@ struct DoneBooksCalendarView: View {
                         }
                         .frame(maxWidth: .infinity, minHeight: 200)
                         .padding()
-                    } else if store.isError {
+                    } else if store.loadingState == .error {
                         VStack(spacing: 8) {
                             Text("calendar_load_failed")
                                 .font(.footnote)
@@ -185,7 +185,7 @@ struct DoneBooksCalendarView: View {
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                 }
-                .disabled(store.isLoading || store.isError || store.thumbnailsByDate == nil)
+                .disabled(store.loadingState == .loading || store.loadingState == .error || store.thumbnailsByDate == nil)
             }
         }
         .alert(store: store.scope(state: \.$alert, action: \.alert))

@@ -15,12 +15,11 @@ struct CollectionSelectBooksFeatureTests {
 
         await store.send(.onAppear)
         await store.receive(\.loadBooks) {
-            $0.isError = false
-            $0.isLoading = true
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadBooksResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = [TestFixtures.book]
         }
     }
@@ -32,7 +31,7 @@ struct CollectionSelectBooksFeatureTests {
         )
 
         await store.send(.loadBooksResponse(.success([TestFixtures.book]))) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = [TestFixtures.book]
         }
     }
@@ -44,8 +43,7 @@ struct CollectionSelectBooksFeatureTests {
         )
 
         await store.send(.loadBooksResponse(.failure(.unknown(message: "fail")))) {
-            $0.isLoading = false
-            $0.isError = true
+                        $0.loadingState = .error
         }
     }
 

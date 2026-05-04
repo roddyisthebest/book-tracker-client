@@ -27,7 +27,7 @@ struct ReceiptDetailView: View {
             ZStack {
                 ScrollView {
                     VStack(spacing: 0) {
-                        if store.isLoading && store.detail == nil && !store.isError {
+                        if store.loadingState == .loading && store.detail == nil {
                             VStack(spacing: 14) {
                                 ProgressView().tint(.white)
                                 Text("loading")
@@ -36,7 +36,7 @@ struct ReceiptDetailView: View {
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .padding(.vertical, 40)
-                        } else if store.isError {
+                        } else if store.loadingState == .error {
                             VStack(spacing: 14) {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .font(.system(size: 28))
@@ -64,7 +64,7 @@ struct ReceiptDetailView: View {
                             Divider().background(Color.appSeparator)
                             HStack {
                                 Spacer()
-                                Text("total_books \(String(detail.items.count))").foregroundStyle(Color.appPrimaryText).font(.headline)
+                                Text("total_books \(detail.items.count.commaFormatted)").foregroundStyle(Color.appPrimaryText).font(.headline)
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)

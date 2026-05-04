@@ -14,7 +14,7 @@ struct SearchSuggestionsFeature {
     @Dependency(\.searchKeywordService) var searchKeywordService
 
     @Dependency(\.date) var date
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -55,7 +55,7 @@ struct SearchSuggestionsFeature {
             state, action in
             switch action {
                 case .searchTapped(let text):
-                    let userId = profile?.id.uuidString ?? ""
+                    let userId = userId ?? ""
                     return .merge(
                         .send(.delegate(.setKeyword(text))),
                         .run { [date] _ in
@@ -69,7 +69,7 @@ struct SearchSuggestionsFeature {
                         items.removeAll(where: { $0.id == id })
                         state.searchesResult = .success(items)
                     }
-                    let userId = profile?.id.uuidString ?? ""
+                    let userId = userId ?? ""
                     return .run { _ in
                         try await searchHistory.delete(userId, id)
                     }
@@ -90,7 +90,7 @@ struct SearchSuggestionsFeature {
                     .cancellable(id: CancelID.loadKeywords, cancelInFlight: true)
                 case .loadRecents:
                     state.isSearchesLoading = true
-                    let userId = profile?.id.uuidString ?? ""
+                    let userId = userId ?? ""
                     return .run {
                         send in
                         do {
