@@ -37,7 +37,7 @@ struct BookRow: View {
                     }
                     .frame(height: 5)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
-                    Text("\(Int(progress * 100))% (\(read)p/\(total)p)")
+                    Text("\(Int(progress * 100))% (\(read.commaFormatted)p/\(total.commaFormatted)p)")
                         .foregroundStyle(Color.appSecondaryText)
                         .font(.caption2)
                 }

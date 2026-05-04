@@ -33,7 +33,7 @@ struct IssueReceiptView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             }
             FormCard(labelText: String(localized: "actual_purchase_amount")) {
-                FormTextField(placeholder: String(localized: "enter_price_placeholder"), text: $store.price, keyboardType: .numberPad)
+                FormTextField(placeholder: String(localized: "enter_price_placeholder"), text: $store.price.commaFormatted(), keyboardType: .numberPad)
             }
             HStack(spacing: 6) {
                 Image(systemName: "info.circle")
@@ -41,8 +41,8 @@ struct IssueReceiptView: View {
                     .foregroundStyle(Color.appSecondaryText)
                 let displayTotal = CurrencyCode.baseUnits(fromMicros: store.totalMicros)
                 Text(store.price.isEmpty
-                    ? String(format: String(localized: "price_auto_calc %@"), "\(displayTotal)")
-                    : String(format: String(localized: "price_with_sum %@ %@"), "\(store.price)", "\(displayTotal)"))
+                    ? String(format: String(localized: "price_auto_calc %@"), displayTotal.commaFormatted)
+                    : String(format: String(localized: "price_with_sum %@ %@"), Int(store.price)?.commaFormatted ?? store.price, displayTotal.commaFormatted))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.appSecondaryText)
             }

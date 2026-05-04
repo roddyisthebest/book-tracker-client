@@ -90,7 +90,7 @@ struct CustomBookFormView: View {
                 // Page Count
                 FormCard(labelText: String(localized: "page_count_label")) {
                     CustomFormTextField(
-                        text: $store.pageCount,
+                        text: $store.pageCount.commaFormatted(),
                         placeholder: "page_count_label",
                         keyboardType: .numberPad
                     )
@@ -119,7 +119,7 @@ struct CustomBookFormView: View {
                         HStack(spacing: 10) {
                             TextField(
                                 "",
-                                text: $store.retailPrice,
+                                text: $store.retailPrice.commaFormatted(),
                                 prompt: Text("enter_price").foregroundStyle(Color.appSecondaryText)
                             )
                             .keyboardType(.numberPad)

@@ -100,7 +100,7 @@ struct LibraryView: View {
                     store.send(.sectionTapped(.myBooks(status: .done)))
                 }) {
                     VStack(spacing: 6) {
-                        Text("\(counts[.done] ?? 0)")
+                        Text((counts[.done] ?? 0).commaFormatted)
                             .font(.system(size: 20, weight: .bold))
                         Text("status_done")
                             .font(.system(size: 11, weight: .semibold))
@@ -116,7 +116,7 @@ struct LibraryView: View {
                     store.send(.sectionTapped(.myBooks(status: .reading)))
                 }) {
                     VStack(spacing: 6) {
-                        Text("\(counts[.reading] ?? 0)")
+                        Text((counts[.reading] ?? 0).commaFormatted)
                             .font(.system(size: 20, weight: .bold))
                         Text("status_reading")
                             .font(.system(size: 11, weight: .semibold))
@@ -132,7 +132,7 @@ struct LibraryView: View {
                     store.send(.sectionTapped(.myBooks(status: .want)))
                 }) {
                     VStack(spacing: 6) {
-                        Text("\(counts[.want] ?? 0)")
+                        Text((counts[.want] ?? 0).commaFormatted)
                             .font(.system(size: 20, weight: .bold))
                         Text("status_want")
                             .font(.system(size: 11, weight: .semibold))
@@ -148,7 +148,7 @@ struct LibraryView: View {
                     store.send(.sectionTapped(.myBooks(status: .dropped)))
                 }) {
                     VStack(spacing: 6) {
-                        Text("\(counts[.dropped] ?? 0)")
+                        Text((counts[.dropped] ?? 0).commaFormatted)
                             .font(.system(size: 20, weight: .bold))
                         Text("status_dropped")
                             .font(.system(size: 11, weight: .semibold))

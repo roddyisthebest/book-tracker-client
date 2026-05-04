@@ -64,7 +64,7 @@ struct ReceiptDetailView: View {
                             Divider().background(Color.appSeparator)
                             HStack {
                                 Spacer()
-                                Text("total_books \(String(detail.items.count))").foregroundStyle(Color.appPrimaryText).font(.headline)
+                                Text("total_books \(detail.items.count.commaFormatted)").foregroundStyle(Color.appPrimaryText).font(.headline)
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)

@@ -19,13 +19,15 @@ let project = Project(
             name: "BookTracker",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.seongyeon.booktracker",
+            bundleId: "com.seongyeon.MyBookTracker",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
                         "UIColorName": "LaunchBackground",
                         "UIImageName": "Transparent_AppIcon",
                     ],
+                    "CFBundleDisplayName": "MyBookManager",
                     "SUPABASE_URL": "$(SUPABASE_URL)",
                     "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
                     "ENV": "$(ENV)",
@@ -62,6 +64,7 @@ let project = Project(
             destinations: .iOS,
             product: .unitTests,
             bundleId: "dev.seong.booktrackerTests",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["BookTracker/Tests/**"],
             dependencies: [.target(name: "BookTracker")]
