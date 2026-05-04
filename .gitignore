@@ -51,16 +51,16 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 
-### Xcode Patch ###
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcworkspace/contents.xcworkspacedata
-/*.gcno
-
-### Projects ###
+### Projects (Tuist generates these) ###
 *.xcodeproj
 *.xcworkspace
+
+### Xcode Cloud needs scheme files to detect schemes ###
+!*.xcodeproj/
+*.xcodeproj/*
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/xcshareddata/**
+/*.gcno
 
 ### Tuist derived files ###
 graph.dot
