@@ -3,6 +3,9 @@ import ProjectDescription
 let project = Project(
     name: "BookTracker",
     settings: .settings(
+        base: [
+            "SWIFT_VERSION": "5"
+        ],
         configurations: [
             .debug(
                 name: "Debug",
