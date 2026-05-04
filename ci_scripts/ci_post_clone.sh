@@ -25,6 +25,9 @@ EOF
 
 echo "=== xcconfig files generated ==="
 
+# Xcode Cloud는 ci_scripts/ 에서 실행하므로 레포 루트로 이동
+cd "$CI_PRIMARY_REPOSITORY_PATH"
+
 echo "=== Installing mise ==="
 curl https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
