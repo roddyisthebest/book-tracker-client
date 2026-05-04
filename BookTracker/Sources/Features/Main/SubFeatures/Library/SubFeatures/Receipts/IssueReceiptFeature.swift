@@ -12,7 +12,7 @@ import Foundation
 struct IssueReceiptFeature {
     @Dependency(\.receiptService) var receiptService
     @Dependency(\.localReceiptService) var localReceiptService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -92,7 +92,7 @@ struct IssueReceiptFeature {
                 return .none
             case .alert(.presented(.confirmCreation)):
                 let type = state.type
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     send in
                     let _ = await localReceiptService.removeSpecificTypes(userId, type)

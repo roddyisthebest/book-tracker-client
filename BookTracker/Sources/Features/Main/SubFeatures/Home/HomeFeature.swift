@@ -13,7 +13,7 @@ struct HomeFeature {
     @Dependency(\.date) var date
     @Dependency(\.readingRecordService) var readingRecordService
     @Dependency(\.localReceiptService) var localReceiptService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     private var todayKey: Date {
         Calendar.current.startOfDay(for: date.now)
@@ -169,7 +169,7 @@ struct HomeFeature {
 
             case .loadBookCount:
                 state.isBookCountFetching = true
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     send in
                     let result = await localReceiptService.counts(userId)

@@ -50,7 +50,7 @@ struct SearchResultFeature {
     @Dependency(\.searchKeywordService) var searchKeywordService
 
     @Dependency(\.date) var date
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
     private enum CancelID { case search, loadMore }
 
     var body: some ReducerOf<Self> {
@@ -187,7 +187,7 @@ struct SearchResultFeature {
                     return .none
                 }
                 let trimmed = book.title.trimmingCharacters(in: .whitespacesAndNewlines)
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .merge(
                     .send(.delegate(.tapBook(id: id))),
                     .run { [searchHistory, date, trimmed] _ in

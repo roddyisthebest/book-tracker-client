@@ -14,7 +14,7 @@ struct ExternalBookDetailFeature {
     @Dependency(\.externalBookService) var bookService
     @Dependency(\.bookService) var myBookService
     @Dependency(\.localReceiptService) var localReceiptService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -86,7 +86,7 @@ struct ExternalBookDetailFeature {
             case .loadReceiptTypes:
                 state.receiptTypesLoadState = .loading
                 let bookId = state.id
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     send in
                     let result = await localReceiptService.registeredTypes(userId, bookId)
@@ -176,7 +176,7 @@ struct ExternalBookDetailFeature {
                     state.isRentalSaving = true
                 }
 
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run {
                     send in
                     let result = await localReceiptService.save(userId, book, type)

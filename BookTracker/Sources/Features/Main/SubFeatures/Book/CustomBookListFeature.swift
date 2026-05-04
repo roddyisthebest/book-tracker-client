@@ -11,7 +11,7 @@ import Foundation
 @Reducer
 struct CustomBookListFeature {
     @Dependency(\.localCustomBookService) var localCustomBookService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -40,7 +40,7 @@ struct CustomBookListFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run { send in
                     let result = await localCustomBookService.fetchAll(userId)
                     await send(.loadResponse(result))
@@ -59,7 +59,7 @@ struct CustomBookListFeature {
 
             case .deleteTapped(let id):
                 state.books.removeAll { $0.id == id }
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run { send in
                     let result = await localCustomBookService.remove(id, userId)
                     await send(.deleteResponse(result))
@@ -69,7 +69,7 @@ struct CustomBookListFeature {
                 return .none
 
             case .clearAllTapped:
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run { send in
                     let result = await localCustomBookService.clearAll(userId)
                     switch result {

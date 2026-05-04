@@ -35,6 +35,7 @@ struct AppFeature {
     @Dependency(\.searchHistory) var searchHistory
     @Dependency(\.localReceiptService) var localReceiptService
     @Dependency(\.localCustomBookService) var localCustomBookService
+    @Shared(.userId) var userId: String?
     @Shared(.userProfile) var userProfile: MyProfile?
     @Shared(.userAuthInfo) var userAuthInfo: MyAuthInfo?
     private enum CancelID { case authChanges }
@@ -58,6 +59,7 @@ struct AppFeature {
                 case .initialSession:
                     // If a valid, non-expired session exists, go to main; if none, go to auth.
                     if let s = session, !s.isExpired {
+                        $userId.withLock { $0 = s.user.id.uuidString }
                         state = .main(MainFeature.State())
                     } else if session == nil {
                         state = .auth(AuthFeature.State())
@@ -65,12 +67,14 @@ struct AppFeature {
                     return .none
 
                 case .signedIn, .tokenRefreshed, .userUpdated:
-                    if session != nil {
+                    if let s = session {
+                        $userId.withLock { $0 = s.user.id.uuidString }
                         state = .main(MainFeature.State())
                     }
                     return .none
 
                 case .signedOut:
+                    $userId.withLock { $0 = nil }
                     $userProfile.withLock { $0 = nil }
                     $userAuthInfo.withLock { $0 = nil }
                     state = .auth(AuthFeature.State())
@@ -81,7 +85,7 @@ struct AppFeature {
                 }
 
             case .main(.setting(.delegate(.deleteAccount))):
-                let userId = userProfile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 state = .signingOut
                 return .run { [authService, searchHistory, localReceiptService, localCustomBookService] send in
                     try? await searchHistory.clearAll(userId)
@@ -108,6 +112,7 @@ struct AppFeature {
                 return .none
 
             case .logout:
+                $userId.withLock { $0 = nil }
                 $userProfile.withLock { $0 = nil }
                 $userAuthInfo.withLock { $0 = nil }
                 state = .auth(AuthFeature.State())

@@ -10,7 +10,7 @@ import ComposableArchitecture
 @Reducer
 struct SearchFeature {
     @Dependency(\.localCustomBookService) var localCustomBookService
-    @Shared(.userProfile) var profile: MyProfile?
+    @Shared(.userId) var userId: String?
 
     @ObservableState
     struct State: Equatable {
@@ -81,7 +81,7 @@ struct SearchFeature {
             case .customBookForm(.presented(.delegate(.didCreate(let externalBook)))):
                 state.customBookForm = nil
                 state.detailSheet = ExternalBookDetailFeature.State(id: externalBook.id, book: externalBook)
-                let userId = profile?.id.uuidString ?? ""
+                let userId = userId ?? ""
                 return .run { [localCustomBookService] _ in
                     _ = await localCustomBookService.save(externalBook, userId)
                 }
@@ -93,7 +93,7 @@ struct SearchFeature {
                 let externalId = book.externalBookId
                 state.detailSheet = nil
                 if let externalId, externalId.hasPrefix("custom_") {
-                    let userId = profile?.id.uuidString ?? ""
+                    let userId = userId ?? ""
                     return .run { [localCustomBookService] _ in
                         _ = await localCustomBookService.remove(externalId, userId)
                     }
