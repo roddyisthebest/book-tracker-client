@@ -128,7 +128,7 @@ private extension BooksTableRow {
             author: author ?? "",
             publisher: publisher ?? "",
             pageCount: pageCount,
-            pageCountEditable: false,
+            pageCountEditable: externalBookId?.hasPrefix("custom_") ?? false,
             imageUrl: imageUrl,
             isbn: isbn ?? "",
             status: BookService.mapStatusFromDB(status),

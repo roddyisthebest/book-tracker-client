@@ -215,6 +215,109 @@ struct BookFormFeatureTests {
         await store.send(.binding(.set(\.status, .reading)))
     }
 
+    // MARK: - toPatch
+
+    @Test func toPatch_doneStatus_includesStartedAt() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let state = BookFormFeature.State(
+            externalId: "ext-002",
+            bookId: TestFixtures.doneBook.id,
+            book: TestFixtures.doneBook,
+            changeMode: nil,
+            now: now
+        )
+
+        let patch = state.toPatch()
+        #expect(patch.startedAt != nil)
+        #expect(patch.status == .done)
+        #expect(patch.endedAt != nil)
+    }
+
+    @Test func toPatch_readingStatus_includesStartedAt() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let state = BookFormFeature.State(
+            externalId: "ext-001",
+            bookId: TestFixtures.book.id,
+            book: TestFixtures.book,
+            changeMode: nil,
+            now: now
+        )
+
+        let patch = state.toPatch()
+        #expect(patch.startedAt != nil)
+        #expect(patch.status == .reading)
+        #expect(patch.readCount != nil)
+    }
+
+    @Test func toPatch_wantStatus_excludesStartedAt() {
+        let wantBook = Book(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
+            userId: TestFixtures.userId,
+            externalBookId: "ext-003",
+            title: "Want Book",
+            author: "Author",
+            publisher: "Publisher",
+            pageCount: 100,
+            pageCountEditable: false,
+            imageUrl: nil,
+            isbn: "1234567890",
+            status: .want,
+            type: .paper,
+            startedAt: nil,
+            readCount: nil,
+            memo: nil,
+            endedAt: nil,
+            score: nil,
+            review: nil,
+            droppedReason: nil
+        )
+        let state = BookFormFeature.State(
+            externalId: "ext-003",
+            bookId: wantBook.id,
+            book: wantBook,
+            changeMode: nil
+        )
+
+        let patch = state.toPatch()
+        #expect(patch.startedAt == nil)
+        #expect(patch.status == .want)
+    }
+
+    @Test func toPatch_droppedStatus_excludesStartedAt() {
+        let droppedBook = Book(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000005")!,
+            userId: TestFixtures.userId,
+            externalBookId: "ext-004",
+            title: "Dropped Book",
+            author: "Author",
+            publisher: "Publisher",
+            pageCount: 100,
+            pageCountEditable: false,
+            imageUrl: nil,
+            isbn: "1234567890",
+            status: .dropped,
+            type: .paper,
+            startedAt: nil,
+            readCount: nil,
+            memo: nil,
+            endedAt: nil,
+            score: nil,
+            review: nil,
+            droppedReason: "boring"
+        )
+        let state = BookFormFeature.State(
+            externalId: "ext-004",
+            bookId: droppedBook.id,
+            book: droppedBook,
+            changeMode: nil
+        )
+
+        let patch = state.toPatch()
+        #expect(patch.startedAt == nil)
+        #expect(patch.status == .dropped)
+        #expect(patch.droppedReason == "boring")
+    }
+
     // MARK: - State Helpers
 
     @Test func isEditing_withBookId_returnsTrue() {

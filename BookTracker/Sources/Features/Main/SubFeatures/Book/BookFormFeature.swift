@@ -222,7 +222,7 @@ extension BookFormFeature.State {
             type: type,
             memo: note.isEmpty ? nil : note,
             droppedReason: status == .dropped ? (reason.isEmpty ? nil : reason) : nil,
-            startedAt: status == .reading ? startedAt : nil,
+            startedAt: status == .reading || status == .done ? startedAt : nil,
             endedAt: status == .done ? endedAt : nil,
             readCount: status == .reading ? Int(page) : nil,
             score: status == .done ? (rating == 0 ? nil : rating) : nil,
