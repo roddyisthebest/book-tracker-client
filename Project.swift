@@ -4,7 +4,8 @@ let project = Project(
     name: "BookTracker",
     settings: .settings(
         base: [
-            "SWIFT_VERSION": "5"
+            "SWIFT_VERSION": "5",
+            "SWIFT_STRICT_CONCURRENCY": "minimal"
         ],
         configurations: [
             .debug(
