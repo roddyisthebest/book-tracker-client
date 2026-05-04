@@ -16,11 +16,11 @@ struct CollectionDetailFeatureTests {
 
         await store.send(.onAppear)
         await store.receive(\.loadBooks) {
-            $0.isLoading = true
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadBooksResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = [TestFixtures.book]
             $0.nextIndex = 1
             $0.hasMore = false
@@ -37,14 +37,13 @@ struct CollectionDetailFeatureTests {
         store.dependencies.collectionService.listBooks = { _, _, _ in .failure(.unknown(message: "fail")) }
 
         await store.send(.loadBooks) {
-            $0.isLoading = true
-            $0.isError = false
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadBooksResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.books = []
-            $0.isError = true
+            $0.loadingState = .error
             $0.nextIndex = 0
             $0.hasMore = false
         }

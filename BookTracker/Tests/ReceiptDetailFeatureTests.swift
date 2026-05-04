@@ -20,11 +20,11 @@ struct ReceiptDetailFeatureTests {
         }
 
         await store.receive(\.loadReceipt) {
-            $0.isLoading = true
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadReceiptResponse) {
-            $0.isLoading = false
+            $0.loadingState = .loaded
             $0.detail = TestFixtures.receiptDetail
         }
     }
@@ -41,12 +41,11 @@ struct ReceiptDetailFeatureTests {
         store.dependencies.receiptService.loadReceiptDetail = { _ in .failure(.unknown(message: "fail")) }
 
         await store.send(.loadReceipt) {
-            $0.isLoading = true
+            $0.loadingState = .loading
         }
 
         await store.receive(\.loadReceiptResponse) {
-            $0.isLoading = false
-            $0.isError = true
+                        $0.loadingState = .error
         }
     }
 

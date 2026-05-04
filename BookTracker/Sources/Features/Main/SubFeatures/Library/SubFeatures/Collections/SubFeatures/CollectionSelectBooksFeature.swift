@@ -18,8 +18,7 @@ struct CollectionSelectBooksFeature {
         var selectedIds: Set<UUID> = []
         var books: [Book] = []
 
-        var isLoading: Bool = false
-        var isError: Bool = false
+        var loadingState: LoadingState = .idle
 
         var isSyncing: Bool = false
 
@@ -67,8 +66,7 @@ struct CollectionSelectBooksFeature {
             case .onRefresh:
                 return .send(.onAppear)
             case .loadBooks:
-                state.isError = false
-                state.isLoading = true
+                state.loadingState = .loading
                 let collectionId = state.collection.id
                 return .run {
                     send in
@@ -76,12 +74,11 @@ struct CollectionSelectBooksFeature {
                     await send(.loadBooksResponse(result))
                 }
             case .loadBooksResponse(.success(let books)):
-                state.isLoading = false
+                state.loadingState = .loaded
                 state.books = books
                 return .none
             case .loadBooksResponse(.failure):
-                state.isLoading = false
-                state.isError = true
+                state.loadingState = .error
                 return .none
             case .bookSelected(let id):
                 if state.selectedIds.contains(id) {

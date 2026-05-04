@@ -99,13 +99,13 @@ struct MyBookListView: View {
 
     @ViewBuilder
     private var list: some View {
-        if store.isLoading && store.books.isEmpty && !store.isError {
+        if store.loadingState == .loading && store.books.isEmpty {
             ProgressView()
                 .scaleEffect(1.1)
                 .padding(16)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if store.isError && store.books.isEmpty {
+        } else if store.loadingState == .error && store.books.isEmpty {
             MyBooksErrorView {
                 store.send(.refresh)
             }

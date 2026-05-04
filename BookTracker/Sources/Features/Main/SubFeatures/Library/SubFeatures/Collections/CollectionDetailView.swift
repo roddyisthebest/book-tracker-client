@@ -52,7 +52,7 @@ struct CollectionDetailView: View {
     @ViewBuilder
     private var booksList: some View {
         ZStack {
-            if !store.isLoading && store.books.isEmpty && !store.isError {
+            if store.loadingState != .loading && store.books.isEmpty && store.loadingState != .error {
                 VStack(spacing: 14) {
                     Image(systemName: "books.vertical")
                         .font(.system(size: 28))
@@ -99,7 +99,7 @@ struct CollectionDetailView: View {
                 .scrollContentBackground(.hidden)
                 .listRowBackground(Color.clear)
                 .background(Color.appSurface)
-                .allowsHitTesting(!(store.isLoading && store.books.isEmpty))
+                .allowsHitTesting(!(store.loadingState == .loading && store.books.isEmpty))
                 .refreshable {
                     await store.send(.onRefresh).finish()
                 }
@@ -116,14 +116,14 @@ struct CollectionDetailView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if store.isError {
+                if store.loadingState == .error {
                     errorView
                 } else {
                     booksList
                 }
             }
             .overlay {
-                if store.isLoading && store.books.isEmpty {
+                if store.loadingState == .loading && store.books.isEmpty {
                     ProgressView()
                         .scaleEffect(1.1)
                         .padding(16)

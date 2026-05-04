@@ -144,7 +144,7 @@ struct ExternalBookDetailView: View {
 
                         VStack(spacing: 12) {
                             HStack(spacing: 12) {
-                                if store.isRegisteredReceiptTypesLoading {
+                                if store.receiptTypesLoadState == .loading {
                                     HStack(spacing: 10) {
                                         ProgressView()
                                             .controlSize(.small)
@@ -157,7 +157,7 @@ struct ExternalBookDetailView: View {
                                     .padding(.horizontal, 16)
                                     .background(Color.appButtonSurface)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                                } else if store.isRegisteredReceiptTypesLoadError {
+                                } else if store.receiptTypesLoadState == .error {
                                     VStack(spacing: 8) {
                                         Image(systemName: "exclamationmark.triangle.fill")
                                             .font(.system(size: 18, weight: .semibold))
@@ -176,7 +176,7 @@ struct ExternalBookDetailView: View {
                                     .padding(.horizontal, 16)
                                     .background(Color.appButtonSurface)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                                } else if store.isRegisteredReceiptTypesLoadSuccess {
+                                } else if store.receiptTypesLoadState == .loaded {
                                     Button(action: {
                                         store.send(.addButtonTapped(.rental))
                                     }) {

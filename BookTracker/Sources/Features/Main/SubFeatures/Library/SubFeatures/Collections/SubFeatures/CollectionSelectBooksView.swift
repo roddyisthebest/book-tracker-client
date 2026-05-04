@@ -86,7 +86,7 @@ struct CollectionSelectBooksView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if store.isError {
+                if store.loadingState == .error {
                     errorView
                 }
                 else {
@@ -94,7 +94,7 @@ struct CollectionSelectBooksView: View {
                 }
             }
             .overlay {
-                if store.isLoading {
+                if store.loadingState == .loading {
                     ProgressView()
                         .scaleEffect(1.1)
                         .padding(16)

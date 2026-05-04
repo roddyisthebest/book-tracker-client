@@ -9,8 +9,7 @@ struct DoneBooksCalendarFeature {
     @ObservableState
     struct State: Equatable {
         var date: Date = .init()
-        var isLoading: Bool = false
-        var isError: Bool = false
+        var loadingState: LoadingState = .idle
         var thumbnailsByDate: [Date: [BookCalendarSummary]]?
 
         @Presents var alert: AlertState<Action.Alert>?
@@ -38,8 +37,7 @@ struct DoneBooksCalendarFeature {
             case .onAppear:
                 return .send(.loadData)
             case .loadData:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 state.thumbnailsByDate = nil
                 let calendar = Calendar(identifier: .gregorian)
                 let comps = calendar.dateComponents([.year, .month], from: state.date)
@@ -50,12 +48,12 @@ struct DoneBooksCalendarFeature {
                     await send(.loadDataResponse(result))
                 }
             case .loadDataResponse(let result):
-                state.isLoading = false
                 switch result {
                 case .success(let dict):
+                    state.loadingState = .loaded
                     state.thumbnailsByDate = dict
                 case .failure:
-                    state.isError = true
+                    state.loadingState = .error
                 }
                 return .none
             case .saveSuccess:

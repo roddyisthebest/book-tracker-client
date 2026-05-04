@@ -393,7 +393,7 @@ struct ReadingReportView: View {
 
     private var mainContent: some View {
         ScrollView {
-            if store.isLoading {
+            if store.loadingState == .loading {
                 VStack(spacing: 12) {
                     ProgressView()
                         .tint(.white)
@@ -402,7 +402,7 @@ struct ReadingReportView: View {
                         .foregroundStyle(Color.appSecondaryText)
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
-            } else if store.isError {
+            } else if store.loadingState == .error {
                 VStack(spacing: 14) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 28))
@@ -472,7 +472,7 @@ struct ReadingReportView: View {
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
-                    .disabled(store.isLoading || store.isError || store.monthlyReadingReport == nil)
+                    .disabled(store.loadingState == .loading || store.loadingState == .error || store.monthlyReadingReport == nil)
                 }
             }
             .sheet(isPresented: Binding(

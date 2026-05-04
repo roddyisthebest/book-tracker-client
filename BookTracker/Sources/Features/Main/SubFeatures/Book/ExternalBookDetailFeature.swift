@@ -30,9 +30,7 @@ struct ExternalBookDetailFeature {
 
         var registeredReceiptTypes: [ReceiptType] = []
 
-        var isRegisteredReceiptTypesLoading: Bool = false
-        var isRegisteredReceiptTypesLoadError: Bool = false
-        var isRegisteredReceiptTypesLoadSuccess: Bool = false
+        var receiptTypesLoadState: LoadingState = .idle
 
         var isPurchasingSaving: Bool = false
         var isRentalSaving: Bool = false
@@ -86,9 +84,7 @@ struct ExternalBookDetailFeature {
                     .send(.checkAlreadyRegistered)
                 )
             case .loadReceiptTypes:
-                state.isRegisteredReceiptTypesLoading = true
-                state.isRegisteredReceiptTypesLoadError = false
-                state.isRegisteredReceiptTypesLoadSuccess = false
+                state.receiptTypesLoadState = .loading
                 let bookId = state.id
                 let userId = profile?.id.uuidString ?? ""
                 return .run {
@@ -97,15 +93,12 @@ struct ExternalBookDetailFeature {
                     await send(.loadReceiptTypesResponse(result))
                 }
             case .loadReceiptTypesResponse(.success(let receiptTypes)):
-                state.isRegisteredReceiptTypesLoading = false
-                state.isRegisteredReceiptTypesLoadSuccess = true
+                state.receiptTypesLoadState = .loaded
                 state.registeredReceiptTypes = receiptTypes
                 return .none
             case .loadReceiptTypesResponse(.failure):
-                state.isRegisteredReceiptTypesLoading = false
-                state.isRegisteredReceiptTypesLoadSuccess = false
+                state.receiptTypesLoadState = .error
                 state.registeredReceiptTypes = []
-                state.isRegisteredReceiptTypesLoadError = true
                 return .none
             case .loadDetail:
                 if state.id.hasPrefix("custom_"), state.book != nil {

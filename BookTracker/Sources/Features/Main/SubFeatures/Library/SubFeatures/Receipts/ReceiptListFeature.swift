@@ -22,10 +22,8 @@ struct ReceiptListFeature {
         var receiptType: ReceiptType = .rental
         var list: [ReceiptSummary] = []
 
-        var isLoading: Bool = false
+        var loadingState: LoadingState = .idle
         var isLoadingMore: Bool = false
-
-        var isError: Bool = false
         var isDeleting: Bool = false
 
         var nextIndex: Int = 0
@@ -73,8 +71,7 @@ struct ReceiptListFeature {
             case .onRefresh:
                 return .send(.loadReceipts)
             case .loadReceipts:
-                state.isLoading = true
-                state.isError = false
+                state.loadingState = .loading
                 state.nextIndex = 0
                 state.hasMore = true
                 let pageSize = state.pageSize
@@ -88,20 +85,19 @@ struct ReceiptListFeature {
                     }
                 )
             case .loadReceiptResponse(.success(let receipts)):
-                state.isLoading = false
+                state.loadingState = .loaded
                 state.list = receipts
                 state.nextIndex = receipts.count
                 state.hasMore = receipts.count == state.pageSize
                 return .none
             case .loadReceiptResponse(.failure(let error)):
-                state.isLoading = false
+                state.loadingState = .error
                 state.list = []
-                state.isError = true
                 state.nextIndex = 0
                 state.hasMore = false
                 return .none
             case .loadMore:
-                guard !state.isLoading,
+                guard state.loadingState != .loading,
                       !state.isLoadingMore,
                       state.hasMore
                 else {
