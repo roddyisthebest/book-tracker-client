@@ -31,15 +31,15 @@ export PATH="$HOME/.local/bin:$PATH"
 
 echo "=== Installing Tuist via mise ==="
 mise install tuist@4.134.0
-eval "$(mise activate bash)"
 
+# CI 환경에서는 activate 대신 mise exec로 직접 실행
 echo "=== Tuist version ==="
-tuist version
+mise exec tuist@4.134.0 -- tuist version
 
 echo "=== Installing dependencies ==="
-tuist install
+mise exec tuist@4.134.0 -- tuist install
 
 echo "=== Generating project ==="
-tuist generate --no-open
+mise exec tuist@4.134.0 -- tuist generate --no-open
 
 echo "=== Done ==="
