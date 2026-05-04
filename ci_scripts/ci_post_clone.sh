@@ -45,4 +45,11 @@ mise exec tuist@4.134.0 -- tuist install
 echo "=== Generating project ==="
 mise exec tuist@4.134.0 -- tuist generate --no-open
 
+echo "=== Suppressing strict concurrency for all targets (Swift 6 / Xcode 26) ==="
+find "$CI_PRIMARY_REPOSITORY_PATH" -name "project.pbxproj" | while read pbxproj; do
+    sed -i '' '/buildSettings = {/a\
+				SWIFT_STRICT_CONCURRENCY = minimal;
+' "$pbxproj"
+done
+
 echo "=== Done ==="
