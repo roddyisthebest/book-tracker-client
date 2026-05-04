@@ -45,7 +45,7 @@ struct HomeView: View {
                             VStack {
                                 ProgressView().tint(Color.appAccent)
                             }.frame(maxWidth: .infinity, alignment: .center)
-                        case (false, true):
+                        case (false, .some(true)):
                             HStack {
                                 Text("error_retry_message")
                                     .foregroundStyle(.red)
@@ -53,7 +53,7 @@ struct HomeView: View {
                                     store.send(.loadRecentWeek)
                                 }
                             }
-                        case (false, false):
+                        case (false, .some(false)):
                             HStack(alignment: .center) {
                                 ForEach(
                                     store.recentWeekRecords
