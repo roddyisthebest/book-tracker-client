@@ -25,9 +25,13 @@ EOF
 
 echo "=== xcconfig files generated ==="
 
-echo "=== Installing Tuist ==="
-curl -Ls https://install.tuist.io | bash
+echo "=== Installing mise ==="
+curl https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
+
+echo "=== Installing Tuist via mise ==="
+mise install tuist@4.134.0
+eval "$(mise activate bash)"
 
 echo "=== Tuist version ==="
 tuist version
