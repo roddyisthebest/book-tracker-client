@@ -266,20 +266,20 @@ extension LocalReceiptService {
             removeSpecificTypes: { userId, type in
                 do {
                     try await context.perform {
-                        let request = entityFetchRequest()
-                        request.predicate = NSPredicate(
+                        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: ReceiptCoreDataStack.entityName)
+                        fetchRequest.predicate = NSPredicate(
                             format: "userId == %@ AND typeRawValue == %@",
                             userId,
                             type.rawValue
                         )
-                        let results = try context.fetch(request)
-                        for obj in results {
-                            context.delete(obj)
-                        }
-
-                        if context.hasChanges {
-                            try context.save()
-                        }
+                        let batchDelete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                        batchDelete.resultType = .resultTypeObjectIDs
+                        let result = try context.execute(batchDelete) as? NSBatchDeleteResult
+                        let objectIDs = result?.result as? [NSManagedObjectID] ?? []
+                        NSManagedObjectContext.mergeChanges(
+                            fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                            into: [context]
+                        )
                     }
                     return .success(true)
                 } catch {
@@ -289,17 +289,16 @@ extension LocalReceiptService {
             removeAllTypes: { userId, externalBookId in
                 do {
                     try await context.perform {
-                        let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, externalBookId)
-
-                        let results = try context.fetch(request)
-                        for obj in results {
-                            context.delete(obj)
-                        }
-
-                        if context.hasChanges {
-                            try context.save()
-                        }
+                        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: ReceiptCoreDataStack.entityName)
+                        fetchRequest.predicate = NSPredicate(format: "userId == %@ AND id == %@", userId, externalBookId)
+                        let batchDelete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                        batchDelete.resultType = .resultTypeObjectIDs
+                        let result = try context.execute(batchDelete) as? NSBatchDeleteResult
+                        let objectIDs = result?.result as? [NSManagedObjectID] ?? []
+                        NSManagedObjectContext.mergeChanges(
+                            fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                            into: [context]
+                        )
                     }
                     return .success(())
                 } catch {
@@ -310,15 +309,16 @@ extension LocalReceiptService {
             clearAll: { userId in
                 do {
                     try await context.perform {
-                        let request = entityFetchRequest()
-                        request.predicate = NSPredicate(format: "userId == %@", userId)
-                        let results = try context.fetch(request)
-                        for obj in results {
-                            context.delete(obj)
-                        }
-                        if context.hasChanges {
-                            try context.save()
-                        }
+                        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: ReceiptCoreDataStack.entityName)
+                        fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
+                        let batchDelete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                        batchDelete.resultType = .resultTypeObjectIDs
+                        let result = try context.execute(batchDelete) as? NSBatchDeleteResult
+                        let objectIDs = result?.result as? [NSManagedObjectID] ?? []
+                        NSManagedObjectContext.mergeChanges(
+                            fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                            into: [context]
+                        )
                     }
                     return .success(())
                 } catch {
