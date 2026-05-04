@@ -148,7 +148,10 @@ struct BookDetailView: View {
                                         }
 
                                     case .reading:
-                                        VStack(spacing: 8) {
+                                        VStack(spacing: 17.5) {
+                                            let startedDate: Date? = book.startedAt as? Date
+                                            let started = startedDate?.formatted(date: .abbreviated, time: .omitted) ?? "-"
+                                            StatusRow(key: String(localized: "started_at_label"), value: started)
                                             let readCountRaw = book.readCount ?? 0
                                             let pageCountRaw = max(book.pageCount ?? 0, 1)
                                             let progress = Int((Double(readCountRaw) / Double(pageCountRaw)) * 100.0)
