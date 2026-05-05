@@ -109,16 +109,19 @@ struct CollectionCard: View {
     @ViewBuilder
     private func remoteBookImage(urlString: String?) -> some View {
         if let urlString, let url = URL(string: urlString) {
-            KFImage(url)
-                .placeholder {
-                    imagePlaceholder(systemName: "book.closed")
-                }
-                .retry(maxCount: 2, interval: .seconds(1))
-                .fade(duration: 0.2)
-                .resizable()
-                .scaledToFill()
+            Color.clear
                 .frame(maxWidth: .infinity)
                 .frame(height: 80)
+                .overlay {
+                    KFImage(url)
+                        .placeholder {
+                            imagePlaceholder(systemName: "book.closed")
+                        }
+                        .retry(maxCount: 2, interval: .seconds(1))
+                        .fade(duration: 0.2)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         } else {
             imagePlaceholder(systemName: "book.closed")
