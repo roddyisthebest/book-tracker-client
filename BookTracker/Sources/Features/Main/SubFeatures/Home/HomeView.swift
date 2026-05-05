@@ -56,11 +56,12 @@ struct HomeView: View {
                         case (false, .some(false)):
                             HStack(alignment: .center) {
                                 ForEach(
-                                    store.recentWeekRecords
+                                    Array(store.recentWeekRecords
                                         .map { (date: $0.key, record: $0.value) }
-                                        .sorted { $0.date < $1.date },
-                                    id: \.date
-                                ) { item in
+                                        .sorted { $0.date < $1.date }
+                                        .enumerated()),
+                                    id: \.offset
+                                ) { index, item in
                                     DayBadge(day: item.date.toDayOfWeek()) {
                                         if item.record != nil {
                                             Image(systemName: "checkmark.circle.fill")
