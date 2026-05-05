@@ -10,7 +10,7 @@ struct DoneBooksCalendarFeature {
     struct State: Equatable {
         var date: Date = .init()
         var loadingState: LoadingState = .idle
-        var thumbnailsByDate: [Date: [BookCalendarSummary]]?
+        var thumbnailsByDate: [Date: BookCalendarDay]?
 
         @Presents var alert: AlertState<Action.Alert>?
     }
@@ -19,7 +19,7 @@ struct DoneBooksCalendarFeature {
         case binding(BindingAction<State>)
         case onAppear
         case loadData
-        case loadDataResponse(Result<[Date: [BookCalendarSummary]], AppError>)
+        case loadDataResponse(Result<[Date: BookCalendarDay], AppError>)
         case saveSuccess
         case saveFailed
         case alert(PresentationAction<Alert>)

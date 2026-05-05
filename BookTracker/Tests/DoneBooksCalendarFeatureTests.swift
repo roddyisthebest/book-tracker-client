@@ -22,14 +22,49 @@ struct DoneBooksCalendarFeatureTests {
             imageUrl: "https://example.com/cover.jpg",
             endedAt: Date(timeIntervalSince1970: 1_700_000_000)
         )
-        let data: [Date: [BookCalendarSummary]] = [
-            Date(timeIntervalSince1970: 1_700_000_000): [summary],
+        let data: [Date: BookCalendarDay] = [
+            Date(timeIntervalSince1970: 1_700_000_000): BookCalendarDay(books: [summary], totalCount: 1),
         ]
 
         store.dependencies.bookService.calendarByMonth = { _, _, _, _ in .success(data) }
 
         await store.send(.onAppear)
         await store.receive(\.loadData) {
+            $0.loadingState = .loading
+            $0.thumbnailsByDate = nil
+        }
+
+        await store.receive(\.loadDataResponse) {
+            $0.loadingState = .loaded
+            $0.thumbnailsByDate = data
+        }
+    }
+
+    @Test func loadData_carriesServerTotalCount() async {
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
+
+        let store = TestStore(
+            initialState: DoneBooksCalendarFeature.State(date: fixedDate),
+            reducer: { DoneBooksCalendarFeature() }
+        )
+        store.exhaustivity = .off
+
+        store.dependencies.date = .constant(fixedDate)
+
+        let summary = BookCalendarSummary(
+            id: TestFixtures.bookId,
+            title: "Done Book",
+            imageUrl: "https://example.com/cover.jpg",
+            endedAt: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        let day = BookCalendarDay(books: [summary], totalCount: 7)
+        let data: [Date: BookCalendarDay] = [
+            Date(timeIntervalSince1970: 1_700_000_000): day,
+        ]
+
+        store.dependencies.bookService.calendarByMonth = { _, _, _, _ in .success(data) }
+
+        await store.send(.loadData) {
             $0.loadingState = .loading
             $0.thumbnailsByDate = nil
         }

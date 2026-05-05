@@ -200,40 +200,22 @@ struct BookCalendarSummary: Equatable, Decodable, Hashable {
     }
 }
 
-private extension Array where Element == BookCalendarSummary {
-    func groupedByEndedDate() -> [Date: [BookCalendarSummary]] {
-        let calendar = Calendar(identifier: .gregorian)
-        var result: [Date: [BookCalendarSummary]] = [:]
+struct BookCalendarDay: Equatable, Hashable {
+    let books: [BookCalendarSummary]
+    let totalCount: Int
 
-        for book in self {
-            guard let endedAt = book.endedAt else { continue }
-            let day = calendar.startOfDay(for: endedAt)
-            result[day, default: []].append(book)
-        }
+    static let empty = BookCalendarDay(books: [], totalCount: 0)
+}
 
-        return result
-    }
+private struct BookCalendarDayRow: Decodable {
+    let endedDate: String
+    let totalCount: Int
+    let books: [BookCalendarSummary]
 
-    func groupedByEndedDate(year: Int, month: Int, calendar: Calendar = Calendar(identifier: .gregorian)) -> [Date: [BookCalendarSummary]] {
-        // First group only the days that have data
-        let grouped = groupedByEndedDate()
-
-        // Build a dictionary that includes every day of the given month
-        guard let start = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
-              let range = calendar.range(of: .day, in: .month, for: start)
-        else {
-            return grouped
-        }
-
-        let startOfMonth = calendar.startOfDay(for: start)
-        var filled: [Date: [BookCalendarSummary]] = [:]
-        for day in range { // day is 1-based
-            if let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) {
-                let key = calendar.startOfDay(for: date)
-                filled[key] = grouped[key] ?? []
-            }
-        }
-        return filled
+    enum CodingKeys: String, CodingKey {
+        case endedDate = "ended_date"
+        case totalCount = "total_count"
+        case books
     }
 }
 
@@ -293,7 +275,7 @@ struct BookService {
         _ month: Int,
         _ status: BookStatus?,
         _ type: BookType?
-    ) async -> Result<[Date: [BookCalendarSummary]], AppError>
+    ) async -> Result<[Date: BookCalendarDay], AppError>
 }
 
 extension BookService {
@@ -476,11 +458,41 @@ extension BookService {
                         pType: type.map { Self.mapTypeToDB($0) }
                     )
 
-                    let response: PostgrestResponse<[BookCalendarSummary]> = try await client
+                    let response: PostgrestResponse<[BookCalendarDayRow]> = try await client
                         .rpc(byMonthRpcName, params: payload)
                         .execute()
 
-                    return .success(response.value.groupedByEndedDate(year: year, month: month))
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    dateFormatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+
+                    let calendar = Calendar(identifier: .gregorian)
+
+                    // Parse server response into [Date: BookCalendarDay]
+                    var grouped: [Date: BookCalendarDay] = [:]
+                    for row in response.value {
+                        guard let date = dateFormatter.date(from: row.endedDate) else { continue }
+                        let key = calendar.startOfDay(for: date)
+                        grouped[key] = BookCalendarDay(books: row.books, totalCount: row.totalCount)
+                    }
+
+                    // Fill all days of the month
+                    guard let start = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+                          let range = calendar.range(of: .day, in: .month, for: start)
+                    else {
+                        return .success(grouped)
+                    }
+
+                    let startOfMonth = calendar.startOfDay(for: start)
+                    var filled: [Date: BookCalendarDay] = [:]
+                    for day in range {
+                        if let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) {
+                            let key = calendar.startOfDay(for: date)
+                            filled[key] = grouped[key] ?? .empty
+                        }
+                    }
+
+                    return .success(filled)
                 } catch {
                     return .failure(
                         .storage(

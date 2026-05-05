@@ -41,12 +41,12 @@ struct DoneBooksCalendarView: View {
     private func dayContentView(for date: Date) -> some View {
         let cal = Calendar.current
         let key = cal.startOfDay(for: date)
-        let items = store.thumbnailsByDate?[key] ?? []
-        if items.isEmpty {
+        let day = store.thumbnailsByDate?[key] ?? .empty
+        if day.books.isEmpty {
             Text("\(cal.component(.day, from: date))")
                 .foregroundStyle(Color.appPrimaryText)
         } else {
-            DoneBookThumbnailsGrid(items: Array(items.prefix(4)))
+            DoneBookThumbnailsGrid(items: Array(day.books.prefix(DoneBookThumbnailsGrid.maxVisible)), totalCount: day.totalCount)
         }
     }
 
@@ -54,12 +54,12 @@ struct DoneBooksCalendarView: View {
     private func captureDayContentView(for date: Date) -> some View {
         let cal = Calendar.current
         let key = cal.startOfDay(for: date)
-        let items = store.thumbnailsByDate?[key] ?? []
-        if items.isEmpty {
+        let day = store.thumbnailsByDate?[key] ?? .empty
+        if day.books.isEmpty {
             Text("\(cal.component(.day, from: date))")
                 .foregroundStyle(Color.appPrimaryText)
         } else {
-            CaptureThumbnailsGrid(items: Array(items.prefix(4)))
+            CaptureThumbnailsGrid(items: Array(day.books.prefix(CaptureThumbnailsGrid.maxVisible)), totalCount: day.totalCount)
         }
     }
 
@@ -194,16 +194,52 @@ struct DoneBooksCalendarView: View {
 }
 
 private struct CaptureThumbnailsGrid: View {
-    let items: [BookCalendarSummary]
+    static let maxVisible = DoneBookThumbnailsGrid.maxVisible
 
-    private var columns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 1), count: 2)
+    let items: [BookCalendarSummary]
+    let totalCount: Int?
+
+    init(items: [BookCalendarSummary], totalCount: Int? = nil) {
+        self.items = items
+        self.totalCount = totalCount
+    }
+
+    private var displayCount: Int {
+        totalCount ?? items.count
+    }
+
+    private var overflowCount: Int {
+        displayCount - Self.maxVisible
     }
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 1) {
-            ForEach(Array(items.prefix(4)).indices, id: \.self) { idx in
-                CaptureThumbnailCell(item: items[idx])
+        ZStack(alignment: .bottomTrailing) {
+            captureThumbnailLayout
+            if overflowCount > 0 {
+                Text("+\(overflowCount)")
+                    .font(.system(size: 7, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 3)
+                    .padding(.vertical, 1)
+                    .background(Color.black.opacity(0.7))
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
+                    .padding(1)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var captureThumbnailLayout: some View {
+        switch items.count {
+        case 0:
+            Color.clear
+        case 1:
+            CaptureThumbnailCell(item: items[0])
+        default:
+            HStack(spacing: 1) {
+                ForEach(Array(items.prefix(Self.maxVisible).enumerated()), id: \.offset) { _, item in
+                    CaptureThumbnailCell(item: item)
+                }
             }
         }
     }
@@ -213,20 +249,24 @@ private struct CaptureThumbnailCell: View {
     let item: BookCalendarSummary
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color(hex: "#2C2C35", default: .secondary))
-            if let urlString = item.imageUrl,
-               let cached = ImageCache.default.retrieveImageInMemoryCache(forKey: urlString) {
-                Image(uiImage: cached)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Image(systemName: "book.fill")
-                    .foregroundStyle(.white.opacity(0.7))
+        Color.clear
+            .overlay {
+                if let urlString = item.imageUrl,
+                   let cached = ImageCache.default.retrieveImageInMemoryCache(forKey: urlString) {
+                    Image(uiImage: cached)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Color(hex: "#2C2C35", default: .secondary))
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 8))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
             }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 2))
+            .clipShape(RoundedRectangle(cornerRadius: 2))
     }
 }
 
